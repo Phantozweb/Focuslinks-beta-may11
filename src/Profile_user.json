@@ -1,0 +1,801 @@
+[
+  {
+    "id": "1",
+    "type": "student",
+    "name": "Janarthan Veeramani",
+    "title": "Founder of FocusLinks & Focus-IN | B.Optom Student",
+    "experience": "Founder of FocusLinks & Focus-IN | B.Optom Student",
+    "location": "Madurai, Tamil Nadu, India",
+    "description": "I'm Janarthan Veeramani, a third-year B.Sc. Optometry student on a mission to make eye care smarter and more accessible. As the founder of FocusLinks and Focus-IN, I am building an ecosystem of AI-powered tools to empower optometry students and practitioners worldwide.",
+    "isFounder": true,
+    "verified": true,
+    "verifiedRole": "Founder of Focus links",
+    "flCredits": 5000,
+    "joinedDate": "July 2024",
+    "badges": ["Founder", "Head of Administration"],
+    "skills": [
+      "Administration",
+      "Keratometry",
+      "Scientific Writing",
+      "Business Ownership",
+      "Start-up Leadership",
+      "Team Leadership",
+      "Organization Skills",
+      "Project Management",
+      "Event Planning",
+      "Optometry",
+      "Creativity Skills",
+      "Artificial Intelligence (AI)",
+      "Microsoft Excel",
+      "Pediatric Vision Screening",
+      "Clinical Patient Counseling",
+      "Visual Acuity Testing"
+    ],
+    "interests": [
+      "AI in Optometry",
+      "Visual Telepathy",
+      "Bionic Eyes",
+      "Entrepreneurship",
+      "Student Collaboration"
+    ],
+    "bio": "I'm Janarthan Veeramani, a third-year B.Sc. Optometry student on a mission to make eye care smarter and more accessible. As the founder of FocusLinks and Focus-IN, I am building an ecosystem of AI-powered tools to empower optometry students and practitioners worldwide. My journey began at LIHSM, Coimbatore, where I discovered that my true strength lies in creative thinking, not just academics. That mindset inspired me to build the tools I once wished I had as a student—tools that support smarter learning, clinical reasoning, and collaboration for the global eye care community.",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/janarthan-v",
+      "email": "janarthanv@outlook.com"
+    },
+    "image": "https://iili.io/KTpEi9s.md.jpg",
+    "experience": [
+      {
+        "title": "Founder",
+        "company": "FocusLinks & Focus-IN",
+        "duration": "Jul 2024 - Present",
+        "description": "Building an ecosystem of AI-powered tools to empower optometry students and practitioners worldwide."
+      },
+      {
+        "title": "Head of Administration",
+        "company": "OptoBharat",
+        "duration": "Jul 2025 - Present",
+        "description": "Leading administrative functions for a national student-led organization."
+      },
+      {
+        "title": "Managing Director of Southern Region",
+        "company": "OptoBharat",
+        "duration": "Mar 2025 - Jul 2025",
+        "description": "Connected optometry students, supported teamwork, and created growth opportunities for the community."
+      }
+    ],
+    "education": [
+      {
+        "degree": "B.Sc. Optometry",
+        "institution": "Alagappa University, Karaikudi",
+        "year": "2023 - 2027 (Expected)"
+      }
+    ],
+    "languages": [
+      "English (Professional)",
+      "German (Elementary)",
+      "Tamil (Native)"
+    ]
+  },
+  {
+    "id": "silvester-ogweno",
+    "type": "student",
+    "name": "Silvester Ogweno Mang'ong'o",
+    "title": "B.Sc. Optometry & Vision Science Student",
+    "experience": "B.Sc. Optometry & Vision Science Student",
+    "location": "Kakamega, Kenya",
+    "description": "Dynamic professional with strong adaptability, fast learning ability, and consistent delivery of high-quality work. Recognized for problem-solving skills, reliability and positive attitude.",
+    "verified": true,
+    "verifiedRole": "Regional Head of Kenya",
+    "flCredits": 800,
+    "joinedDate": "March 2025",
+    "badges": ["Regional Head"],
+    "isFounder": false,
+    "skills": [
+      "Public Speaking",
+      "Writing",
+      "Problem-solving",
+      "Organizational Skills",
+      "Communication"
+    ],
+    "interests": [
+      "Pediatric Optometry",
+      "Community Service",
+      "Content Creation",
+      "Debating"
+    ],
+    "bio": "Dynamic professional with strong adaptability, fast learning ability, and consistent delivery of high-quality work. Recognized for problem-solving skills, reliability and positive attitude, great communication, and strong organizational ability. Demonstrates commitment to continuous improvement and works effectively independently or collaboratively.",
+    "links": {
+      "email": "sildamba20@gmail.com",
+      "linkedin": ""
+    },
+    "image": "https://i.ibb.co/PZmfcWqH/IMG-20251203-110801.jpg",
+    "experience": [
+      {
+        "title": "Elementary Teacher",
+        "company": "REM High School, Nairobi South B",
+        "duration": "2023 - 2024 (8 months)",
+        "description": "Taught at REM High School for eight months."
+      },
+      {
+        "title": "Community Service Organizer",
+        "company": "Self-Initiated, Koromatangi, Kisumu",
+        "duration": "2023 - Present",
+        "description": "Organizing community service initiatives focused on eye care awareness."
+      },
+      {
+        "title": "Youth Leader",
+        "company": "Kasipul Constituency, Kodera, Kisumu",
+        "duration": "2022 - Present",
+        "description": "Leading youth initiatives and community engagement programs."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bachelor of Science in Optometry & Vision Science",
+        "institution": "Masinde Muliro University of Science and Technology",
+        "year": "2024 - Present"
+      },
+      {
+        "degree": "Kenya Certificate of Secondary Education (KCSE)",
+        "institution": "Maranda High School",
+        "year": "2018 - 2021"
+      }
+    ],
+    "languages": ["English", "Kiswahili", "Luo"]
+  },
+  {
+    "id": "2",
+    "type": "student",
+    "name": "Braseetha A",
+    "title": "Aspiring Optometrist | Pediatric & Binocular Vision Enthusiast",
+    "experience": "Aspiring Optometrist | Pediatric & Binocular Vision Enthusiast",
+    "location": "Madurai, Tamil Nadu, India",
+    "description": "I'm an Optometry student passionate about pediatric vision care, binocular vision assessment, and congenital ocular motor anomalies. I love simplifying complex academic topics through concept maps, structured notes, and visual learning aids.",
+    "verified": false,
+    "flCredits": 150,
+    "joinedDate": "August 2024",
+    "badges": [],
+    "isFounder": false,
+    "skills": [
+      "Diagnosing and managing eye conditions",
+      "Prescribing corrective lenses",
+      "Refraction",
+      "Contact lens fitting",
+      "Instruments handling",
+      "Clinical skills & patient communication",
+      "Research",
+      "Team collaboration",
+      "Analytical thinking"
+    ],
+    "interests": [
+      "Pediatric Vision Care",
+      "Binocular Vision Assessment",
+      "Congenital Ocular Motor Anomalies",
+      "Concept-based Learning",
+      "Peer Learning",
+      "Research Methodology"
+    ],
+    "bio": "I'm an Optometry student passionate about pediatric vision care, binocular vision assessment, and congenital ocular motor anomalies. I love simplifying complex academic topics through concept maps, structured notes, and visual learning aids making learning accessible and engaging. Beyond academics, I create interactive quizzes and MCQs to support peer learning and foster curiosity in vision science.",
+    "links": {
+      "linkedin": "https://linkedin.com/in/braseetha-a-260b60323",
+      "email": "brasee66@gmail.com"
+    },
+    "image": "https://i.pravatar.cc/150?u=braseetha",
+    "experience": [
+      {
+        "title": "First Prize – Science Exhibition",
+        "company": "VK College of Science and Optometry",
+        "duration": "2024",
+        "description": "Won first prize in a poster competition, contributing to vision awareness through creativity and clinical insight."
+      },
+      {
+        "title": "Participant",
+        "company": "EuyunCare",
+        "duration": "2024",
+        "description": "Participated in the International Webinar Series on Specialty Contact Lenses."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bachelor of Optometry (B.Optom)",
+        "institution": "Alagappa University",
+        "year": "2023 - 2027"
+      }
+    ],
+    "languages": [
+      "English (Full Professional)",
+      "Tamil (Native)",
+      "Hindi (Limited Working)"
+    ]
+  },
+  {
+    "id": "3",
+    "type": "student",
+    "name": "Anshi Jha",
+    "title": "Optometry Intern | Head of Clinical Development (Focus-IN)",
+    "experience": "Optometry Intern | Head of Clinical Development (Focus-IN)",
+    "location": "Etawah, Uttar Pradesh, India",
+    "description": "I am a Bachelor of Optometry student at Uttar Pradesh University of Medical Sciences with a growing passion for clinical innovation, patient care, and global vision science. As the Head of Clinical Development at Focus-IN, I lead and design training initiatives.",
+    "verified": true,
+    "verifiedRole": "Regional Head of India",
+    "flCredits": 950,
+    "joinedDate": "September 2024",
+    "badges": ["Regional Head", "Clinical Lead"],
+    "isFounder": false,
+    "skills": [
+      "Vision Testing & Eye Examination",
+      "Patient Communication & Education",
+      "Refraction (Optometry) & Diagnostic Techniques",
+      "Clinical Training & Workshop Design",
+      "Research Methodology & Data Analysis",
+      "Myopia Management & Ocular Health Awareness"
+    ],
+    "interests": ["Myopia Management", "Binocular Vision", "AI in Eye Care"],
+    "bio": "I am a Bachelor of Optometry student at Uttar Pradesh University of Medical Sciences with a growing passion for clinical innovation, patient care, and global vision science. As the Head of Clinical Development at Focus-IN, I lead and design training initiatives, coordinate clinical research projects, and mentor fellow students in evidence-based optometric practice. My work bridges academic knowledge with real-world applications helping aspiring clinicians build confidence and competence in diverse areas of optometry.",
+    "links": {
+      "linkedin": "https://linkedin.com/in/anshi-jha-6a98b0310",
+      "email": "12anshijha@gmail.com"
+    },
+    "image": "https://i.ibb.co/twWf1ngC/IMG-20251025-172851.jpg",
+    "experience": [
+      {
+        "title": "Optometry Intern",
+        "company": "L V Prasad Eye Institute",
+        "duration": "Jul 2025 - Present",
+        "description": "Performing comprehensive eye examinations, vision testing, and assisting in specialized clinics to enhance patient management skills."
+      },
+      {
+        "title": "Head of Clinical Development",
+        "company": "Focus-IN",
+        "duration": "Sep 2025 - Present",
+        "description": "Oversee clinical content and training modules. Collaborate with professionals to design workshops on clinical refraction, binocular vision, and ocular disease management."
+      },
+      {
+        "title": "Regional Contributor & Student Representative",
+        "company": "OptoBharat (Central Zone)",
+        "duration": "Mar 2025 - Present",
+        "description": "Supporting student engagement and vision awareness projects across India through collaborations and community events."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bachelor of Optometry (B.Optom)",
+        "institution": "Uttar Pradesh University of Medical Sciences",
+        "year": "2021 - 2025 (Expected)"
+      }
+    ],
+    "languages": ["English (Full Professional)", "Hindi (Native or Bilingual)"]
+  },
+  {
+    "id": "7",
+    "type": "student",
+    "name": "M. Mega Dharshini",
+    "title": "B.Optom Student | Former State Head - Tamil Nadu",
+    "experience": "B.Optom Student",
+    "location": "Tirunelveli, Tamil Nadu, India",
+    "description": "A third-year Optometry student with leadership experience as the State Head for Optobharat in Tamil Nadu. Passionate about community outreach, dispensing optics, and contact lenses.",
+    "verified": false,
+    "flCredits": 320,
+    "joinedDate": "January 2025",
+    "badges": [],
+    "isFounder": false,
+    "skills": [
+      "Vision Examination & Refraction",
+      "Auto-Refractometer (AR) & NCT Operation",
+      "Patient Handling & Consultation",
+      "Systematic Review & Research",
+      "Poster Presentation"
+    ],
+    "interests": [
+      "Dispensing Optics",
+      "Contact Lenses",
+      "Community Outreach"
+    ],
+    "bio": "A third-year Optometry student with leadership experience as the State Head for Optobharat in Tamil Nadu. Passionate about community outreach, dispensing optics, and contact lenses. Proven research and presentation skills through systematic reviews and conference participation.",
+    "links": {
+      "email": "megadharshini999@gmail.com"
+    },
+    "image": "https://i.pravatar.cc/150?u=megadharshini",
+    "experience": [
+      {
+        "title": "State Head - Tamil Nadu",
+        "company": "Optobharat",
+        "duration": "2024 - 2025",
+        "description": "Led state-level initiatives and student engagement for a prominent optometry organization."
+      },
+      {
+        "title": "Community Eye Camp Participant",
+        "company": "Vision Screening Camps",
+        "duration": "2023 - Present (5 Camps)",
+        "description": "Assisted with vision screenings and patient management in community settings."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bachelor of Optometry",
+        "institution": "VK College of Optometry, Madurai",
+        "year": "Present (Third Year)"
+      }
+    ],
+    "languages": ["English", "Tamil"]
+  },
+  {
+    "id": "11",
+    "type": "student",
+    "name": "Rudra Kumar Sinha",
+    "title": "Optometry Intern at CL Gupta Eye Institute | B.Optometry Student",
+    "experience": "Optometry Intern at CL Gupta Eye Institute | B.Optometry Student",
+    "location": "Moradabad, Uttar Pradesh, India",
+    "description": "I'm Rudra Kumar Sinha, a dedicated and enthusiastic optometry intern at CL Gupta Eye Institute, currently pursuing a Bachelor of Optometry at Chandigarh University. My core interests lie in contact lenses, ocular diseases, and vision science innovation.",
+    "verified": true,
+    "verifiedRole": "Eye Q Arena 2025 Champion",
+    "flCredits": 1100,
+    "joinedDate": "December 2024",
+    "badges": ["Eye Q Arena Winner"],
+    "isFounder": false,
+    "skills": [
+      "Refraction",
+      "Applanation Tonometer",
+      "Marketing and Outreach",
+      "Patient Counseling",
+      "Teamwork"
+    ],
+    "interests": [
+      "Innovation in healthcare",
+      "Contact Lenses",
+      "Ocular Diseases",
+      "Vision Science"
+    ],
+    "bio": "I'm Rudra Kumar Sinha, a dedicated and enthusiastic optometry intern at CL Gupta Eye Institute, currently pursuing a Bachelor of Optometry at Chandigarh University. My core interests lie in contact lenses, ocular diseases, and vision science innovation. With a strong academic foundation and hands-on clinical exposure, I've conducted research on AI-based digital handheld ophthalmoscopes exploring how technology can revolutionize eye care in underserved regions.",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/rudra-kumar-sinha-29499617a",
+      "email": "rudrakumarsinha4@gmail.com"
+    },
+    "image": "https://i.ibb.co/v6XJ3B7X/1747244504223.jpg",
+    "experience": [
+      {
+        "title": "Intern Optometrist",
+        "company": "C L Gupta Eye Institute",
+        "duration": "Jul 2025 - Present",
+        "description": "Performing comprehensive eye examinations, refraction, tonometry, and patient counseling at a leading eye care institution."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bachelor of Optometry",
+        "institution": "Chandigarh University",
+        "year": "2022 - 2026"
+      }
+    ],
+    "languages": [
+      "English (Full Professional)",
+      "Hindi (Full Professional)",
+      "Bhojpuri (Professional Working)"
+    ]
+  },
+  {
+    "id": "21",
+    "type": "student",
+    "name": "Esakkiammal Iyyappan",
+    "title": "Master of Optometry Student | Former Clinical Optometrist",
+    "experience": "Master of Optometry Student | Former Clinical Optometrist",
+    "location": "Chennai, Tamil Nadu, India",
+    "description": "I am Optom. Esakkiammal Iyyappan, passionate about advancing vision care through clinical excellence and continuous learning. With experience as both a Clinical Optometrist and Academic Tutor at the renowned Aravind Eye Hospital.",
+    "verified": true,
+    "verifiedRole": "Clinical Optometrist",
+    "flCredits": 750,
+    "joinedDate": "November 2024",
+    "badges": ["Aravind Alumni"],
+    "isFounder": false,
+    "skills": [
+      "Comprehensive Eye Examination",
+      "Pediatric Refraction",
+      "Orthoptic Evaluations",
+      "Specialty Contact Lens Fitting",
+      "Diagnostic Procedures",
+      "Patient Counseling",
+      "Academic Tutoring",
+      "Low Vision & Rehabilitation"
+    ],
+    "interests": [
+      "Pediatric Optometry",
+      "Contact Lenses",
+      "Low Vision",
+      "Evidence-Based Practice",
+      "Clinical Research"
+    ],
+    "bio": "I am Optom. Esakkiammal Iyyappan, passionate about advancing vision care through clinical excellence and continuous learning. With experience as both a Clinical Optometrist and Academic Tutor at the renowned Aravind Eye Hospital, I have a strong foundation in patient care and education. My goal is to bridge the gap between practice and education. I am currently pursuing a Master of Optometry at The Sankara Nethralaya Academy to further specialize and contribute to improving visual health through evidence-based practice, research, and teaching.",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/esakkiammal-iyyappan-263953217",
+      "email": "dhanasriiyyappan2020@gmail.com"
+    },
+    "image": "https://media.licdn.com/dms/image/v2/D5603AQGqudTp058K9g/profile-displayphoto-crop_800_800/B56ZpaKBmYKEAI-/0/1762449170789?e=1764806400&v=beta&t=I8iXNg6bkBhjaw8LvLO4oFfyGkxhWJ01yQLEd3qdRoU",
+    "experience": [
+      {
+        "title": "Clinical Optometrist & Academic Tutor",
+        "company": "Aravind Eye Care System",
+        "duration": "Aug 2024 - Aug 2025",
+        "description": "Efficiently managed and performed comprehensive eye examinations daily for over 3700 patients, conducted over 140 classes for students, and specialized in pediatric refraction and orthoptic evaluations."
+      },
+      {
+        "title": "Optometry Intern",
+        "company": "Bejan Singh Eye Hospital",
+        "duration": "Feb 2023 - Mar 2024",
+        "description": "Completed a comprehensive internship gaining foundational clinical experience."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Master of Optometry",
+        "institution": "Sankara Nethralaya",
+        "year": "2025 - 2027"
+      },
+      {
+        "degree": "Bachelor of Optometry",
+        "institution": "Tamil Nadu Dr. M.G.R. Medical University",
+        "year": "2019 - 2024"
+      }
+    ],
+    "languages": [
+      "English (Professional)",
+      "Tamil (Native)",
+      "Malayalam (Limited)"
+    ]
+  },
+  {
+    "id": "monalisa-behera",
+    "type": "student",
+    "name": "Monalisa Behera",
+    "title": "First-Year Optometry Student | Head of Outreach",
+    "experience": "First-Year Optometry Student",
+    "location": "Khurda, Odisha, India",
+    "description": "Hi everyone! I'm Monalisa, a first-year Optometry student at Trilochan School of Optometry. I'm passionate about all aspects of eye health and love creating engaging content to raise awareness about the importance of optometry and proper eye care.",
+    "verified": true,
+    "verifiedRole": "Head of Outreach",
+    "flCredits": 450,
+    "joinedDate": "October 2024",
+    "badges": ["Head of Outreach"],
+    "isFounder": false,
+    "skills": ["Content Creation", "Social Media", "Public Speaking"],
+    "interests": [
+      "Content Creation",
+      "Eye Care Awareness",
+      "Public Health"
+    ],
+    "bio": "Hi everyone! I'm Monalisa, a first-year Optometry student at Trilochan School of Optometry. I'm passionate about all aspects of eye health and love creating engaging content to raise awareness about the importance of optometry and proper eye care.",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/monalisa-behera-997361321",
+      "email": "monalisabehers30@gmail.com"
+    },
+    "image": "https://i.ibb.co/q3nPKVwx/IMG-20250825-203303-668.webp",
+    "experience": [],
+    "education": [
+      {
+        "degree": "B.Sc. Optometry",
+        "institution": "Trilochan Netralaya School of Optometry",
+        "year": "2024 - 2028"
+      }
+    ],
+    "languages": ["English", "Hindi", "Odia"]
+  },
+  {
+    "id": "faith-wanjugu",
+    "type": "student",
+    "name": "Faith Wanjugu",
+    "title": "College Ambassador | 5th year Bsc Optometry and Vision Science",
+    "experience": "College Ambassador | 5th year Bsc Optometry and Vision Science",
+    "location": "Kakamega, Kenya",
+    "description": "I'm a passionate optometry student, currently serving as Mmuosa chairperson and AFOS vice president. I would like to venture into the field of advocacy and research in optometry.",
+    "verified": false,
+    "flCredits": 620,
+    "joinedDate": "February 2025",
+    "badges": ["MMUOSA President"],
+    "isFounder": false,
+    "skills": [
+      "Visual acuity assessment",
+      "Refraction",
+      "Slit-lamp biomicroscopy",
+      "Contact lens fitting",
+      "Fundus evaluation",
+      "Optical dispensing",
+      "Event planning and coordination",
+      "Team leadership and mentoring",
+      "Project management"
+    ],
+    "interests": [
+      "Advocacy",
+      "Research",
+      "Community Eye Care"
+    ],
+    "bio": "I'm a passionate optometry student, currently serving as Mmuosa chairperson and AFOS vice president. I would like to venture into the field of advocacy and research in optometry.",
+    "links": {
+      "email": "wanjugukimunyu2020@gmail.com"
+    },
+    "image": "https://i.pravatar.cc/150?u=faithwanjugu",
+    "experience": [
+      {
+        "title": "College Ambassador",
+        "company": "Masinde Muliro University of Science and Technology",
+        "duration": "2025 - Present",
+        "description": "Serving as a representative for the university's optometry program."
+      },
+      {
+        "title": "President",
+        "company": "Masinde Muliro University Optometry Students Association (MMUOSA)",
+        "duration": "2025 - 2026",
+        "description": "Organized academic workshops, community outreach, and vision-screening events."
+      },
+      {
+        "title": "Vice President",
+        "company": "AFOS",
+        "duration": "2024 - Present",
+        "description": "Collaborated with executive teams across institutions to promote professional development."
+      },
+      {
+        "title": "Clinical Attachment",
+        "company": "Embu level 5 hospital",
+        "duration": "Apr 2025 - Aug 2025",
+        "description": "Performed refraction, slit-lamp examination, and ocular health screenings under supervision."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Bsc Optometry and Vision Science",
+        "institution": "Masinde Muliro University of Science and Technology",
+        "year": "Present (5th Year)"
+      }
+    ],
+    "languages": ["English", "Kiswahili"]
+  },
+  {
+    "id": "manish-bhagat",
+    "type": "professional",
+    "name": "Manish Bhagat",
+    "title": "Head — Visual Eyez India | Consultant Optometrist",
+    "location": "Noida/Delhi NCR, India",
+    "description": "Manish Bhagat is a Contact Lens Specialist and Orthokeratologist with extensive experience in myopia management. He completed his Contact Lens Residency at LV Prasad Eye Institute (LVPEI) and is an active member of the International Academy of Orthokeratology and Myopia Control (IAOMC). He has published multiple peer-reviewed papers on scleral lenses and rigid corneal lenses.",
+    "image": "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300&h=300",
+    "verified": true,
+    "flCredits": 500,
+    "joinedDate": "January 2024",
+    "badges": ["Speaker"],
+    "skills": [
+      "Orthokeratology",
+      "Myopia Management",
+      "Scleral Lenses",
+      "Rigid Corneal Lenses",
+      "Specialty Contact Lenses"
+    ],
+    "bio": "Manish Bhagat is a Contact Lens Specialist and Orthokeratologist with extensive experience in myopia management. He completed his Contact Lens Residency at LV Prasad Eye Institute (LVPEI) and is an active member of the International Academy of Orthokeratology and Myopia Control (IAOMC). He has published multiple peer-reviewed papers on scleral lenses and rigid corneal lenses.",
+    "links": {
+      "linkedin": "",
+      "email": "manish@visualeyez.in"
+    },
+    "events": [
+      {
+        "title": "Beyond Ortho-K: Practical & Affordable Myopia Management with Contact Lenses",
+        "date": "May 6, 2026",
+        "role": "Speaker"
+      }
+    ],
+    "experience": [
+      {
+        "title": "Head",
+        "company": "Visual Eyez India",
+        "duration": "Present",
+        "description": "Leading the specialty contact lens and myopia management clinic, providing advanced solutions for complex corneal conditions."
+      },
+      {
+        "title": "Consultant Optometrist",
+        "company": "LV Prasad Eye Institute",
+        "duration": "Past",
+        "description": "Completed Contact Lens Residency and specialized in complex contact lens fittings."
+      }
+    ],
+    "education": [
+      {
+        "degree": "Master of Optometry (M.Optom)",
+        "institution": "Amity University",
+        "year": "2018 - 2020"
+      },
+      {
+        "degree": "Bachelor of Optometry (B.Optom)",
+        "institution": "NSHM College of Management",
+        "year": "2014 - 2018"
+      }
+    ]
+  },
+  {
+    "id": "4",
+    "type": "professional",
+    "name": "Sabitabrata Panja",
+    "title": "Clinical Optometrist | 4 Years Experience",
+    "experience": "4 year of Clinical Optometry experience",
+    "location": "West Bengal",
+    "description": "I am confident in handling refraction, patient counseling, dispensing of spectacles, and managing primary eye care responsibilities at a vision centre. I am fluent in Hindi, which will help me communicate effectively with patients and team members.",
+    "skills": [
+      "Diabetic Retinopathy",
+      "Contact lens",
+      "Dispensing optics",
+      "Opd diagnosis"
+    ],
+    "interests": [
+      "Clinical Research",
+      "Low vision aids",
+      "Binocular rehabilitation"
+    ],
+    "bio": "I am confident in handling refraction, patient counseling, dispensing of spectacles, and managing primary eye care responsibilities at a vision centre. I am fluent in Hindi, which will help me communicate effectively with patients and team members.",
+    "links": {
+      "linkedin": "https://www.linkedin.com/in/sabitabrata-panja-50b3bb229",
+      "email": "sabitabratapanja1999@gmail.com"
+    },
+    "image": "https://iili.io/KuWfZUx.md.jpg",
+    "verified": true,
+    "flCredits": 450,
+    "joinedDate": "March 2024",
+    "experience": [
+      {
+        "title": "Optometrist",
+        "company": "Bhoomika Eye Hospital",
+        "duration": "April 2023 - Present",
+        "description": ""
+      },
+      {
+        "title": "Optometrist",
+        "company": "Disha Eye Hospital",
+        "duration": "June 2021 - March 2023",
+        "description": ""
+      }
+    ],
+    "education": [
+      {
+        "degree": "Batchelor Of Optometry",
+        "institution": "Swami vivekananda university, Barrackpore",
+        "year": "2022 - 2025"
+      },
+      {
+        "degree": "Diploma in Optometry",
+        "institution": "State Medical Faculty W.B",
+        "year": "2018 - 2021"
+      }
+    ],
+    "languages": ["Bengali", "Hindi", "English", "Oriya"]
+  },
+  {
+    "id": "15",
+    "type": "professional",
+    "name": "Mohd Tahseen Raza Khan",
+    "title": "Speciality Contact Lens Practitioner | Trainer | Consultant Optometrist",
+    "location": "Bareilly, Uttar Pradesh, India",
+    "description": "Passionate and dedicated Speciality Contact Lens Practitioner and Optometrist in providing comprehensive eye care and personalized contact lens solutions. Expertise in fitting and managing specialty contact lenses for complex corneal conditions. As a dedicated Scleral Lens Specialist, Orthokeratology Advocate, and Myopia Control Enthusiast, I'm on a mission to transform lives through exceptional vision care.",
+    "image": "https://i.ibb.co/XrNB2vVJ/5-S9-A8865-2.jpg",
+    "verified": true,
+    "flCredits": 1250,
+    "joinedDate": "March 2024",
+    "skills": [
+      "Scleral Lenses",
+      "Orthokeratology",
+      "Myopia Control",
+      "RGP Lenses",
+      "Dry Eye Management",
+      "Corneal Topography",
+      "Clinical Training"
+    ],
+    "bio": "Passionate and dedicated Speciality Contact Lens Practitioner and Optometrist in providing comprehensive eye care and personalized contact lens solutions. Expertise in fitting and managing specialty contact lenses for complex corneal conditions. Skilled in delivering engaging and informative presentations, translating complex concepts into accessible knowledge for diverse audiences. Committed to continuous learning and staying abreast of the latest advancements in eye care. As a dedicated Scleral Lens Specialist, Orthokeratology Advocate, and Myopia Control Enthusiast, I'm on a mission to transform lives through exceptional vision care.",
+    "links": {
+      "email": "tahseenrazakhan123@gmail.com",
+      "linkedin": "https://www.linkedin.com/in/mohd-tahseen-raza-khan-mtrk"
+    },
+    "experience": [
+      {
+        "title": "Professional Services",
+        "company": "VisiXpert",
+        "duration": "Nov 2024 - Present",
+        "location": "Bareilly, UP",
+        "description": "Speciality contact lens - manage, presentation, training, practitioner, communication, sales"
+      },
+      {
+        "title": "Sales Manager and CL Specialist",
+        "company": "Parekh Integrated Services Pvt. Ltd.",
+        "duration": "Dec 2023 - Jun 2024",
+        "description": "Speciality contact lens - manage, presentation, training, practitioner, communication, sales"
+      },
+      {
+        "title": "Optometrist",
+        "company": "Global Eye Hospital India",
+        "duration": "Oct 2022 - Jun 2023",
+        "description": ""
+      }
+    ],
+    "education": [
+      {
+        "degree": "MSc. Optometry",
+        "institution": "Sikkim Skill University",
+        "year": "2022 - 2024"
+      },
+      {
+        "degree": "Fellowship in Speciality Contact Lenses",
+        "institution": "Silver Line Laboratories Delhi",
+        "year": "2023"
+      },
+      {
+        "degree": "Bachelor of Science in Optometry",
+        "institution": "SRMS Institutions",
+        "year": "2017 - 2022"
+      }
+    ],
+    "languages": [
+      "Hindi (Full Professional)",
+      "English (Professional)",
+      "Urdu (Limited Working)"
+    ]
+  },
+  {
+    "id": "vk-college",
+    "type": "college",
+    "name": "VK College of Optometry",
+    "title": "Leading Optometry College in Madurai | B.Sc & Diploma Programs",
+    "experience": "Leading Optometry College in Madurai",
+    "location": "Madurai, Tamilnadu, India",
+    "description": "VK College of Optometry, a premier institution in Madurai, is dedicated to developing the next generation of vision experts and primary eye care professionals. Our mission is to provide top-tier optometry education and combat avoidable blindness through skilled graduates.",
+    "skills": [
+      "B.Sc Optometry Degree",
+      "Diploma in Ophthalmic Techniques",
+      "Clinical Training & Internships",
+      "Community Eye Health",
+      "Industry-Integrated Curriculum",
+      "Expert Faculty Mentorship"
+    ],
+    "interests": [
+      "Optometry Education",
+      "Eye Care Careers"
+    ],
+    "bio": "VK College of Optometry, a premier institution in Madurai, is dedicated to developing the next generation of vision experts and primary eye care professionals. Our mission is to provide top-tier optometry education and combat avoidable blindness through skilled graduates. Led by a talented team of Senior Ophthalmology Professors and experienced Optometrists, VK College of Optometry nurtures students with the passion and skill to excel in the field of vision science.",
+    "links": {
+      "website": "https://vkinstitutions.in/",
+      "email": "vkinstitution@gmail.com"
+    },
+    "image": "https://vkinstitutions.in/assets/images/pre-logo.png",
+    "verified": true,
+    "flCredits": 2500,
+    "joinedDate": "January 2024",
+    "experience": [],
+    "education": [],
+    "languages": []
+  },
+  {
+    "id": "DrishtiKit",
+    "type": "industry",
+    "name": "DrishtiKit",
+    "title": "Revolutionizing Eye Care with Portable Technology",
+    "experience": "Revolutionizing Eye Care with Portable Technology",
+    "location": "India",
+    "description": "DrishtiKit is a proud Indian innovation, recognized by DPIIT under the Startup India initiative, bringing professional-grade vision screening to every community with the world's most portable and affordable eye testing solution.",
+    "skills": [
+      "Portable Phoropter",
+      "Comprehensive Vision Screening",
+      "AI-Powered Mobile App",
+      "Offline Patient Data Management"
+    ],
+    "interests": [
+      "Rural Eye Camps",
+      "School Health Programs",
+      "Community Outreach",
+      "Healthcare Technology",
+      "Tele-Optometry"
+    ],
+    "bio": "DrishtiKit is a proud Indian innovation, recognized by DPIIT under the Startup India initiative, bringing professional-grade vision screening to every community with the world's most portable and affordable eye testing solution. Our mission is to make quality eye care accessible everywhere. The DrishtiKit ecosystem enables healthcare workers, NGOs, and eye care professionals to conduct comprehensive vision exams and manage patient data even offline in remote areas.",
+    "links": {
+      "website": "https://app.drishtikit.com",
+      "email": "contact@drishtikit.com"
+    },
+    "image": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/DrishtiKit%20Logo%20%284%29-CcbkbLu47u6ODPXvh4zXmjBxnHZpWd.png",
+    "verified": true,
+    "flCredits": 1800,
+    "joinedDate": "February 2024",
+    "experience": [],
+    "education": [],
+    "languages": []
+  }
+]
