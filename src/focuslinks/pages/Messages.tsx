@@ -20,6 +20,7 @@ import {
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
 import { useNavigate } from '@/context/NavigationContext';
+import { useAuth } from '../../hooks/useAuth';
 import { timeAgo } from '../../services/connectionsService';
 
 /* ─── Types ──────────────────────────────────────────────── */
@@ -433,6 +434,15 @@ function CreateGroupModal({
 
 export default function Messages() {
   const navigate = useNavigate();
+  const { isLoggedIn, isLoading: authLoading } = useAuth();
+
+  // Auth gate: redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      navigate('/login');
+    }
+  }, [authLoading, isLoggedIn, navigate]);
+
   const [conversations, setConversations] = useState<Conversation[]>(() => loadConversations());
   const [messages, setMessages] = useState<Record<string, Message[]>>(() => {
     const convs = loadConversations();
@@ -604,6 +614,15 @@ export default function Messages() {
   const handleEmoji = useCallback((emoji: string) => {
     setMessageInput((prev) => prev + emoji);
   }, []);
+
+  // Show loading while checking auth
+  if (authLoading || !isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pt-24 pb-12 px-4 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <>

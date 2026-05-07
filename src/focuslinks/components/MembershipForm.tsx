@@ -125,6 +125,22 @@ export default function MembershipForm() {
       });
       
       if (response.ok) {
+        // Auto-login: store user data in localStorage
+        const userData = {
+          membershipId,
+          name: formData.fullName,
+          email: formData.email,
+          role: formData.profession,
+          title: formData.profession,
+          country: formData.country === 'OTHER' ? formData.otherCountry : formData.country,
+          location: `${formData.cityState}${formData.cityState && formData.region ? ', ' : ''}${formData.region}`,
+          verified: true,
+          status: 'accepted',
+          joinedAt: new Date().toISOString()
+        };
+        localStorage.setItem('fl_user', JSON.stringify(userData));
+        window.dispatchEvent(new Event('storage'));
+
         setIsSubmitted(true);
         trackEvent({
           action: 'Membership Form Success',
@@ -185,14 +201,14 @@ export default function MembershipForm() {
           <span className="text-4xl font-black text-blue-600 tracking-widest">{generatedId}</span>
         </div>
         <p className="text-slate-500 dark:text-slate-400 mb-10 text-sm">
-          Please save this ID. You can now use it to login and access all member benefits.
+          You are now logged in. Your ID has been saved — you can use it anytime to access your account.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button 
-            onClick={() => navigate('/login')}
+            onClick={() => navigate('/my-profile')}
             className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/30 active:scale-95"
           >
-            Login Now <ArrowRight className="w-6 h-6" />
+            Go to My Profile <ArrowRight className="w-6 h-6" />
           </button>
           <button 
             onClick={() => navigate('/directory')}
@@ -366,6 +382,7 @@ export default function MembershipForm() {
                   <button 
                     type="button"
                     onClick={nextStep}
+                    disabled={!formData.profession}
                     className="py-5 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                   >
                     Continue <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -487,7 +504,7 @@ export default function MembershipForm() {
                   </button>
                   <button 
                     type="submit" 
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !formData.country}
                     className="py-5 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 dark:shadow-blue-900/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                   >
                     {isSubmitting ? <Loader2 className="w-6 h-6 animate-spin" /> : (

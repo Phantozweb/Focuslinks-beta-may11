@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from '../../context/NavigationContext';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { toast } from 'sonner';
@@ -33,6 +33,9 @@ import {
   Briefcase,
   GraduationCap,
   TrendingUp,
+  Sparkles,
+  ArrowRight,
+  Circle,
 } from 'lucide-react';
 
 /* ------------------------------------------------------------------ */
@@ -63,6 +66,7 @@ function AnimatedCounter({ target, duration = 1.2 }: { target: number; duration?
 
 import SEO from '../components/SEO';
 import { useRef } from 'react';
+import { generateSlug, useProfiles } from '../../hooks/useProfiles';
 
 /* ------------------------------------------------------------------ */
 /*  No mock data — show empty states                                   */
@@ -87,6 +91,15 @@ const tabs = ['Posts', 'Activity', 'Achievements', 'About'] as const;
 type TabType = typeof tabs[number];
 
 /* ------------------------------------------------------------------ */
+/*  Profile Completion Checklist Types                                  */
+/* ------------------------------------------------------------------ */
+interface CompletionItem {
+  label: string;
+  done: boolean;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+/* ------------------------------------------------------------------ */
 /*  Page Component                                                     */
 /* ------------------------------------------------------------------ */
 export default function MyProfile() {
@@ -105,12 +118,125 @@ export default function MyProfile() {
   const [tooltipAchievement, setTooltipAchievement] = useState<string | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
+  // Profile data from GitHub
+  const { listProfiles, fetchListProfiles } = useProfiles();
+
+  // Current user from localStorage (lazy init)
+  const [currentUser] = useState<any>(() => {
+    try {
+      const stored = typeof window !== 'undefined' ? localStorage.getItem('fl_user') : null;
+      return stored ? JSON.parse(stored) : null;
+    } catch { return null; }
+  });
+
+  // Fetch list profiles for data
+  useEffect(() => {
+    fetchListProfiles();
+  }, [fetchListProfiles]);
+
+  // Derive profile data from list_profiles using useMemo
+  const listProfileData = useMemo(() => {
+    if (!currentUser?.membershipId || listProfiles.length === 0) return null;
+    const found = listProfiles.find(p => p.membershipId === currentUser.membershipId);
+    if (!found) return null;
+    return {
+      name: found.name || '',
+      email: found.email || found.links?.email || '',
+      location: found.location || '',
+      title: found.title || '',
+      bio: found.bio || found.description || '',
+      image: found.image || '',
+      linkedin: found.linkedin || found.links?.linkedin || '',
+      skills: found.skills || [],
+      experience: found.experience || [],
+      education: found.education || [],
+      membershipId: found.membershipId || '',
+    };
+  }, [currentUser, listProfiles]);
+
+  // Individual user file data (fetched asynchronously)
+  const [userFileData, setUserFileData] = useState<typeof listProfileData>(null);
+  useEffect(() => {
+    if (!currentUser?.membershipId) return;
+    let cancelled = false;
+    const fetchUserFile = async () => {
+      try {
+        const res = await fetch(`/api/github/fetch?path=Profile/Users/${currentUser.membershipId}_userdata.json`);
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          if (data && typeof data === 'object' && !Array.isArray(data)) {
+            const content = data.content || data;
+            setUserFileData({
+              name: content.name || '',
+              email: content.email || content.links?.email || '',
+              location: content.location || '',
+              title: content.title || '',
+              bio: content.bio || content.description || '',
+              image: content.image || '',
+              linkedin: content.linkedin || content.links?.linkedin || '',
+              skills: content.skills || [],
+              experience: content.experience || [],
+              education: content.education || [],
+              membershipId: content.membershipId || '',
+            });
+          }
+        }
+      } catch { /* ignore */ }
+    };
+    fetchUserFile();
+    return () => { cancelled = true; };
+  }, [currentUser]);
+
+  // Merge: user file data takes priority over list profile data
+  const profileData = useMemo(() => {
+    const base = listProfileData || userFileData;
+    if (!base) return null;
+    if (!userFileData) return base;
+    // Merge with userFileData taking priority
+    return {
+      name: userFileData.name || base.name,
+      email: userFileData.email || base.email,
+      location: userFileData.location || base.location,
+      title: userFileData.title || base.title,
+      bio: userFileData.bio || base.bio,
+      image: userFileData.image || base.image,
+      linkedin: userFileData.linkedin || base.linkedin,
+      skills: userFileData.skills.length > 0 ? userFileData.skills : base.skills,
+      experience: userFileData.experience.length > 0 ? userFileData.experience : base.experience,
+      education: userFileData.education.length > 0 ? userFileData.education : base.education,
+      membershipId: userFileData.membershipId || base.membershipId,
+    };
+  }, [listProfileData, userFileData]);
+
+  // Profile completion calculation
+  const completionItems: CompletionItem[] = useMemo(() => [
+    { label: 'Name', done: !!(profileData?.name || currentUser?.name), icon: User },
+    { label: 'Email', done: !!(profileData?.email || currentUser?.email), icon: Briefcase },
+    { label: 'Location / City', done: !!profileData?.location, icon: MapPin },
+    { label: 'Professional Title', done: !!profileData?.title, icon: Award },
+    { label: 'Bio / About', done: !!profileData?.bio, icon: FileText },
+    { label: 'Profile Photo', done: !!(profileData?.image && profileData.image !== 'none'), icon: Camera },
+    { label: 'LinkedIn', done: !!profileData?.linkedin, icon: ExternalLink },
+    { label: 'Skills', done: !!(profileData?.skills && profileData.skills.length > 0), icon: Star },
+    { label: 'Experience', done: !!(profileData?.experience && profileData.experience.length > 0), icon: Briefcase },
+    { label: 'Education', done: !!(profileData?.education && profileData.education.length > 0), icon: GraduationCap },
+  ], [profileData, currentUser]);
+
+  const completionPercent = useMemo(() => {
+    const done = completionItems.filter(item => item.done).length;
+    return Math.round((done / completionItems.length) * 100);
+  }, [completionItems]);
+
+  const isIncomplete = completionPercent < 100;
+
   const handleEditProfile = useCallback(() => {
     navigate('/settings');
   }, [navigate]);
 
   const handleShareProfile = useCallback(() => {
-    const url = `${window.location.origin}${window.location.pathname}`;
+    const storedUser = JSON.parse(localStorage.getItem('fl_user') || '{}');
+    const slug = generateSlug(storedUser.name || '');
+    const url = `${window.location.origin}/user/${slug}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => {
         toast.success('Profile link copied to clipboard!');
@@ -134,6 +260,37 @@ export default function MyProfile() {
     <SEO title="My Profile" description="View and manage your FocusLinks professional profile. Showcase your skills and connect with the optometry community." keywords="my profile, professional profile, optometrist profile" />
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-white">
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="max-w-5xl mx-auto">
+
+        {/* ══════════════════════════════════════════════════════════ */}
+        {/* PROFILE COMPLETION BANNER                                    */}
+        {/* ══════════════════════════════════════════════════════════ */}
+        {isIncomplete && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mx-4 sm:mx-6 md:mx-8 mt-4 mb-2"
+          >
+            <div className="bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-500 rounded-2xl p-5 sm:p-6 text-white shadow-lg shadow-violet-600/20">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-base sm:text-lg">Complete your profile to unlock all features!</h3>
+                    <p className="text-white/80 text-sm mt-1">Your profile is {completionPercent}% complete. Add more details to stand out and connect with others.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleEditProfile}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-violet-700 font-bold text-sm rounded-xl hover:bg-white/90 transition-all shadow-md shrink-0"
+                >
+                  <Edit className="w-4 h-4" /> Complete Profile
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* ══════════════════════════════════════════════════════════ */}
         {/* 1. COVER PHOTO SECTION                                     */}
@@ -190,7 +347,7 @@ export default function MyProfile() {
                     <BadgeCheck className="w-6 h-6 text-emerald-500 shrink-0 hidden sm:block" />
                   </div>
                   <p className="text-violet-600 dark:text-violet-400 font-semibold mt-1 text-sm sm:text-base">
-                    {(typeof window !== 'undefined' && JSON.parse(localStorage.getItem('fl_user') || '{}').role) || ''}
+                    {(typeof window !== 'undefined' && JSON.parse(localStorage.getItem('fl_user') || '{}').role) || profileData?.title || ''}
                   </p>
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-sm text-gray-500 dark:text-gray-400">
                     {(typeof window !== 'undefined' && JSON.parse(localStorage.getItem('fl_user') || '{}').location) && (
@@ -480,6 +637,78 @@ export default function MyProfile() {
 
             {/* ── RIGHT COLUMN (Sidebar) ── */}
             <div className="space-y-6">
+
+              {/* ══════════════════════════════════════════════════════════ */}
+              {/* PROFILE COMPLETION CARD                                   */}
+              {/* ══════════════════════════════════════════════════════════ */}
+              <motion.div variants={itemVariants} className={glassCard}>
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-violet-500" /> Profile Completion
+                    </h3>
+                    <span className={`text-sm font-bold ${
+                      completionPercent === 100
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : completionPercent >= 50
+                          ? 'text-violet-600 dark:text-violet-400'
+                          : 'text-amber-600 dark:text-amber-400'
+                    }`}>
+                      {completionPercent}%
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-slate-800 overflow-hidden mb-4">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${completionPercent}%` }}
+                      transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
+                      className={`h-full rounded-full ${
+                        completionPercent === 100
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-500'
+                          : 'bg-gradient-to-r from-violet-500 to-fuchsia-500'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Checklist */}
+                  <div className="space-y-1.5">
+                    {completionItems.map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => !item.done && navigate('/settings')}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-all ${
+                          item.done
+                            ? 'text-emerald-600 dark:text-emerald-400'
+                            : 'text-gray-400 dark:text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-violet-600 dark:hover:text-violet-400 cursor-pointer'
+                        }`}
+                      >
+                        {item.done ? (
+                          <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        ) : (
+                          <Circle className="w-4 h-4 shrink-0" />
+                        )}
+                        <span className={`text-sm ${item.done ? 'font-medium' : 'font-medium'}`}>{item.label}</span>
+                        {!item.done && (
+                          <ArrowRight className="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* CTA if incomplete */}
+                  {isIncomplete && (
+                    <button
+                      onClick={() => navigate('/settings')}
+                      className="w-full mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-white text-sm font-bold rounded-xl transition-all shadow-sm hover:shadow-md"
+                    >
+                      <Edit className="w-4 h-4" /> Complete Profile
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+
               {/* Quick Links */}
               <motion.div variants={itemVariants} className={glassCard}>
                 <div className="p-5">

@@ -659,7 +659,7 @@ function NotificationCard({
             ) : notif.type === 'system' ? null : (
               /* View button for other notification types */
               <Link
-                to={notif.link || `/user/${notif.fromUserId}`}
+                to={senderSlug ? `/user/${senderSlug}` : (notif.link || `/user/${notif.fromUserId}`)}
                 onClick={e => e.stopPropagation()}
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
               >

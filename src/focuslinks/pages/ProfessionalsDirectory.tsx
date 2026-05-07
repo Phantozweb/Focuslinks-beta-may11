@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, MapPin, BadgeCheck, Award, Users, Grid3X3, List, ChevronDown, MessageCircle, UserPlus, Eye, Download, Star, Clock, Zap, X, XCircle, ExternalLink, MapPinned, Stethoscope, FlaskConical, GraduationCap, Microscope } from 'lucide-react';
+import { Search, MapPin, BadgeCheck, Award, Users, Grid3X3, List, ChevronDown, MessageCircle, UserPlus, Eye, Download, Star, Clock, Zap, X, XCircle, ExternalLink, MapPinned, Stethoscope, FlaskConical, GraduationCap, Microscope, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from '../../context/NavigationContext';
 import { useProfiles, generateSlug } from '../../hooks/useProfiles';
@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
+import { useAuth } from '../../hooks/useAuth';
 
 const PROFILES_PER_PAGE = 12;
 
@@ -107,8 +108,13 @@ function OnlineStatusIndicator({ seed }: { seed: number }) {
 function ConnectButton({ profile, onConnect }: { profile: Profile; onConnect: (id: string) => void }) {
   const [state, setState] = useState<ConnectState>('idle');
   const id = profile.membershipId || profile.name || '';
+  const { isLoggedIn } = useAuth();
 
   const handleClick = () => {
+    if (!isLoggedIn) {
+      toast.error('Please log in to connect with professionals');
+      return;
+    }
     if (state === 'idle') {
       setState('connecting');
       setTimeout(() => {
@@ -123,6 +129,17 @@ function ConnectButton({ profile, onConnect }: { profile: Profile; onConnect: (i
       onConnect(id);
     }
   };
+
+  if (!isLoggedIn) {
+    return (
+      <button
+        onClick={handleClick}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all duration-300 bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-70"
+      >
+        <Lock className="w-3.5 h-3.5" /> Connect
+      </button>
+    );
+  }
 
   return (
     <motion.button
@@ -154,8 +171,13 @@ function QuickViewPanel({ profile, onClose }: { profile: Profile; onClose: () =>
   const lastActive = getLastActive(seed + 3);
   const isOnline = seed % 3 !== 0;
   const [connectState, setConnectState] = useState<ConnectState>('idle');
+  const { isLoggedIn } = useAuth();
 
   const handleConnect = () => {
+    if (!isLoggedIn) {
+      toast.error('Please log in to connect with professionals');
+      return;
+    }
     if (connectState === 'idle') {
       setConnectState('connecting');
       setTimeout(() => {
@@ -283,23 +305,32 @@ function QuickViewPanel({ profile, onClose }: { profile: Profile; onClose: () =>
 
           {/* Actions */}
           <div className="flex gap-3 mt-8">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleConnect}
-              disabled={connectState === 'connected'}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                connectState === 'idle'
-                  ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-md'
-                  : connectState === 'connecting'
-                    ? 'bg-amber-500 text-white cursor-wait'
-                    : 'bg-emerald-600 text-white shadow-md'
-              }`}
-            >
-              {connectState === 'idle' && <><UserPlus className="w-4 h-4" /> Connect</>}
-              {connectState === 'connecting' && 'Connecting...'}
-              {connectState === 'connected' && <><BadgeCheck className="w-4 h-4" /> Connected</>}
-            </motion.button>
+            {!isLoggedIn ? (
+              <button
+                onClick={handleConnect}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 bg-slate-300 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed opacity-70"
+              >
+                <Lock className="w-4 h-4" /> Connect
+              </button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleConnect}
+                disabled={connectState === 'connected'}
+                className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  connectState === 'idle'
+                    ? 'bg-teal-600 text-white hover:bg-teal-700 shadow-md'
+                    : connectState === 'connecting'
+                      ? 'bg-amber-500 text-white cursor-wait'
+                      : 'bg-emerald-600 text-white shadow-md'
+                }`}
+              >
+                {connectState === 'idle' && <><UserPlus className="w-4 h-4" /> Connect</>}
+                {connectState === 'connecting' && 'Connecting...'}
+                {connectState === 'connected' && <><BadgeCheck className="w-4 h-4" /> Connected</>}
+              </motion.button>
+            )}
             <Link
               to={`/profile/${generateSlug(profile.name)}`}
               className="flex-1 py-3 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-center flex items-center justify-center gap-2"

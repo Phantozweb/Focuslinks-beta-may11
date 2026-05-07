@@ -42,6 +42,7 @@ import {
   BadgeCheck,
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import { generateSlug } from '../../hooks/useProfiles';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -329,13 +330,14 @@ export default function UserProfile() {
 
   // Share
   const handleShare = useCallback(() => {
-    const url = `${window.location.origin}${window.location.pathname}`;
+    const slug = generateSlug(name);
+    const url = slug ? `${window.location.origin}/user/${slug}` : `${window.location.origin}${window.location.pathname}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => toast.success('Profile link copied!')).catch(() => toast.success('Profile link copied!'));
     } else {
       toast.success('Profile link copied!');
     }
-  }, []);
+  }, [name]);
 
   // Edit cover/avatar handlers
   const handleEditCover = useCallback(() => toast.info('Cover photo editor coming soon!'), []);

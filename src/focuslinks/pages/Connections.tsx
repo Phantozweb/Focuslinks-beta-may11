@@ -23,7 +23,7 @@ import {
   FollowEntry,
 } from '../../services/connectionsService';
 import SEO from '../components/SEO';
-import { useProfiles, Profile } from '../../hooks/useProfiles';
+import { useProfiles, Profile, generateSlug } from '../../hooks/useProfiles';
 
 type TabKey = 'requests' | 'connected' | 'sent' | 'following';
 
@@ -219,7 +219,7 @@ function ConnectionCard({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <Link
-              to={`/user/${userId}`}
+              to={`/user/${profile ? generateSlug(profile.name) : userId}`}
               className="font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors truncate"
             >
               {name}

@@ -8,7 +8,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Link, useNavigate, useParams, useLocation } from '../../context/NavigationContext';
+import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import SEO from '../components/SEO';
+import { generateSlug, useProfiles } from '../../hooks/useProfiles';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -117,7 +118,7 @@ export default function UserProfilePage() {
   const location = useLocation();
   const navigate = useNavigate();
   const segments = location.pathname.split('/').filter(Boolean);
-  const membershipId = segments[1] || '';
+  const urlId = segments[1] || '';
 
   // State
   const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -126,6 +127,10 @@ export default function UserProfilePage() {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [isOwner, setIsOwner] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Get list profiles for slug-based lookup
+  const { listProfiles, fetchListProfiles } = useProfiles();
+  const [resolvedMembershipId, setResolvedMembershipId] = useState<string | null>(null);
 
   // Edit profile dialog
   const [editOpen, setEditOpen] = useState(false);
@@ -152,23 +157,43 @@ export default function UserProfilePage() {
     }
   }, []);
 
+  // Fetch list profiles for slug resolution
+  useEffect(() => {
+    fetchListProfiles();
+  }, [fetchListProfiles]);
+
+  // Resolve URL param to membershipId: try slug match first, then direct membershipId
+  useEffect(() => {
+    if (!urlId) return;
+
+    // First, try to match by name slug from list_profiles
+    const slugMatch = listProfiles.find(p => generateSlug(p.name) === urlId);
+    if (slugMatch?.membershipId) {
+      setResolvedMembershipId(slugMatch.membershipId);
+      return;
+    }
+
+    // Fall back: treat urlId as a membershipId directly (backward compatibility)
+    setResolvedMembershipId(urlId);
+  }, [urlId, listProfiles]);
+
   // Determine ownership
   useEffect(() => {
-    if (currentUser && membershipId) {
-      setIsOwner(currentUser.membershipId === membershipId);
+    if (currentUser && resolvedMembershipId) {
+      setIsOwner(currentUser.membershipId === resolvedMembershipId);
     }
-  }, [currentUser, membershipId]);
+  }, [currentUser, resolvedMembershipId]);
 
   // Fetch profile
   useEffect(() => {
-    if (!membershipId) return;
+    if (!resolvedMembershipId) return;
     const fetchProfile = async () => {
       setLoadingProfile(true);
       try {
         const res = await fetch('/api/profiles');
         if (res.ok) {
           const data = await res.json();
-          const found = data.profiles.find((p: ProfileData) => p.membershipId === membershipId);
+          const found = data.profiles.find((p: ProfileData) => p.membershipId === resolvedMembershipId);
           setProfile(found || null);
         }
       } catch (err) {
@@ -178,15 +203,15 @@ export default function UserProfilePage() {
       }
     };
     fetchProfile();
-  }, [membershipId]);
+  }, [resolvedMembershipId]);
 
   // Fetch posts
   useEffect(() => {
-    if (!membershipId) return;
+    if (!resolvedMembershipId) return;
     const fetchPosts = async () => {
       setLoadingPosts(true);
       try {
-        const res = await fetch(`/api/posts?authorId=${encodeURIComponent(membershipId)}`);
+        const res = await fetch(`/api/posts?authorId=${encodeURIComponent(resolvedMembershipId)}`);
         if (res.ok) {
           const data = await res.json();
           setPosts(data.posts || []);
@@ -198,7 +223,7 @@ export default function UserProfilePage() {
       }
     };
     fetchPosts();
-  }, [membershipId]);
+  }, [resolvedMembershipId]);
 
   // Populate edit form when profile loads
   useEffect(() => {
@@ -218,7 +243,7 @@ export default function UserProfilePage() {
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [membershipId]);
+  }, [urlId]);
 
   // Stats
   const stats = useMemo(() => {
@@ -653,7 +678,8 @@ export default function UserProfilePage() {
                     variant="outline"
                     className="w-full gap-2"
                     onClick={() => {
-                      const url = `${window.location.origin}${window.location.pathname}`;
+                      const slug = profile?.name ? generateSlug(profile.name) : urlId;
+                      const url = `${window.location.origin}/user/${slug}`;
                       navigator.clipboard.writeText(url).then(() => {
                         toast.success('Profile link copied!');
                       }).catch(() => {

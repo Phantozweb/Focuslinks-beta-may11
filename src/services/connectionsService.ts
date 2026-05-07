@@ -12,6 +12,7 @@
  */
 
 import { fetchGitHubJson, updateGitHubFile } from './githubService';
+import { generateSlug } from '../hooks/useProfiles';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -156,7 +157,7 @@ export async function sendConnectionRequest(
       type: 'connection_request',
       fromUserId,
       message: `${fromName} wants to connect with you`,
-      link: `/user/${fromUserId}`,
+      link: `/user/${generateSlug(fromName)}`,
     });
   }
 
@@ -204,7 +205,7 @@ export async function acceptConnection(
     type: 'connection_accepted',
     fromUserId: acceptorUserId,
     message: `${acceptorName} accepted your connection request! You are now connected.`,
-    link: `/user/${acceptorUserId}`,
+    link: `/user/${generateSlug(acceptorName)}`,
   });
 
   return true;
@@ -401,7 +402,7 @@ export async function followUser(
       type: 'follow',
       fromUserId: followerId,
       message: `${followerName} started following you`,
-      link: `/user/${followerId}`,
+      link: `/user/${generateSlug(followerName)}`,
     });
   }
 

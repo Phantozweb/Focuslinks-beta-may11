@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes';
 import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { useUnreadCount } from '../../hooks/useNotifications';
+import { generateSlug } from '../../hooks/useProfiles';
 
 export default function Navbar() {
   const [menuOpenedAtPath, setMenuOpenedAtPath] = useState('/');
@@ -335,7 +336,7 @@ export default function Navbar() {
                         <div className="py-1.5">
                           <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Quick Actions</p>
                           <Link
-                            to={`/user/${user.membershipId}`}
+                            to={`/user/${generateSlug(user.name)}`}
                             className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mx-1"
                           >
                             <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -572,7 +573,7 @@ export default function Navbar() {
 
                       <p className="px-4 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Account</p>
                       <Link
-                        to={`/user/${user.membershipId}`}
+                        to={`/user/${generateSlug(user.name)}`}
                         onClick={closeMobileMenu}
                         className="px-4 py-3 rounded-xl text-sm font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-800/50 flex items-center gap-3 transition-all"
                       >

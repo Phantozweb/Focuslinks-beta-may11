@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// Generate a slug from a name for use in profile URLs
+function generateSlug(name: string): string {
+  return (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+}
+
 const GITHUB_OWNER = 'Phantozweb';
 const GITHUB_REPO = 'Fldatas';
 const RAW_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main`;
@@ -139,7 +144,7 @@ export async function POST(request: NextRequest) {
       message,
       timestamp: new Date().toISOString(),
       read: false,
-      link: link || `/user/${fromUserId}`,
+      link: link || (fromUser?.name ? `/user/${generateSlug(fromUser.name)}` : `/user/${fromUserId}`),
       fromUser: fromUser || undefined,
       postId: postId || undefined,
     };

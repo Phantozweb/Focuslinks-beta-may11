@@ -1,9 +1,10 @@
 'use client';
 import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useParams } from '../../context/NavigationContext';
-import { MapPin, BadgeCheck, ArrowLeft, Mail, Globe, Briefcase, GraduationCap, Award, Calendar, Linkedin, Flag, Mic, Video, Users, UserPlus, Check, X, UserCheck, MessageCircle, Clock, Link2 } from 'lucide-react';
+import { MapPin, BadgeCheck, ArrowLeft, Mail, Globe, Briefcase, GraduationCap, Award, Calendar, Linkedin, Flag, Mic, Video, Users, UserPlus, Check, X, UserCheck, MessageCircle, Clock, Link2, Lock, LogIn } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useProfiles, generateSlug } from '../../hooks/useProfiles';
+import { useAuth } from '../../hooks/useAuth';
 import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectConnection, followUser, unfollowUser, cancelConnection, removeConnection, isFollowing as checkIsFollowing, fetchFollowing, fetchConnections, getMutualConnections, getFollowingCount } from '../../services/connectionsService';
 import type { ConnectionStatus } from '../../services/connectionsService';
 import { toast } from 'sonner';
@@ -22,18 +23,8 @@ export default function ProfileDetail() {
   const [showDisconnectMenu, setShowDisconnectMenu] = useState(false);
   const [connectionCount, setConnectionCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
-  const [currentUser, setCurrentUser] = useState<{ membershipId: string; name: string } | null>(null);
+  const { user: currentUser, isLoggedIn, isLoading: authLoading } = useAuth();
   const disconnectRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('fl_user');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setCurrentUser(parsed);
-      }
-    } catch { /* ignore */ }
-  }, []);
 
   // Close disconnect menu on outside click
   useEffect(() => {
@@ -287,8 +278,37 @@ export default function ProfileDetail() {
   const mailtoBody = encodeURIComponent(`Hi ${userData?.name || profile.name},\n\nI came across your profile on FocusLinks and would love to connect with you!\n\nBest regards,\n[Your Name]`);
   const mailtoLink = `mailto:${email}?subject=${mailtoSubject}&body=${mailtoBody}`;
 
+  const handleGatedConnect = () => {
+    toast.error('Please log in to connect with professionals');
+  };
+
+  const handleGatedEmail = () => {
+    toast.error('Please log in to send messages');
+  };
+
+  const handleGatedLinkedIn = () => {
+    toast.error('Log in to view LinkedIn profile');
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pt-20 pb-16">
+      {/* Sign-in banner for non-logged-in users */}
+      {!isLoggedIn && !authLoading && (
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4">
+          <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+            <p className="text-sm font-medium truncate">
+              Sign in to connect with professionals, send messages, and access full profiles
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-white text-blue-700 rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors shrink-0"
+            >
+              <LogIn className="w-4 h-4" />
+              Sign In
+            </Link>
+          </div>
+        </div>
+      )}
       {/* Cover Photo Area */}
       <div className="h-48 md:h-64 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9IjEiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIvPjwvc3ZnPg==')] [mask-image:linear-gradient(to_bottom,white,transparent)]"></div>
@@ -466,14 +486,30 @@ export default function ProfileDetail() {
                         </motion.button>
                       </motion.div>
                     ) : (
-                      <a href={mailtoLink} className="px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 flex items-center">
+                      <button
+                        onClick={() => {
+                          toast.error('Please log in to connect with professionals');
+                        }}
+                        className="px-6 py-2.5 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded-xl font-bold cursor-not-allowed flex items-center gap-2 opacity-70"
+                      >
+                        <Lock className="w-4 h-4" />
                         Connect
-                      </a>
+                      </button>
                     )}
 
-                    <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-[#0A66C2]/10 text-[#0A66C2] rounded-xl hover:bg-[#0A66C2]/20 transition-colors border border-[#0A66C2]/20" title="LinkedIn Profile">
-                      <Linkedin className="w-5 h-5" />
-                    </a>
+                    {isLoggedIn ? (
+                      <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-[#0A66C2]/10 text-[#0A66C2] rounded-xl hover:bg-[#0A66C2]/20 transition-colors border border-[#0A66C2]/20" title="LinkedIn Profile">
+                        <Linkedin className="w-5 h-5" />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => toast.error('Log in to view LinkedIn profile')}
+                        className="p-2.5 bg-[#0A66C2]/5 text-[#0A66C2]/40 rounded-xl cursor-not-allowed border border-[#0A66C2]/10 opacity-60"
+                        title="Log in to view LinkedIn"
+                      >
+                        <Linkedin className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
                 </div>
                 
@@ -673,9 +709,15 @@ export default function ProfileDetail() {
                       <Linkedin className="w-5 h-5 text-slate-400 dark:text-gray-500 mr-3 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-slate-900 dark:text-white">LinkedIn</p>
-                        <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline break-all">
-                          {linkedinUrl.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}
-                        </a>
+                        {isLoggedIn ? (
+                          <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline break-all">
+                            {linkedinUrl.replace(/^https?:\/\/(www\.)?linkedin\.com\/in\//, '')}
+                          </a>
+                        ) : (
+                          <button onClick={handleGatedLinkedIn} className="text-sm text-slate-400 dark:text-gray-500 cursor-not-allowed flex items-center gap-1">
+                            <Lock className="w-3 h-3" /> Log in to view
+                          </button>
+                        )}
                       </div>
                     </li>
                     <li className="flex items-start">
@@ -689,7 +731,13 @@ export default function ProfileDetail() {
                       <Mail className="w-5 h-5 text-slate-400 dark:text-gray-500 mr-3 mt-0.5" />
                       <div>
                         <p className="text-sm font-medium text-slate-900 dark:text-white">Email</p>
-                        <a href={mailtoLink} className="text-sm text-blue-600 hover:underline break-all">{email}</a>
+                        {isLoggedIn ? (
+                          <a href={mailtoLink} className="text-sm text-blue-600 hover:underline break-all">{email}</a>
+                        ) : (
+                          <button onClick={handleGatedEmail} className="text-sm text-slate-400 dark:text-gray-500 cursor-not-allowed flex items-center gap-1">
+                            <Lock className="w-3 h-3" /> Log in to send messages
+                          </button>
+                        )}
                       </div>
                     </li>
                     {(userData?.whatsapp || userData?.phone) && (
@@ -697,14 +745,20 @@ export default function ProfileDetail() {
                         <MessageCircle className="w-5 h-5 text-emerald-400 dark:text-emerald-500 mr-3 mt-0.5" />
                         <div>
                           <p className="text-sm font-medium text-slate-900 dark:text-white">WhatsApp</p>
-                          <a
-                            href={`https://wa.me/${(userData.whatsapp || userData.phone || '').replace(/[^0-9+]/g, '')}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-emerald-600 hover:underline"
-                          >
-                            {userData.whatsapp || userData.phone}
-                          </a>
+                          {isLoggedIn ? (
+                            <a
+                              href={`https://wa.me/${(userData.whatsapp || userData.phone || '').replace(/[^0-9+]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-emerald-600 hover:underline"
+                            >
+                              {userData.whatsapp || userData.phone}
+                            </a>
+                          ) : (
+                            <button onClick={handleGatedConnect} className="text-sm text-slate-400 dark:text-gray-500 cursor-not-allowed flex items-center gap-1">
+                              <Lock className="w-3 h-3" /> Log in to view
+                            </button>
+                          )}
                         </div>
                       </li>
                     )}
