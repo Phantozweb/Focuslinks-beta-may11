@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     let GITHUB_FILE_PATH = '';
 
-    if (['prebook', 'ask', 'feedback', 'claim', 'join'].includes(body.type)) {
+    if (['prebook', 'ask', 'feedback', 'claim', 'certificate-claim', 'join'].includes(body.type)) {
       let typeFolder = body.type.toLowerCase();
       let filename = `${entryId}.json`;
       
@@ -32,6 +32,12 @@ export async function POST(request: NextRequest) {
       
       if (body.type === 'join') {
         typeFolder = 'Joined users';
+        const membershipIdStr = body.membershipId ? `_${body.membershipId}` : '';
+        filename = `${entryId}${membershipIdStr}.json`;
+      }
+
+      if (body.type === 'certificate-claim') {
+        typeFolder = 'claim';
         const membershipIdStr = body.membershipId ? `_${body.membershipId}` : '';
         filename = `${entryId}${membershipIdStr}.json`;
       }

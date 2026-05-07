@@ -94,6 +94,8 @@ export default function Webinar() {
   const [certFlVerified, setCertFlVerified] = useState<boolean | null>(null);
   const [certFlVerifying, setCertFlVerifying] = useState(false);
   const [certFlMemberInfo, setCertFlMemberInfo] = useState<{ name: string; title: string } | null>(null);
+  const [certEligibility, setCertEligibility] = useState<{ eligible: boolean; matchedBy?: string; source?: string; error?: string } | null>(null);
+  const [certVerifying, setCertVerifying] = useState(false);
 
   /* user from localStorage */
   useEffect(() => {
@@ -260,14 +262,69 @@ export default function Webinar() {
     return () => clearTimeout(timer);
   }, [certMembershipId, handleVerifyCertMembership]);
 
+  /* certificate eligibility verification */
+  const verifyCertificateEligibility = useCallback(async () => {
+    if (!certEmail.trim() && !certMembershipId.trim()) {
+      setCertEligibility({ eligible: false, error: 'Please enter your email or Membership ID to verify.' });
+      return;
+    }
+    setCertVerifying(true);
+    setCertEligibility(null);
+    try {
+      const res = await fetch('/api/verify-certificate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: WEBINAR_SLUG, email: certEmail, membershipId: certMembershipId, name: certName }),
+      });
+      const data = await res.json();
+      setCertEligibility(data);
+    } catch {
+      setCertEligibility({ eligible: false, error: 'Failed to verify. Please try again.' });
+    } finally {
+      setCertVerifying(false);
+    }
+  }, [certEmail, certMembershipId, certName]);
+
   /* certificate claim handler */
   const handleCertificateClaim = async (e: React.FormEvent) => {
-    e.preventDefault(); setCertSubmitting(true);
+    e.preventDefault();
+
+    // Step 1: Verify eligibility first
+    setCertSubmitting(true);
     try {
-      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'certificate-claim', webinar: WEBINAR_TITLE, slug, name: certName, email: certEmail, membershipId: certMembershipId, flVerified: certFlVerified }) });
-      if (res.ok) { setCertSubmitted(true); toast.success('Certificate claimed!'); }
+      const verifyRes = await fetch('/api/verify-certificate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: WEBINAR_SLUG, email: certEmail, membershipId: certMembershipId, name: certName }),
+      });
+      const verifyData = await verifyRes.json();
+      setCertEligibility(verifyData);
+
+      if (!verifyData.eligible) {
+        toast.error(verifyData.error || 'You are not eligible for a certificate. Please check your details.');
+        setCertSubmitting(false);
+        return;
+      }
+
+      // Step 2: If eligible, submit the claim
+      const res = await fetch('/api/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'certificate-claim',
+          webinar: WEBINAR_TITLE,
+          slug,
+          name: verifyData.name || certName,
+          email: verifyData.email || certEmail,
+          membershipId: verifyData.membershipId || certMembershipId,
+          flVerified: certFlVerified,
+          matchedBy: verifyData.matchedBy,
+          source: verifyData.source,
+        }),
+      });
+      if (res.ok) { setCertSubmitted(true); toast.success('Certificate claimed successfully!'); }
       else { const d = await res.json(); toast.error(d.error || 'Failed to claim certificate'); }
-    } catch { toast.error('Unexpected error.'); }
+    } catch { toast.error('Unexpected error. Please try again.'); }
     finally { setCertSubmitting(false); }
   };
 
@@ -585,25 +642,28 @@ export default function Webinar() {
                           </div>
                           <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-300">Certificate Claimed!</h3>
                           <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm">Check your email for your certificate of participation.</p>
+                          {certEligibility?.source && (
+                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Status: {certEligibility.source}</p>
+                          )}
                         </motion.div>
                       ) : (
                         <form onSubmit={handleCertificateClaim} className="space-y-4">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="relative">
                               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <input type="text" required placeholder="Full Name *" value={certName} onChange={e => setCertName(e.target.value)}
+                              <input type="text" required placeholder="Full Name *" value={certName} onChange={e => { setCertName(e.target.value); setCertEligibility(null); }}
                                 className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
                             </div>
                             <div className="relative">
                               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <input type="email" required placeholder="Email Address *" value={certEmail} onChange={e => setCertEmail(e.target.value)}
+                              <input type="email" required placeholder="Email Address *" value={certEmail} onChange={e => { setCertEmail(e.target.value); setCertEligibility(null); }}
                                 className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
                             </div>
                           </div>
-                          {/* FL Membership ID (optional) */}
+                          {/* FL Membership ID (optional but helps verification) */}
                           <div className="relative">
                             <ShieldCheck className={`absolute left-3 top-3 w-4 h-4 transition-colors ${certFlVerified === true ? 'text-emerald-500' : certFlVerified === false ? 'text-red-400' : 'text-slate-400'}`} />
-                            <input type="text" placeholder="FL Membership ID (optional)" value={certMembershipId} onChange={e => setCertMembershipId(e.target.value)}
+                            <input type="text" placeholder="FL Membership ID (helps us find your record faster)" value={certMembershipId} onChange={e => { setCertMembershipId(e.target.value); setCertEligibility(null); }}
                               className={`w-full pl-9 pr-10 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-sm outline-none transition-all placeholder:text-slate-400 ${certFlVerified === true ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-500/50' : certFlVerified === false ? 'border-red-300 focus:ring-2 focus:ring-red-400/50' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'}`}
                             />
                             <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -620,19 +680,47 @@ export default function Webinar() {
                               <span className="text-xs text-emerald-700 dark:text-emerald-300">Verified: <strong>{certFlMemberInfo.name}</strong> — {certFlMemberInfo.title}</span>
                             </motion.div>
                           )}
-                          {certFlVerified === false && certMembershipId.trim().length >= 3 && (
-                            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30"
-                            >
-                              <AlertCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                              <span className="text-xs text-amber-700 dark:text-amber-300">Membership ID not found. You can still claim your certificate without it.</span>
-                            </motion.div>
-                          )}
+
+                          {/* Check Eligibility Button */}
+                          <button type="button" onClick={verifyCertificateEligibility} disabled={certVerifying || (!certEmail.trim() && !certMembershipId.trim())}
+                            className="w-full py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                          >
+                            {certVerifying ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : <><ShieldCheck className="w-4 h-4" /> Check Eligibility</>}
+                          </button>
+
+                          {/* Eligibility Result */}
+                          <AnimatePresence>
+                            {certEligibility && certEligibility.eligible && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
+                              >
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Eligible for certificate!</p>
+                                  {certEligibility.source && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">Status: {certEligibility.source}</p>}
+                                  {certEligibility.matchedBy && <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 mt-0.5">Matched by: {certEligibility.matchedBy === 'email' ? 'Email' : certEligibility.matchedBy === 'membershipId' ? 'Membership ID' : 'Name'}</p>}
+                                </div>
+                              </motion.div>
+                            )}
+                            {certEligibility && !certEligibility.eligible && (
+                              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30"
+                              >
+                                <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="text-xs font-bold text-red-700 dark:text-red-300">Not eligible</p>
+                                  <p className="text-[11px] text-red-600 dark:text-red-400 mt-0.5">{certEligibility.error || 'No booking or attendance record found with your details.'}</p>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
                           <button type="submit" disabled={certSubmitting}
                             className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-70 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
                           >
-                            {certSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Claiming…</> : <><GraduationCap className="w-4 h-4" /> Claim Certificate</>}
+                            {certSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying & Claiming…</> : <><GraduationCap className="w-4 h-4" /> Claim Certificate</>}
                           </button>
+                          <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">We will verify your booking/attendance before issuing the certificate.</p>
                         </form>
                       )}
                     </div>
