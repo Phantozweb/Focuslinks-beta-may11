@@ -16,24 +16,34 @@ const NavigationContext = createContext<NavigationContextType>({
 
 function getInitialPath(): string {
   if (typeof window !== 'undefined') {
-    return window.location.hash.replace('#', '') || '/';
+    // Migrate from hash routing: if there's a hash path, use it then clean the URL
+    const hash = window.location.hash.replace('#', '');
+    if (hash && hash !== '/') {
+      // Replace the hash URL with a clean path
+      const cleanUrl = window.location.origin + window.location.pathname + hash;
+      window.history.replaceState(null, '', cleanUrl);
+      return hash;
+    }
+    return window.location.pathname || '/';
   }
   return '/';
 }
 
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [currentPath, setCurrentPath] = useState(getInitialPath);
+
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace('#', '') || '/';
-      setCurrentPath(hash);
+    // Listen for browser back/forward navigation
+    const handlePopState = () => {
+      const path = window.location.pathname || '/';
+      setCurrentPath(path);
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const navigate = useCallback((path: string) => {
-    window.location.hash = path;
+    window.history.pushState(null, '', path);
     setCurrentPath(path);
     window.scrollTo(0, 0);
   }, []);
@@ -84,7 +94,7 @@ export function Link({ to, children, className, onClick, ...props }: {
   };
 
   return (
-    <a href={`#${to}`} className={className} onClick={handleClick} {...props}>
+    <a href={to} className={className} onClick={handleClick} {...props}>
       {children}
     </a>
   );

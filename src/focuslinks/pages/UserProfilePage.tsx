@@ -653,7 +653,7 @@ export default function UserProfilePage() {
                     variant="outline"
                     className="w-full gap-2"
                     onClick={() => {
-                      const url = `${window.location.origin}${window.location.pathname}${window.location.hash}`;
+                      const url = `${window.location.origin}${window.location.pathname}`;
                       navigator.clipboard.writeText(url).then(() => {
                         toast.success('Profile link copied!');
                       }).catch(() => {

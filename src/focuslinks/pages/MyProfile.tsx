@@ -110,7 +110,7 @@ export default function MyProfile() {
   }, [navigate]);
 
   const handleShareProfile = useCallback(() => {
-    const url = `${window.location.origin}${window.location.hash}`;
+    const url = `${window.location.origin}${window.location.pathname}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => {
         toast.success('Profile link copied to clipboard!');

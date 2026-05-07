@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { ArrowRight, Zap, Globe, Ticket, Gift, ShieldCheck, Layers, Users, Check, X, ChevronDown, Sparkles, Star, HelpCircle, Crown } from 'lucide-react';
+import { ArrowRight, Zap, Globe, Ticket, Gift, ShieldCheck, Layers, Users, Check, ChevronDown, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import MembershipForm from '../components/MembershipForm';
 import MembershipCard from '../components/MembershipCard';
@@ -41,19 +41,19 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-// ─── Feature Check/X Mark ──────────────────────────────────────────
-function FeatureMark({ included }: { included: boolean }) {
+// ─── Feature Check Mark ──────────────────────────────────────────
+function FeatureCheck({ text }: { text: string }) {
   return (
     <motion.div 
-      initial={{ scale: 0 }}
-      animate={{ scale: 1 }}
-      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
-        included 
-          ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' 
-          : 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600'
-      }`}
+      initial={{ opacity: 0, x: -10 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      className="flex items-center gap-3"
     >
-      {included ? <Check className="w-3.5 h-3.5" strokeWidth={3} /> : <X className="w-3.5 h-3.5" strokeWidth={3} />}
+      <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
+        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+      </div>
+      <span className="text-sm text-slate-700 dark:text-gray-300">{text}</span>
     </motion.div>
   );
 }
@@ -81,65 +81,16 @@ export default function Membership() {
     transition: { duration: 0.5 }
   };
 
-  // Plan data
-  const plans = [
-    {
-      name: 'Starter',
-      price: 'Free',
-      period: 'forever',
-      description: 'Perfect for students and new professionals exploring the community.',
-      icon: <Users className="w-6 h-6" />,
-      color: 'from-slate-500 to-slate-600',
-      popular: false,
-      features: [
-        { text: 'Basic Directory Profile', included: true },
-        { text: 'Community Feed Access', included: true },
-        { text: 'Blog Article Access', included: true },
-        { text: 'Event Registration', included: true },
-        { text: 'Member ID Card', included: true },
-        { text: 'Priority Event Seating', included: false },
-        { text: 'Career Center Access', included: false },
-        { text: 'Verified Badge', included: false },
-      ]
-    },
-    {
-      name: 'Professional',
-      price: '$9',
-      period: '/month',
-      description: 'For established professionals seeking deeper engagement and visibility.',
-      icon: <Star className="w-6 h-6" />,
-      color: 'from-blue-600 to-indigo-600',
-      popular: true,
-      features: [
-        { text: 'Enhanced Directory Profile', included: true },
-        { text: 'Community Feed Access', included: true },
-        { text: 'Blog Article Access', included: true },
-        { text: 'Priority Event Registration', included: true },
-        { text: 'Digital Member ID Card', included: true },
-        { text: 'Priority Event Seating', included: true },
-        { text: 'Career Center Access', included: true },
-        { text: 'Verified Badge', included: true },
-      ]
-    },
-    {
-      name: 'Enterprise',
-      price: '$29',
-      period: '/month',
-      description: 'For institutions and teams managing multiple professional accounts.',
-      icon: <Crown className="w-6 h-6" />,
-      color: 'from-amber-500 to-orange-600',
-      popular: false,
-      features: [
-        { text: 'Unlimited Team Profiles', included: true },
-        { text: 'Community Feed Access', included: true },
-        { text: 'Blog Publishing Rights', included: true },
-        { text: 'VIP Event Access', included: true },
-        { text: 'Premium Member ID Cards', included: true },
-        { text: 'Dedicated Event Seating', included: true },
-        { text: 'Career Center Access', included: true },
-        { text: 'Verified Badge + Analytics', included: true },
-      ]
-    }
+  // All features included for free
+  const features = [
+    'Basic Directory Profile',
+    'Community Feed Access',
+    'Blog Article Access',
+    'Event Registration',
+    'Digital Member ID Card',
+    'Priority Event Seating',
+    'Career Center Access',
+    'Verified Badge',
   ];
 
   // FAQ data
@@ -153,20 +104,16 @@ export default function Membership() {
       answer: 'Your ID serves as a universal passport to the FocusLinks ecosystem. Use it to register for webinars and competitions, appear in the global professional directory, join community discussions, and access member-only perks from our industry partners.'
     },
     {
-      question: 'Can I upgrade my plan later?',
-      answer: 'Absolutely! You can start with the free Starter plan and upgrade to Professional or Enterprise at any time. All your data, connections, and profile information will carry over seamlessly.'
-    },
-    {
-      question: 'How do I get my physical Member ID card?',
-      answer: 'Digital ID cards are generated instantly. For Professional and Enterprise members, physical cards can be requested through your dashboard. We ship internationally with delivery in 7-14 business days.'
+      question: 'How do I get my Member ID card?',
+      answer: 'Your digital ID card is generated instantly when you sign up. You can access it anytime from your dashboard and share it with peers.'
     },
     {
       question: 'Is my data secure and private?',
       answer: 'We take privacy seriously. Your personal information is encrypted and never shared with third parties without consent. You control what information is visible on your public profile through granular privacy settings.'
     },
     {
-      question: 'Can I cancel my subscription anytime?',
-      answer: 'Yes, you can cancel your Professional or Enterprise subscription at any time with no penalties. You will retain access until the end of your billing period, and your free Starter features remain permanently.'
+      question: 'Can I delete my account?',
+      answer: 'Yes, you can delete your account at any time. All your data will be permanently removed from our systems. You can always sign up again if you change your mind.'
     },
   ];
 
@@ -222,7 +169,7 @@ export default function Membership() {
         </div>
       </section>
 
-      {/* Pricing Plans Section */}
+      {/* What You Get - Free Features Section */}
       <section className="py-24 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div 
@@ -232,179 +179,63 @@ export default function Membership() {
             className="text-center mb-16"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-semibold text-sm mb-4 border border-blue-100 dark:border-blue-800/30">
-              <Sparkles className="w-4 h-4" />
-              Choose Your Plan
+              <Zap className="w-4 h-4" />
+              Everything Included
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
-              Simple, Transparent Pricing
+              One Plan. Everything Free.
             </h2>
             <p className="text-lg text-slate-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Start free and upgrade as you grow. Every plan includes our core community features.
+              No tiers, no paywalls, no hidden fees. Every member gets full access to the entire FocusLinks ecosystem.
             </p>
           </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6 lg:gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, idx) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 hover-lift ${
-                  plan.popular
-                    ? 'bg-white dark:bg-slate-800 border-2 border-blue-500 dark:border-blue-400 shadow-xl shadow-blue-500/10 scale-[1.02] lg:scale-105 z-10 hover-glow'
-                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700'
-                }`}
-              >
-                {/* Most Popular Badge */}
-                {plan.popular && (
-                  <div className="absolute top-0 left-0 right-0">
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center text-xs font-bold py-1.5 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                      <Sparkles className="w-3 h-3 sparkle-anim" />
-                      Most Popular
-                      <Sparkles className="w-3 h-3 sparkle-anim" style={{ animationDelay: '0.75s' }} />
-                    </div>
-                  </div>
-                )}
-                
-                {/* Gradient border effect for popular */}
-                {plan.popular && (
-                  <div className="absolute -inset-[2px] bg-gradient-to-b from-blue-500/20 via-transparent to-indigo-500/20 rounded-2xl -z-10" />
-                )}
-
-                <div className={`p-8 flex flex-col flex-grow ${plan.popular ? 'pt-12' : ''}`}>
-                  {/* Plan icon & name */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center text-white shadow-lg`}>
-                      {plan.icon}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">{plan.name}</h3>
-                    </div>
-                  </div>
-
-                  {/* Price */}
-                  <div className="mb-4">
-                    <span className="text-4xl font-black text-slate-900 dark:text-white">{plan.price}</span>
-                    <span className="text-slate-500 dark:text-gray-400 text-sm font-medium ml-1">{plan.period}</span>
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed mb-8">{plan.description}</p>
-
-                  {/* Feature list */}
-                  <ul className="space-y-3 mb-8 flex-grow">
-                    {plan.features.map((feature, fIdx) => (
-                      <motion.li 
-                        key={feature.text}
-                        initial={{ opacity: 0, x: -10 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: idx * 0.1 + fIdx * 0.05 }}
-                        className="flex items-center gap-3"
-                      >
-                        <FeatureMark included={feature.included} />
-                        <span className={`text-sm ${feature.included ? 'text-slate-700 dark:text-gray-300' : 'text-slate-400 dark:text-gray-600 line-through'}`}>
-                          {feature.text}
-                        </span>
-                      </motion.li>
-                    ))}
-                  </ul>
-
-                  {/* CTA button */}
-                  <button className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm transition-all duration-300 ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5'
-                      : 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-                  }`}>
-                    {plan.popular ? 'Start Free Trial' : plan.price === 'Free' ? 'Get Started Free' : 'Start Free Trial'}
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Comparison Table */}
-      <section className="py-16 bg-white dark:bg-slate-900">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="max-w-2xl mx-auto"
           >
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-3">Compare All Features</h2>
-            <p className="text-slate-600 dark:text-gray-400">See exactly what's included in each plan.</p>
-          </motion.div>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
+              <div className="p-8">
+                {/* Plan header */}
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">FocusLinks Member</h3>
+                  </div>
+                </div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="overflow-x-auto -mx-4 sm:-mx-6 lg:-mx-8"
-          >
-            <table className="w-full min-w-[640px]">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="text-left py-4 px-4 sm:px-6 text-sm font-bold text-slate-900 dark:text-white">Feature</th>
-                  <th className="text-center py-4 px-4 sm:px-6 text-sm font-bold text-slate-600 dark:text-gray-400">Starter</th>
-                  <th className="text-center py-4 px-4 sm:px-6">
-                    <span className="inline-flex items-center gap-1 text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1 rounded-full border border-blue-100 dark:border-blue-800/30">
-                      <Star className="w-3 h-3" /> Professional
-                    </span>
-                  </th>
-                  <th className="text-center py-4 px-4 sm:px-6 text-sm font-bold text-amber-600 dark:text-amber-400">Enterprise</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  { feature: 'Directory Profile', starter: true, pro: true, enterprise: true },
-                  { feature: 'Community Feed', starter: true, pro: true, enterprise: true },
-                  { feature: 'Blog Access', starter: true, pro: true, enterprise: true },
-                  { feature: 'Event Registration', starter: true, pro: true, enterprise: true },
-                  { feature: 'Member ID Card', starter: 'Basic', pro: 'Digital', enterprise: 'Premium' },
-                  { feature: 'Priority Seating', starter: false, pro: true, enterprise: true },
-                  { feature: 'Career Center', starter: false, pro: true, enterprise: true },
-                  { feature: 'Verified Badge', starter: false, pro: true, enterprise: true },
-                  { feature: 'Blog Publishing', starter: false, pro: false, enterprise: true },
-                  { feature: 'Team Management', starter: false, pro: false, enterprise: true },
-                  { feature: 'Analytics Dashboard', starter: false, pro: false, enterprise: true },
-                  { feature: 'Priority Support', starter: false, pro: true, enterprise: true },
-                ].map((row, i) => (
-                  <tr key={row.feature} className={`border-b border-slate-100 dark:border-slate-800 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/30 ${i % 2 === 0 ? 'bg-slate-50/50 dark:bg-slate-900/50' : ''}`}>
-                    <td className="py-3.5 px-4 sm:px-6 text-sm font-medium text-slate-700 dark:text-gray-300">{row.feature}</td>
-                    <td className="py-3.5 px-4 sm:px-6 text-center">
-                      {typeof row.starter === 'boolean' ? (
-                        <FeatureMark included={row.starter} />
-                      ) : (
-                        <span className="text-xs font-semibold text-slate-500 dark:text-gray-400">{row.starter}</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 sm:px-6 text-center bg-blue-50/30 dark:bg-blue-900/10">
-                      {typeof row.pro === 'boolean' ? (
-                        <FeatureMark included={row.pro} />
-                      ) : (
-                        <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">{row.pro}</span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 sm:px-6 text-center">
-                      {typeof row.enterprise === 'boolean' ? (
-                        <FeatureMark included={row.enterprise} />
-                      ) : (
-                        <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{row.enterprise}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {/* Price */}
+                <div className="mb-4">
+                  <span className="text-4xl font-black text-slate-900 dark:text-white">Free</span>
+                  <span className="text-slate-500 dark:text-gray-400 text-sm font-medium ml-1">forever</span>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-gray-400 leading-relaxed mb-8">
+                  Join the global eye care community with full access to all features. No credit card required.
+                </p>
+
+                {/* Feature list */}
+                <div className="space-y-3 mb-8">
+                  {features.map((feature) => (
+                    <FeatureCheck key={feature} text={feature} />
+                  ))}
+                </div>
+
+                {/* CTA button */}
+                <a href="#claim-id" className="block w-full py-3.5 px-6 rounded-xl font-bold text-sm text-center text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:shadow-lg hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all duration-300">
+                  Get Your Free ID
+                </a>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-900 relative">
+      <section className="py-24 bg-white dark:bg-slate-900 relative">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

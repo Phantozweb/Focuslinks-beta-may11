@@ -1,7 +1,7 @@
 'use client';
 
 import React, { lazy, Suspense, useMemo, useEffect, useRef } from 'react';
-import { NavigationProvider, useLocation } from '@/context/NavigationContext';
+import { NavigationProvider, useLocation, useNavigate } from '@/context/NavigationContext';
 import { AnimatePresence, motion } from 'motion/react';
 import Navbar from '@/focuslinks/components/Navbar';
 import Footer from '@/focuslinks/components/Footer';
@@ -86,17 +86,18 @@ function Router() {
   const path = pathname || '/';
   // Redirect logged-in users from / to /home (one-time only)
   const hasRedirected = useRef(false);
+  const navigate = useNavigate();
   useEffect(() => {
     if (path === '/' && !hasRedirected.current) {
       try {
         const storedUser = localStorage.getItem('fl_user');
         if (storedUser) {
           hasRedirected.current = true;
-          window.location.hash = '/home';
+          navigate('/home');
         }
       } catch { /* ignore */ }
     }
-  }, [path]);
+  }, [path, navigate]);
 
   const routes: Record<string, React.LazyExoticComponent<React.ComponentType>> = useMemo(() => ({
     '/': Home,
