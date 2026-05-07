@@ -14,10 +14,26 @@ interface WebinarUser {
 }
 
 // ── In-memory cache for webinar attendees (5-minute TTL) ──
+let cachedSlug: string | null = null;
 let cachedBookedUsers: WebinarUser[] | null = null;
 let cachedJoinedUsers: WebinarUser[] | null = null;
 let cacheTimestamp: number = 0;
 const CACHE_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Checks if a membershipId value is actually a name (not a real FL ID).
+ * FL Membership IDs follow patterns like FL2ZXS6C, FL39BOKG, FLIPKUEP, etc.
+ * A name-as-membershipId would contain spaces or be a full human name.
+ */
+function isNameNotMembershipId(value: string | undefined): boolean {
+  if (!value) return false;
+  const trimmed = value.trim();
+  // If it contains a space, it's almost certainly a name, not an ID
+  if (trimmed.includes(' ')) return true;
+  // If it doesn't start with "FL" and is longer than 10 chars without special chars, likely a name
+  if (!trimmed.toUpperCase().startsWith('FL') && trimmed.length > 10) return true;
+  return false;
+}
 
 /**
  * Fetches all JSON files from a GitHub directory and parses them into an array.
@@ -54,7 +70,27 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
     .filter((file: { name?: string }) => file.name?.endsWith('.json'))
     .map(async (file: { name: string }) => {
       try {
-        const fileRes = await fetch(`${RAW_BASE}/${directoryPath}/${file.name}?t=${Date.now()}`, { cache: 'no-store' });
+        // Try raw URL first (faster, works for public repos)
+        let fileRes = await fetch(`${RAW_BASE}/${directoryPath}/${file.name}?t=${Date.now()}`, { cache: 'no-store' });
+
+        // If raw URL fails, try with PAT via Contents API
+        if (!fileRes.ok && GITHUB_PAT) {
+          const apiFileRes = await fetch(`${API_BASE}/${encodedPath}/${file.name}`, {
+            headers: {
+              Accept: 'application/vnd.github.v3+json',
+              'User-Agent': 'FocusLinks-App',
+              Authorization: `token ${GITHUB_PAT}`,
+            },
+            cache: 'no-store',
+          });
+          if (apiFileRes.ok) {
+            const fileData = await apiFileRes.json();
+            const decoded = Buffer.from(fileData.content, 'base64').toString('utf-8');
+            const sanitized = decoded.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+            return JSON.parse(sanitized) as WebinarUser;
+          }
+        }
+
         if (fileRes.ok) {
           const text = await fileRes.text();
           const sanitized = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
@@ -76,9 +112,16 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
 
 /**
  * Returns cached webinar attendee data or fetches fresh data.
+ * Cache is per-slug (invalidated when slug changes).
  */
 async function getWebinarAttendees(slug: string): Promise<{ booked: WebinarUser[]; joined: WebinarUser[] }> {
   const now = Date.now();
+
+  // Invalidate cache if slug changed
+  if (cachedSlug !== slug) {
+    cachedBookedUsers = null;
+    cachedJoinedUsers = null;
+  }
 
   if (cachedBookedUsers !== null && cachedJoinedUsers !== null && now - cacheTimestamp < CACHE_TTL_MS) {
     return { booked: cachedBookedUsers, joined: cachedJoinedUsers };
@@ -89,6 +132,7 @@ async function getWebinarAttendees(slug: string): Promise<{ booked: WebinarUser[
     fetchUsersFromDirectory(`Webinar/${slug}/Joined users`),
   ]);
 
+  cachedSlug = slug;
   cachedBookedUsers = booked;
   cachedJoinedUsers = joined;
   cacheTimestamp = now;
@@ -112,8 +156,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ eligible: false, error: 'Webinar slug is required.' }, { status: 400 });
     }
 
-    if (!email && !membershipId) {
-      return NextResponse.json({ eligible: false, error: 'Please provide an email address or Membership ID.' }, { status: 400 });
+    if (!email && !membershipId && !name) {
+      return NextResponse.json({ eligible: false, error: 'Please provide your name, email address, or Membership ID.' }, { status: 400 });
     }
 
     const { booked, joined } = await getWebinarAttendees(slug);
@@ -121,7 +165,7 @@ export async function POST(request: NextRequest) {
     // Combine all attendees (booked + joined)
     const allAttendees = [...booked, ...joined];
 
-    // Check eligibility by matching email OR membershipId
+    // Check eligibility by matching email OR membershipId OR name
     let matchFound = false;
     let matchedBy = '';
     let matchedName = '';
@@ -137,18 +181,21 @@ export async function POST(request: NextRequest) {
       const attendeeMembershipId = normalize(attendee.membershipId);
       const attendeeName = normalize(attendee.name);
 
-      // Match by email
+      // Match by email (highest priority)
       if (normalizedEmail && attendeeEmail && attendeeEmail === normalizedEmail) {
         matchFound = true;
         matchedBy = 'email';
         matchedName = attendee.name || name || '';
         matchedEmail = attendee.email || email || '';
-        matchedMembershipId = attendee.membershipId || '';
+        // Only use the attendee's membershipId if it's a real FL ID (not a name)
+        matchedMembershipId = (!isNameNotMembershipId(attendee.membershipId) && attendee.membershipId)
+          ? attendee.membershipId
+          : (membershipId || '');
         break;
       }
 
-      // Match by membership ID
-      if (normalizedMembershipId && attendeeMembershipId && attendeeMembershipId === normalizedMembershipId) {
+      // Match by membership ID (skip if the stored membershipId is actually a name)
+      if (normalizedMembershipId && attendeeMembershipId && !isNameNotMembershipId(attendee.membershipId) && attendeeMembershipId === normalizedMembershipId) {
         matchFound = true;
         matchedBy = 'membershipId';
         matchedName = attendee.name || name || '';
@@ -157,13 +204,15 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      // Match by name (fallback - some booked users have name as membershipId field)
-      if (normalizedName && attendeeName && attendeeName === normalizedName && !attendeeEmail && !attendeeMembershipId) {
+      // Match by name (works for users who may have name stored as membershipId, or no email/ID)
+      if (normalizedName && attendeeName && attendeeName === normalizedName) {
         matchFound = true;
         matchedBy = 'name';
         matchedName = attendee.name || name || '';
         matchedEmail = attendee.email || email || '';
-        matchedMembershipId = attendee.membershipId || membershipId || '';
+        matchedMembershipId = (!isNameNotMembershipId(attendee.membershipId) && attendee.membershipId)
+          ? attendee.membershipId
+          : (membershipId || '');
         break;
       }
     }
@@ -175,16 +224,16 @@ export async function POST(request: NextRequest) {
         const aMid = normalize(a.membershipId);
         const aName = normalize(a.name);
         return (normalizedEmail && aEmail === normalizedEmail) ||
-               (normalizedMembershipId && aMid === normalizedMembershipId) ||
-               (normalizedName && aName === normalizedName && !aEmail && !aMid);
+               (normalizedMembershipId && aMid === normalizedMembershipId && !isNameNotMembershipId(a.membershipId)) ||
+               (normalizedName && aName === normalizedName);
       });
       const wasJoined = joined.some(a => {
         const aEmail = normalize(a.email);
         const aMid = normalize(a.membershipId);
         const aName = normalize(a.name);
         return (normalizedEmail && aEmail === normalizedEmail) ||
-               (normalizedMembershipId && aMid === normalizedMembershipId) ||
-               (normalizedName && aName === normalizedName && !aEmail && !aMid);
+               (normalizedMembershipId && aMid === normalizedMembershipId && !isNameNotMembershipId(a.membershipId)) ||
+               (normalizedName && aName === normalizedName);
       });
 
       let source = '';
@@ -206,7 +255,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       eligible: false,
-      error: 'No booking or attendance record found. Please make sure you use the same email or Membership ID you used when booking or joining the webinar.',
+      error: 'No booking or attendance record found. Please make sure you use the same email, Membership ID, or name you used when booking or joining the webinar.',
       totalBooked: booked.length,
       totalJoined: joined.length,
     });

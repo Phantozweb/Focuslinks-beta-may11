@@ -182,7 +182,7 @@ export default function Webinar() {
     setIsSubmitting(true); setErrorMessage(null);
     try {
       trackEvent({ action: 'Webinar Prebook Attempt', details: `${formData.name} prebooking ${WEBINAR_TITLE}`, metadata: { ...formData, webinar: WEBINAR_TITLE, slug } });
-      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'prebook', webinar: WEBINAR_TITLE, slug, ...formData }) });
+      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'prebook', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, ...formData }) });
       const data = await res.json();
       if (res.ok) { trackEvent({ action: 'Webinar Prebook Success', details: `${formData.name} prebooked` }); if (data.success && data.entryId) window.location.href = `/booked/${data.entryId}`; else setIsPrebooked(true); }
       else { setErrorMessage(data.error || 'Failed'); trackEvent({ action: 'Webinar Prebook Error', details: data.error }); }
@@ -193,7 +193,7 @@ export default function Webinar() {
   const handleAskSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setIsSubmitting(true);
     try {
-      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'ask', webinar: WEBINAR_TITLE, slug, name: askName, email: askEmail, membershipId: formData.membershipId, question: askQuestion }) });
+      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'ask', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: askName, email: askEmail, membershipId: formData.membershipId, question: askQuestion }) });
       if (res.ok) { setAskSubmitted(true); toast.success('Question submitted!'); }
       else { const d = await res.json(); setErrorMessage(d.error || 'Failed'); }
     } catch { setErrorMessage('Unexpected error.'); }
@@ -203,7 +203,7 @@ export default function Webinar() {
   const handleFeedbackSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setIsSubmitting(true);
     try {
-      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug, name: formData.name, email: formData.email, membershipId: formData.membershipId, feedback }) });
+      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: formData.name, email: formData.email, membershipId: formData.membershipId, feedback }) });
       if (res.ok) { setFeedbackSubmitted(true); toast.success('Feedback submitted!'); }
       else { const d = await res.json(); setErrorMessage(d.error || 'Failed'); }
     } catch { setErrorMessage('Unexpected error.'); }
@@ -213,7 +213,7 @@ export default function Webinar() {
   const handleClaimSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); setIsSubmitting(true);
     try {
-      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'claim', webinar: WEBINAR_TITLE, slug, name: formData.name, email: formData.email, membershipId: claimId }) });
+      const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'claim', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: formData.name, email: formData.email, membershipId: claimId }) });
       if (res.ok) { setClaimSubmitted(true); toast.success('Claim submitted!'); }
       else { const d = await res.json(); setErrorMessage(d.error || 'Failed'); }
     } catch { setErrorMessage('Unexpected error.'); }
@@ -264,8 +264,8 @@ export default function Webinar() {
 
   /* certificate eligibility verification */
   const verifyCertificateEligibility = useCallback(async () => {
-    if (!certEmail.trim() && !certMembershipId.trim()) {
-      setCertEligibility({ eligible: false, error: 'Please enter your email or Membership ID to verify.' });
+    if (!certEmail.trim() && !certMembershipId.trim() && !certName.trim()) {
+      setCertEligibility({ eligible: false, error: 'Please enter your name, email, or Membership ID to verify.' });
       return;
     }
     setCertVerifying(true);
@@ -313,7 +313,7 @@ export default function Webinar() {
         body: JSON.stringify({
           type: 'certificate-claim',
           webinar: WEBINAR_TITLE,
-          slug,
+          slug: WEBINAR_SLUG,
           name: verifyData.name || certName,
           email: verifyData.email || certEmail,
           membershipId: verifyData.membershipId || certMembershipId,
@@ -648,30 +648,33 @@ export default function Webinar() {
                         </motion.div>
                       ) : (
                         <form onSubmit={handleCertificateClaim} className="space-y-4">
+                          {/* Name */}
+                          <div className="relative">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input type="text" required placeholder="Full Name *" value={certName} onChange={e => { setCertName(e.target.value); setCertEligibility(null); }}
+                              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
+                          </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="relative">
-                              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <input type="text" required placeholder="Full Name *" value={certName} onChange={e => { setCertName(e.target.value); setCertEligibility(null); }}
-                                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
-                            </div>
+                            {/* Email */}
                             <div className="relative">
                               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <input type="email" required placeholder="Email Address *" value={certEmail} onChange={e => { setCertEmail(e.target.value); setCertEligibility(null); }}
+                              <input type="email" placeholder="Email Address" value={certEmail} onChange={e => { setCertEmail(e.target.value); setCertEligibility(null); }}
                                 className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
                             </div>
-                          </div>
-                          {/* FL Membership ID (optional but helps verification) */}
-                          <div className="relative">
-                            <ShieldCheck className={`absolute left-3 top-3 w-4 h-4 transition-colors ${certFlVerified === true ? 'text-emerald-500' : certFlVerified === false ? 'text-red-400' : 'text-slate-400'}`} />
-                            <input type="text" placeholder="FL Membership ID (helps us find your record faster)" value={certMembershipId} onChange={e => { setCertMembershipId(e.target.value); setCertEligibility(null); }}
-                              className={`w-full pl-9 pr-10 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-sm outline-none transition-all placeholder:text-slate-400 ${certFlVerified === true ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-500/50' : certFlVerified === false ? 'border-red-300 focus:ring-2 focus:ring-red-400/50' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'}`}
-                            />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                              {certFlVerifying && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
-                              {certFlVerified === true && <BadgeCheck className="w-4 h-4 text-emerald-500" />}
-                              {certFlVerified === false && <AlertCircle className="w-4 h-4 text-red-400" />}
+                            {/* FL Membership ID */}
+                            <div className="relative">
+                              <ShieldCheck className={`absolute left-3 top-3 w-4 h-4 transition-colors ${certFlVerified === true ? 'text-emerald-500' : certFlVerified === false ? 'text-red-400' : 'text-slate-400'}`} />
+                              <input type="text" placeholder="FL Membership ID" value={certMembershipId} onChange={e => { setCertMembershipId(e.target.value); setCertEligibility(null); }}
+                                className={`w-full pl-9 pr-10 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-sm outline-none transition-all placeholder:text-slate-400 ${certFlVerified === true ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-500/50' : certFlVerified === false ? 'border-red-300 focus:ring-2 focus:ring-red-400/50' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'}`}
+                              />
+                              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {certFlVerifying && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+                                {certFlVerified === true && <BadgeCheck className="w-4 h-4 text-emerald-500" />}
+                                {certFlVerified === false && <AlertCircle className="w-4 h-4 text-red-400" />}
+                              </div>
                             </div>
                           </div>
+                          <p className="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Provide at least your email or Membership ID so we can verify your attendance.</p>
                           {certFlVerified === true && certFlMemberInfo && (
                             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
                               className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
@@ -682,7 +685,7 @@ export default function Webinar() {
                           )}
 
                           {/* Check Eligibility Button */}
-                          <button type="button" onClick={verifyCertificateEligibility} disabled={certVerifying || (!certEmail.trim() && !certMembershipId.trim())}
+                          <button type="button" onClick={verifyCertificateEligibility} disabled={certVerifying || (!certEmail.trim() && !certMembershipId.trim() && !certName.trim())}
                             className="w-full py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
                           >
                             {certVerifying ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : <><ShieldCheck className="w-4 h-4" /> Check Eligibility</>}
@@ -720,7 +723,7 @@ export default function Webinar() {
                           >
                             {certSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying & Claiming…</> : <><GraduationCap className="w-4 h-4" /> Claim Certificate</>}
                           </button>
-                          <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">We will verify your booking/attendance before issuing the certificate.</p>
+                          <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">We verify your booking or attendance record before issuing the certificate. You can use your email, Membership ID, or name for verification.</p>
                         </form>
                       )}
                     </div>
