@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
     return {
       beforeFiles: [
         {
-          source: '/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-*).*)',
+          source: '/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-*|certificate-template\\.png|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|.*\\.webp).*)',
           destination: '/',
         },
       ],

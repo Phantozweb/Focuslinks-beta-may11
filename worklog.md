@@ -253,3 +253,25 @@ Stage Summary:
 - MyProfile shows a Profile Completion section with progress bar and clickable checklist
 - Prominent banner encourages users to complete their profile
 - All lint checks pass cleanly
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix Breadcrumbs hydration mismatch, fix certificate template image, and start dev server
+
+Work Log:
+- Fixed Breadcrumbs.tsx hydration mismatch by using useSyncExternalStore pattern:
+  - Added isClient check using useSyncExternalStore (server returns false, client returns true)
+  - Returns null on server to prevent hydration mismatch
+  - Added 'certificate' to ROUTE_LABELS for breadcrumb display
+- Fixed next.config.ts rewrite pattern to exclude static assets (png, jpg, svg, ico, webp)
+  - Changed back to beforeFiles (afterFiles caused infinite loop on /)
+  - Added exclusions for certificate-template.png and common image extensions
+- Regenerated certificate-template.png in /public/ folder (was missing)
+- Verified all routes work: / (200), /certificate (200), /certificate-template.png (200, image/png)
+
+Stage Summary:
+- Breadcrumbs hydration mismatch fixed with useSyncExternalStore (no more SSR/client mismatch)
+- Certificate editor accessible at /certificate route
+- Certificate template image served correctly as image/png (126KB)
+- Dev server compiles successfully (10.2s first compile, subsequent routes ~100ms)

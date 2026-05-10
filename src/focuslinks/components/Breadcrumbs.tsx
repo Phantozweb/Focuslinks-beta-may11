@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { motion } from 'motion/react';
 import { ChevronRight, Home } from 'lucide-react';
 import { Link, useLocation } from '../../context/NavigationContext';
@@ -51,6 +51,7 @@ const ROUTE_LABELS: Record<string, string> = {
   'webinar': 'Webinar',
   'profile': 'Profile',
   'event': 'Event',
+  'certificate': 'Certificate Editor',
 };
 
 function formatSegment(segment: string): string {
@@ -62,6 +63,14 @@ function formatSegment(segment: string): string {
 }
 
 export default function Breadcrumbs() {
+  // Detect client-side rendering to avoid hydration mismatch.
+  // useLocation() returns '/' on the server but the actual URL on the client.
+  const isClient = useSyncExternalStore(
+    () => () => {},   // subscribe — no-op (value never changes at runtime)
+    () => true,       // getSnapshot  — client always returns true
+    () => false       // getServerSnapshot — server always returns false
+  );
+
   const { pathname } = useLocation();
   const path = pathname || '/';
 
@@ -83,7 +92,8 @@ export default function Breadcrumbs() {
     return result;
   }, [path]);
 
-  if (crumbs.length === 0) return null;
+  // Return null on server to prevent hydration mismatch; on client, skip when no crumbs
+  if (!isClient || crumbs.length === 0) return null;
 
   return (
     <nav
