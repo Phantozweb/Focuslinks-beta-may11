@@ -275,3 +275,27 @@ Stage Summary:
 - Certificate editor accessible at /certificate route
 - Certificate template image served correctly as image/png (126KB)
 - Dev server compiles successfully (10.2s first compile, subsequent routes ~100ms)
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Make feedback mandatory for getting certificate
+
+Work Log:
+- Redesigned certificate claim section in Webinar.tsx as a two-step flow:
+  - Step 1: "Share Your Feedback" — required before proceeding (violet-themed card)
+  - Step 2: "Claim Certificate" — locked until feedback submitted (greyed out with Lock icon)
+- Added visual step indicator between steps (divider with numbered circles)
+- When feedback not submitted, Step 2 shows lock message and all form fields are hidden
+- When feedback is submitted, Step 2 unlocks with emerald theme showing all certificate form fields
+- Added backend guard in handleCertificateClaim: checks feedbackSubmitted before proceeding, shows toast error if not
+- Updated certificate section header description to mention feedback requirement
+- Replaced standalone feedback form in "Forms" section with redirect card pointing to #certificate-claim
+- Added separate "Feedback Submitted" confirmation card for the forms section
+- All lint checks pass cleanly
+
+Stage Summary:
+- Feedback is now mandatory before claiming a certificate — enforced both in UI (two-step flow) and handler logic
+- Users see clear visual progression: Step 1 (feedback) → Step 2 (certificate claim)
+- The standalone feedback form now redirects users to the integrated certificate section
+- No bypass possible: handler rejects certificate claims without feedback
