@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { MapContainer as LeafletMap, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer as LeafletMap, TileLayer, useMap, Marker, Tooltip } from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ArrowRight, Users, MapPin } from 'lucide-react';
@@ -18,197 +19,37 @@ interface MapPoint {
   id?: string;
 }
 
-// ─── Vibrant Density Heatmap Layer ───────────────────────────────────────
-// Single unified teal gradient with additive blending for a cohesive
-// global-expansion look. Larger radii = spots bleed across country borders.
+// ─── Mini Marker Icon ────────────────────────────────────────────────────
+function createMiniIcon(type: string): L.DivIcon {
+  const color = type === 'student' ? '#D97706' : type === 'clinic' || type === 'institution' ? '#059669' : '#0D9488';
+  return L.divIcon({
+    className: 'mini-marker',
+    html: `<div style="width:8px;height:8px;background:${color};border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [8, 8],
+    iconAnchor: [4, 4],
+  });
+}
 
-function DensityHeatmapLayer({ points }: { points: MapPoint[] }) {
-  const map = useMap();
-  const overlayRef = useRef<L.Layer | null>(null);
-  const [redrawTrigger, setRedrawTrigger] = useState(0);
+// ─── Mini Cluster Icon ───────────────────────────────────────────────────
+function createMiniClusterIcon(cluster: any): L.DivIcon {
+  const count = cluster.getChildCount();
+  const size = count < 10 ? 32 : count < 50 ? 40 : 50;
+  return L.divIcon({
+    className: 'mini-cluster',
+    html: `<div style="width:${size}px;height:${size}px;background:#0D9488;border:2px solid white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${size < 40 ? 10 : 12}px;font-weight:800;color:white;text-shadow:0 1px 2px rgba(0,0,0,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.3);font-family:system-ui,sans-serif;">${count}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+  });
+}
 
-  useEffect(() => {
-    if (!map || points.length === 0) {
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-      }
-      return;
-    }
-
-    // High-res canvas for crisp rendering
-    const canvas = document.createElement('canvas');
-    canvas.width = 2000;
-    canvas.height = 1200;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const bounds = map.getBounds();
-    const ne = bounds.getNorthEast();
-    const sw = bounds.getSouthWest();
-
-    const lngSpan = ne.lng - sw.lng;
-    const latSpan = ne.lat - sw.lat;
-    const safeLngSpan = Math.abs(lngSpan) < 1e-10 ? 1 : lngSpan;
-    const safeLatSpan = Math.abs(latSpan) < 1e-10 ? 1 : latSpan;
-    const toCanvasX = (lng: number) => ((lng - sw.lng) / safeLngSpan) * canvas.width;
-    const toCanvasY = (lat: number) => ((ne.lat - lat) / safeLatSpan) * canvas.height;
-
-    // ── Pass 1: Build density grid ──
-    const gridSize = 18;
-    const density: Record<string, number> = {};
-    points.forEach(p => {
-      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
-      const gx = Math.floor(toCanvasX(p.lng) / gridSize);
-      const gy = Math.floor(toCanvasY(p.lat) / gridSize);
-      const key = `${gx},${gy}`;
-      density[key] = (density[key] || 0) + 1;
-    });
-
-    let maxDensity = 1;
-    Object.values(density).forEach(d => { if (d > maxDensity) maxDensity = d; });
-
-    // ── Pass 2: Gaussian blur spread for smooth density field ──
-    // Spread density into neighboring cells for a softer look
-    const blurred: Record<string, number> = {};
-    const blurRadius = 3;
-    Object.entries(density).forEach(([key, val]) => {
-      const [gx, gy] = key.split(',').map(Number);
-      for (let dx = -blurRadius; dx <= blurRadius; dx++) {
-        for (let dy = -blurRadius; dy <= blurRadius; dy++) {
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > blurRadius + 0.5) continue;
-          const falloff = Math.max(0, 1 - dist / (blurRadius + 0.5));
-          const nk = `${gx + dx},${gy + dy}`;
-          blurred[nk] = (blurred[nk] || 0) + val * falloff * falloff;
-        }
-      }
-    });
-
-    let maxBlurred = 1;
-    Object.values(blurred).forEach(d => { if (d > maxBlurred) maxBlurred = d; });
-
-    // ── Pass 3: Render with additive blending ──
-    ctx.globalCompositeOperation = 'screen';
-
-    const canvasW = canvas.width;
-    const canvasH = canvas.height;
-
-    Object.entries(blurred).forEach(([key, val]) => {
-      const [gx, gy] = key.split(',').map(Number);
-      const x = gx * gridSize + gridSize / 2;
-      const y = gy * gridSize + gridSize / 2;
-
-      if (x < -150 || x > canvasW + 150 || y < -150 || y > canvasH + 150) return;
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-
-      const intensity = Math.pow(val / maxBlurred, 0.6); // Gamma for more visible spread
-      if (intensity < 0.02) return;
-
-      // Large radius for global spread feel
-      const radius = Math.min(45 + intensity * 65, 130);
-      if (!Number.isFinite(radius)) return;
-
-      // Bright teal center → deep teal → transparent
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-
-      if (intensity > 0.5) {
-        // Hot spot: white-bright center
-        const hot = (intensity - 0.5) * 2;
-        const g1 = Math.round(148 + hot * 80);  // Brighter green
-        const b1 = Math.round(136 + hot * 60);
-        gradient.addColorStop(0, `rgba(255, 255, 255, ${0.15 + hot * 0.2})`);
-        gradient.addColorStop(0.15, `rgba(${Math.round(13 + hot * 100)}, ${g1}, ${b1}, ${0.5 + intensity * 0.35})`);
-        gradient.addColorStop(0.4, `rgba(13, 148, 136, ${0.25 + intensity * 0.3})`);
-        gradient.addColorStop(0.7, `rgba(6, 95, 90, ${0.1 + intensity * 0.15})`);
-        gradient.addColorStop(1, `rgba(6, 78, 75, 0)`);
-      } else {
-        // Warm spot: teal glow
-        gradient.addColorStop(0, `rgba(20, 184, 166, ${0.3 + intensity * 0.5})`);
-        gradient.addColorStop(0.3, `rgba(13, 148, 136, ${0.15 + intensity * 0.3})`);
-        gradient.addColorStop(0.6, `rgba(6, 95, 90, ${0.06 + intensity * 0.12})`);
-        gradient.addColorStop(1, `rgba(6, 78, 75, 0)`);
-      }
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
-      ctx.fill();
-    });
-
-    // ── Pass 4: Add tiny amber sparkles for student-heavy areas ──
-    ctx.globalCompositeOperation = 'screen';
-    const studentDensity: Record<string, number> = {};
-    points.forEach(p => {
-      if (p.type !== 'student') return;
-      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return;
-      const gx = Math.floor(toCanvasX(p.lng) / gridSize);
-      const gy = Math.floor(toCanvasY(p.lat) / gridSize);
-      const key = `${gx},${gy}`;
-      studentDensity[key] = (studentDensity[key] || 0) + 1;
-    });
-
-    let maxStudentDensity = 1;
-    Object.values(studentDensity).forEach(d => { if (d > maxStudentDensity) maxStudentDensity = d; });
-
-    Object.entries(studentDensity).forEach(([key, val]) => {
-      const [gx, gy] = key.split(',').map(Number);
-      const x = gx * gridSize + gridSize / 2;
-      const y = gy * gridSize + gridSize / 2;
-      if (x < -80 || x > canvasW + 80 || y < -80 || y > canvasH + 80) return;
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-
-      const intensity = val / maxStudentDensity;
-      if (intensity < 0.15) return;
-
-      const radius = Math.min(30 + intensity * 40, 80);
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-      gradient.addColorStop(0, `rgba(251, 191, 36, ${0.15 + intensity * 0.2})`);
-      gradient.addColorStop(0.4, `rgba(217, 119, 6, ${0.06 + intensity * 0.1})`);
-      gradient.addColorStop(1, `rgba(180, 83, 9, 0)`);
-
-      ctx.beginPath();
-      ctx.arc(x, y, radius, 0, Math.PI * 2);
-      ctx.fillStyle = gradient;
-      ctx.fill();
-    });
-
-    ctx.globalCompositeOperation = 'source-over';
-
-    // ── Overlay on map ──
-    const boundsLiteral = L.latLngBounds(sw, ne);
-    const imgOverlay = L.imageOverlay(canvas.toDataURL(), boundsLiteral, { opacity: 0.92, interactive: false });
-
-    if (overlayRef.current) map.removeLayer(overlayRef.current);
-    overlayRef.current = imgOverlay;
-    imgOverlay.addTo(map);
-
-    return () => {
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-      }
-    };
-  }, [map, points, redrawTrigger]);
-
-  useEffect(() => {
-    if (!map) return;
-    const redraw = () => {
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-        setRedrawTrigger(prev => prev + 1);
-      }
-    };
-    map.on('moveend', redraw);
-    map.on('zoomend', redraw);
-    return () => {
-      map.off('moveend', redraw);
-      map.off('zoomend', redraw);
-    };
-  }, [map]);
-
-  return null;
+// ─── Cluster CSS Override ────────────────────────────────────────────────
+function ClusterStyles() {
+  return (
+    <style>{`
+      .mini-marker { background: none !important; border: none !important; }
+      .mini-cluster { background: none !important; border: none !important; }
+    `}</style>
+  );
 }
 
 // ─── Fit Bounds ──────────────────────────────────────────────────────────
@@ -227,7 +68,7 @@ function FitBounds({ points }: { points: MapPoint[] }) {
   return null;
 }
 
-// ─── Main MiniMap Component (Heatmap Only) ───────────────────────────────
+// ─── Main MiniMap Component (Pin Markers + Clustering) ───────────────────
 
 interface MapStats {
   totalProfiles: number;
@@ -342,8 +183,28 @@ export default function MiniOptoMap() {
         <TileLayer url={tileUrl} maxZoom={19} />
         <FitBounds points={points} />
 
-        {/* Vibrant density heatmap */}
-        <DensityHeatmapLayer points={points} />
+        {/* Pin markers with clustering */}
+        <ClusterStyles />
+        <MarkerClusterGroup
+          maxClusterRadius={50}
+          iconCreateFunction={createMiniClusterIcon}
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          zoomToBoundsOnClick={true}
+          chunkedLoading={true}
+        >
+          {points.map((p, idx) => (
+            <Marker
+              key={p.id || idx}
+              position={[p.lat, p.lng]}
+              icon={createMiniIcon(p.type)}
+            >
+              <Tooltip direction="top" offset={[0, -4]}>
+                <span className="text-xs font-semibold whitespace-nowrap">{p.name || p.type}</span>
+              </Tooltip>
+            </Marker>
+          ))}
+        </MarkerClusterGroup>
       </LeafletMap>
 
       {/* Top-left: Expansion stats */}
@@ -391,16 +252,12 @@ export default function MiniOptoMap() {
         </Link>
       </div>
 
-      {/* Top-right: Density legend (compact) */}
+      {/* Top-right: Pin legend (compact) */}
       <div className="absolute top-3 right-3 z-[400]">
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-lg shadow-sm border border-slate-200/40 dark:border-slate-700/40 px-2.5 py-1.5">
           <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Density</span>
-            <div className="flex items-center">
-              <div className="w-2 h-2 rounded-full bg-teal-600" />
-              <div className="w-2 h-2 rounded-full bg-teal-500 opacity-70 -ml-0.5" />
-              <div className="w-2 h-2 rounded-full bg-teal-400 opacity-40 -ml-0.5" />
-            </div>
+            <span className="text-[9px] font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider">Pins</span>
+            <MapPin className="w-3 h-3 text-teal-600 dark:text-teal-400" />
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { MapContainer as LeafletMap, TileLayer, Marker, Popup, useMap, Tooltip } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import MarkerClusterGroup from 'react-leaflet-cluster';
 import { BadgeCheck, ExternalLink, Building2, GraduationCap, Stethoscope, MapPin, X, MessageCircle, Star, Phone, Clock, Navigation, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link } from '../../context/NavigationContext';
@@ -76,10 +77,6 @@ export interface MapContainerProps {
   onZoomChange?: (zoom: number) => void;
 }
 
-// ─── Zoom thresholds ───────────────────────────────────────────────────────
-const CLUSTER_ZOOM_THRESHOLD = 4;  // Below this: show country cluster circles (global overview)
-// No MARKERS_ZOOM_THRESHOLD — individual pins show at all zooms
-
 // ─── Marker Colors ──────────────────────────────────────────────────────────
 
 const MARKER_COLORS: Record<string, string> = {
@@ -89,7 +86,7 @@ const MARKER_COLORS: Record<string, string> = {
   institution: '#059669',
 };
 
-// ─── Country Centroids (for clustering) ──────────────────────────────────
+// ─── Country Centroids (for reference) ──────────────────────────────────
 
 const COUNTRY_CENTROIDS: Record<string, { lat: number; lng: number }> = {
   'india': { lat: 20.5937, lng: 78.9629 },
@@ -171,18 +168,6 @@ const COUNTRY_CENTROIDS: Record<string, { lat: number; lng: number }> = {
   'cambodia': { lat: 12.5657, lng: 104.991 },
 };
 
-// ─── Country Cluster Type ──────────────────────────────────────────────────
-
-interface CountryCluster {
-  country: string;
-  lat: number;
-  lng: number;
-  pros: number;
-  students: number;
-  clinics: number;
-  total: number;
-}
-
 function isClinicType(type: string, source?: string): boolean {
   return type === 'clinic' || source === 'clinic';
 }
@@ -262,42 +247,64 @@ function createStudentIcon(size: number = 28, verified: boolean = false): L.DivI
   });
 }
 
-function createCountryClusterIcon(cluster: CountryCluster, size: number = 48): L.DivIcon {
-  const total = cluster.total;
-  const s = Math.min(size + Math.floor(total / 5), 70);
-  const fontSize = total > 100 ? 11 : total > 50 ? 12 : 14;
+// ─── Cluster Icon Creator ───────────────────────────────────────────────
 
-  let mainColor = '#0D9488';
-  if (cluster.students >= cluster.pros && cluster.students >= cluster.clinics) {
-    mainColor = '#D97706';
-  } else if (cluster.clinics >= cluster.pros && cluster.clinics >= cluster.students) {
-    mainColor = '#059669';
+function createClusterIcon(cluster: any): L.DivIcon {
+  const count = cluster.getChildCount();
+  let size = 40;
+  let bgColor = '#0D9488'; // teal default
+  let fontSize = 14;
+
+  if (count >= 100) {
+    size = 70;
+    fontSize = 16;
+  } else if (count >= 50) {
+    size = 60;
+    fontSize = 15;
+  } else if (count >= 10) {
+    size = 50;
+    fontSize = 14;
+  }
+
+  // Determine dominant type from child markers for color
+  const markers = cluster.getAllChildMarkers();
+  let pros = 0;
+  let students = 0;
+  let clinics = 0;
+  markers.forEach((m: any) => {
+    const profile = m.options?.profile;
+    if (profile) {
+      if (isClinicType(profile.type, profile.source)) clinics++;
+      else if (profile.type === 'student') students++;
+      else pros++;
+    }
+  });
+
+  if (students >= pros && students >= clinics) {
+    bgColor = '#D97706'; // amber
+  } else if (clinics >= pros && clinics >= students) {
+    bgColor = '#059669'; // emerald
   }
 
   return L.divIcon({
-    className: 'country-cluster-marker',
     html: `
       <div style="
-        position:relative;
-        width:${s}px;height:${s}px;
-        background:${mainColor};
+        width:${size}px;height:${size}px;
+        background:${bgColor};
         border:3px solid white;
         border-radius:50%;
-        display:flex;align-items:center;justify-content:center;flex-direction:column;
+        display:flex;align-items:center;justify-content:center;
         box-shadow:0 3px 14px rgba(0,0,0,0.4);
         font-weight:800;font-size:${fontSize}px;color:white;
         text-shadow:0 1px 2px rgba(0,0,0,0.3);
         font-family:system-ui,sans-serif;
       ">
-        <span>${total}</span>
-        <div style="position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:9px;font-weight:700;color:#475569;background:white;padding:2px 8px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.15);font-family:system-ui,sans-serif;">
-          ${cluster.country.length > 15 ? cluster.country.slice(0, 15) + '..' : cluster.country}
-        </div>
+        <span>${count}</span>
       </div>
     `,
-    iconSize: [s, s],
-    iconAnchor: [s / 2, s / 2],
-    popupAnchor: [0, -s / 2],
+    className: 'custom-cluster',
+    iconSize: L.point(size, size),
+    iconAnchor: L.point(size / 2, size / 2),
   });
 }
 
@@ -329,143 +336,6 @@ function getAvatarColor(name: string): string {
   ];
   const idx = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % gradients.length;
   return gradients[idx];
-}
-
-// ─── Heatmap Layer ───────────────────────────────────────────────────────────
-
-function HeatmapLayer({ points, visible, fadeOnZoom }: { points: MapProfile[]; visible: boolean; fadeOnZoom: boolean }) {
-  const map = useMap();
-  const overlayRef = useRef<L.Layer | null>(null);
-  const [redrawTrigger, setRedrawTrigger] = useState(0);
-
-  useEffect(() => {
-    if (!map || !visible || points.length === 0) {
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-      }
-      return;
-    }
-
-    const canvas = document.createElement('canvas');
-    canvas.width = 1200;
-    canvas.height = 800;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    const bounds = map.getBounds();
-    const ne = bounds.getNorthEast();
-    const sw = bounds.getSouthWest();
-
-    const lngSpan = ne.lng - sw.lng;
-    const latSpan = ne.lat - sw.lat;
-    // Guard against zero-span bounds which produce non-finite values
-    const safeLngSpan = Math.abs(lngSpan) < 1e-10 ? 1 : lngSpan;
-    const safeLatSpan = Math.abs(latSpan) < 1e-10 ? 1 : latSpan;
-    const toCanvasX = (lng: number) => ((lng - sw.lng) / safeLngSpan) * canvas.width;
-    const toCanvasY = (lat: number) => ((ne.lat - lat) / safeLatSpan) * canvas.height;
-
-    // Separate points by type for colored heatmap
-    const typeColors: Record<string, { r: number; g: number; b: number }> = {
-      professional: { r: 13, g: 148, b: 136 },   // teal
-      student: { r: 217, g: 119, b: 6 },         // amber
-      clinic: { r: 5, g: 150, b: 105 },           // emerald
-    };
-
-    const gridSize = 25;
-    const grid: Record<string, { professional: number; student: number; clinic: number }> = {};
-    points.forEach(p => {
-      if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return; // Skip invalid
-      const gx = Math.floor(toCanvasX(p.lng) / gridSize);
-      const gy = Math.floor(toCanvasY(p.lat) / gridSize);
-      const key = `${gx},${gy}`;
-      if (!grid[key]) grid[key] = { professional: 0, student: 0, clinic: 0 };
-      const t = (p.type === 'clinic' || p.source === 'clinic') ? 'clinic' : p.type || 'professional';
-      grid[key][t] = (grid[key][t] || 0) + 1;
-    });
-
-    // Find max density across all types
-    let maxDensity = 1;
-    Object.values(grid).forEach(g => {
-      const total = g.professional + g.student + g.clinic;
-      if (total > maxDensity) maxDensity = total;
-    });
-
-    const canvasW = canvas.width;
-    const canvasH = canvas.height;
-    const maxRadius = 50;
-
-    Object.entries(grid).forEach(([key, counts]) => {
-      const [gx, gy] = key.split(',').map(Number);
-      const x = gx * gridSize + gridSize / 2;
-      const y = gy * gridSize + gridSize / 2;
-
-      // Skip if coordinates are outside canvas or non-finite
-      if (x < -maxRadius || x > canvasW + maxRadius || y < -maxRadius || y > canvasH + maxRadius) return;
-      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
-
-      // Draw each type as a separate colored dot
-      Object.entries(counts).forEach(([type, count]) => {
-        if (count === 0) return;
-        const c = typeColors[type] || typeColors.professional;
-        const total = counts.professional + counts.student + counts.clinic;
-        const intensity = total / maxDensity;
-        const radius = Math.min(Math.max(12 + intensity * 35, 1), maxRadius);
-
-        if (!Number.isFinite(radius)) return;
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius);
-        gradient.addColorStop(0, `rgba(${c.r}, ${c.g}, ${c.b}, ${0.3 + intensity * 0.35})`);
-        gradient.addColorStop(0.5, `rgba(${c.r}, ${c.g}, ${c.b}, ${0.1 + intensity * 0.15})`);
-        gradient.addColorStop(1, `rgba(${c.r}, ${c.g}, ${c.b}, 0)`);
-
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-      });
-    });
-
-    const boundsLiteral = L.latLngBounds(sw, ne);
-    // Fade heatmap when zoomed in (markers visible)
-    const opacity = fadeOnZoom ? Math.max(0, 1 - (map.getZoom() - CLUSTER_ZOOM_THRESHOLD) * 0.25) : 0.75;
-    const imgOverlay = L.imageOverlay(canvas.toDataURL(), boundsLiteral, { opacity, interactive: false });
-
-    if (overlayRef.current) {
-      map.removeLayer(overlayRef.current);
-    }
-    overlayRef.current = imgOverlay;
-    imgOverlay.addTo(map);
-
-    return () => {
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-      }
-    };
-  }, [map, points, visible, fadeOnZoom, redrawTrigger]);
-
-  // Redraw on zoom/pan
-  useEffect(() => {
-    if (!map) return;
-    const redraw = () => {
-      // Force re-render by toggling a counter (handled by removing + re-adding overlay)
-      if (overlayRef.current) {
-        map.removeLayer(overlayRef.current);
-        overlayRef.current = null;
-        // The main effect will re-run on next render cycle
-        setRedrawTrigger(prev => prev + 1);
-      }
-    };
-    map.on('moveend', redraw);
-    map.on('zoomend', redraw);
-    return () => {
-      map.off('moveend', redraw);
-      map.off('zoomend', redraw);
-    };
-  }, [map]);
-
-  return null;
 }
 
 // ─── Detail Side Panel (Desktop) ───────────────────────────────────────────────
@@ -723,7 +593,7 @@ function ProfilePopup({ profile, onSelect }: { profile: MapProfile; onSelect: (p
 
 // ─── Legend ──────────────────────────────────────────────────────────────────
 
-function MapLegend({ showMarkers }: { showMarkers: boolean }) {
+function MapLegend() {
   return (
     <div className="absolute bottom-20 lg:bottom-6 right-3 z-[400] bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-2.5">
       <h4 className="text-[10px] font-bold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">Legend</h4>
@@ -759,11 +629,14 @@ function MapLegend({ showMarkers }: { showMarkers: boolean }) {
           </div>
           <span className="text-[11px] text-slate-600 dark:text-gray-400">Clinics</span>
         </div>
-        {showMarkers && (
-          <div className="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700">
-            <span className="text-[10px] text-slate-400 dark:text-gray-500 italic">Zoom in for details</span>
+        <div className="mt-1 pt-1 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-1.5">
+            <div className="w-4 h-4 rounded-full bg-teal-600 border-2 border-white shadow-sm flex items-center justify-center">
+              <span className="text-[6px] text-white font-bold">5</span>
+            </div>
+            <span className="text-[10px] text-slate-500 dark:text-gray-500">Cluster (zoom to expand)</span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -802,68 +675,26 @@ function ZoomTracker({ onZoomChange }: { onZoomChange?: (zoom: number) => void }
   return null;
 }
 
-// ─── Coordinate Detail Detection ───────────────────────────────────────
-// A "raw" point has lat/lng matching the country centroid (no city-level geocode)
-// A "detailed" point has unique city-level coordinates
+// ─── Cluster CSS (injected via style tag) ──────────────────────────────
 
-function isRawCoordinate(lat: number, lng: number, country: string): boolean {
-  const key = (country || '').toLowerCase().trim();
-  const centroid = COUNTRY_CENTROIDS[key];
-  if (!centroid) return false; // Unknown country → assume detailed
-  return Math.abs(lat - centroid.lat) < 0.05 && Math.abs(lng - centroid.lng) < 0.05;
-}
-
-// ─── Overlapping Marker Spread ─────────────────────────────────────────
-// Spreads markers that are too close together in a circular pattern
-
-function spreadOverlappingMarkers(points: MapProfile[], clusterRadius: number = 0.06): MapProfile[] {
-  if (points.length === 0) return points;
-
-  const used = new Set<string>();
-  const result: MapProfile[] = [];
-  const groups: MapProfile[][] = [];
-
-  for (let i = 0; i < points.length; i++) {
-    if (used.has(points[i].id)) continue;
-    const group: MapProfile[] = [points[i]];
-    used.add(points[i].id);
-
-    for (let j = i + 1; j < points.length; j++) {
-      if (used.has(points[j].id)) continue;
-      const dLat = Math.abs(points[i].lat - points[j].lat);
-      const dLng = Math.abs(points[i].lng - points[j].lng);
-      if (dLat < clusterRadius && dLng < clusterRadius) {
-        group.push(points[j]);
-        used.add(points[j].id);
+function ClusterStyles() {
+  return (
+    <style>{`
+      .custom-cluster {
+        background: none !important;
+        border: none !important;
       }
-    }
-
-    if (group.length > 1) {
-      groups.push(group);
-    } else {
-      result.push(group[0]);
-    }
-  }
-
-  // Spread each group in a circle
-  groups.forEach(group => {
-    const centerLat = group.reduce((s, p) => s + p.lat, 0) / group.length;
-    const centerLng = group.reduce((s, p) => s + p.lng, 0) / group.length;
-    const n = group.length;
-    // Dynamic radius: more points = bigger circle
-    const spreadRadius = Math.max(0.02, 0.008 * Math.sqrt(n));
-
-    group.forEach((p, idx) => {
-      const angle = (2 * Math.PI * idx) / n - Math.PI / 2;
-      result.push({
-        ...p,
-        lat: centerLat + spreadRadius * Math.cos(angle),
-        lng: centerLng + spreadRadius * Math.sin(angle),
-      });
-    });
-  });
-
-  return result;
+      .marker-cluster-small,
+      .marker-cluster-medium,
+      .marker-cluster-large {
+        background: none !important;
+      }
+      .custom-marker {
+        background: none !important;
+        border: none !important;
+      }
+    `}</style>
+  );
 }
 
 // ─── Main MapContainer Component ────────────────────────────────────────────
@@ -879,12 +710,7 @@ export default function MapContainer({
   centerOn,
   onZoomChange,
 }: MapContainerProps) {
-  const [currentZoom, setCurrentZoom] = useState(5);
-
-  // ─── Split points by type ─────────────────────────────────────────────
-  // Clinics: ALWAYS show as individual pins (never clustered)
-  // Detailed profiles: show as individual pins (unique city-level coordinates)
-  // Raw profiles: only cluster India's at low zoom; others show individually too
+  // ─── Filtering logic ─────────────────────────────────────────────
 
   const baseFilter = useCallback((p: MapProfile) => {
     if (!Number.isFinite(p.lat) || !Number.isFinite(p.lng)) return false;
@@ -902,102 +728,12 @@ export default function MapContainer({
     return true;
   }, [filterType, searchQuery]);
 
-  // Clinic pins — always individual, never clustered
-  const clinicPins = useMemo(() => {
+  // All individual pins: clinics + profiles + users — the clustering library handles grouping
+  const allIndividualPins = useMemo(() => {
     if (!data) return [];
-    return (data.clinics || []).filter(p => baseFilter(p) && Number.isFinite(p.lat) && Number.isFinite(p.lng));
+    const combined = [...(data.clinics || []), ...(data.profiles || []), ...(data.users || [])];
+    return combined.filter(p => baseFilter(p) && Number.isFinite(p.lat) && Number.isFinite(p.lng));
   }, [data, baseFilter]);
-
-  // Non-clinic profiles (professionals + students)
-  const profilePoints = useMemo(() => {
-    if (!data) return [];
-    const combined = [...data.profiles, ...data.users];
-    return combined.filter(baseFilter);
-  }, [data, baseFilter]);
-
-  // Split profiles into detailed vs raw
-  const { detailedPins, rawPins } = useMemo(() => {
-    const detailed: MapProfile[] = [];
-    const raw: MapProfile[] = [];
-    profilePoints.forEach(p => {
-      if (isRawCoordinate(p.lat, p.lng, p.country || '')) {
-        raw.push(p);
-      } else {
-        detailed.push(p);
-      }
-    });
-    return { detailedPins: detailed, rawPins: raw };
-  }, [profilePoints]);
-
-  // Split raw pins into India (needs spread due to many overlapping at centroid) vs others
-  const { indiaRawPins, otherRawPins } = useMemo(() => {
-    const india: MapProfile[] = [];
-    const other: MapProfile[] = [];
-    rawPins.forEach(p => {
-      const key = (p.country || '').toLowerCase().trim();
-      if (key === 'india') {
-        india.push(p);
-      } else {
-        other.push(p);
-      }
-    });
-    return { indiaRawPins: india, otherRawPins: other };
-  }, [rawPins]);
-
-  // Apply circular spread ONLY to India's raw pins (they all share same centroid)
-  const spreadIndiaRaw = useMemo(() => spreadOverlappingMarkers(indiaRawPins, 0.06), [indiaRawPins]);
-
-  // All individual markers = clinics + detailed + spread India raw + other countries raw (no spread)
-  const allIndividualPins = useMemo(() => [...clinicPins, ...detailedPins, ...spreadIndiaRaw, ...otherRawPins], [clinicPins, detailedPins, spreadIndiaRaw, otherRawPins]);
-
-  // Heatmap points: use original points — heatmap handles density via grid-based intensity
-  // No spread needed; overlapping raw coords just create stronger heat intensity
-  const heatmapPoints = useMemo(() => allIndividualPins, [allIndividualPins]);
-
-  // India-only cluster for raw members (shown at very low zoom as a count bubble)
-  const indiaCluster = useMemo(() => {
-    if (!data) return null;
-    const indiaRaw = rawPins.filter(p => {
-      const key = (p.country || '').toLowerCase().trim();
-      return key === 'india';
-    });
-    if (indiaRaw.length < 3) return null; // Only cluster if significant
-    const centroid = COUNTRY_CENTROIDS['india'];
-    let pros = 0, students = 0;
-    indiaRaw.forEach(p => {
-      if (p.type === 'student') students++;
-      else pros++;
-    });
-    return { country: 'India', lat: centroid.lat, lng: centroid.lng, pros, students, clinics: 0, total: indiaRaw.length };
-  }, [data, rawPins]);
-
-  // Country clusters for OTHER countries (non-India) — shown at low zoom for global overview
-  const otherCountryClusters = useMemo(() => {
-    if (!data) return [];
-    const countryMap = new Map<string, CountryCluster>();
-    // Use ALL non-clinic points to count per country (including detailed)
-    [...data.profiles, ...data.users].filter(baseFilter).forEach(p => {
-      const countryKey = (p.country || '').toLowerCase().trim();
-      if (!countryKey || countryKey === 'india') return; // Skip India (handled separately)
-      const centroid = COUNTRY_CENTROIDS[countryKey];
-      if (!centroid) return;
-      let cluster = countryMap.get(countryKey);
-      if (!cluster) {
-        cluster = { country: p.country || countryKey, lat: centroid.lat, lng: centroid.lng, pros: 0, students: 0, clinics: 0, total: 0 };
-        countryMap.set(countryKey, cluster);
-      }
-      const type = p.type === 'student' ? 'student' : 'professional';
-      if (type === 'student') cluster.students++;
-      else cluster.pros++;
-      cluster.total++;
-    });
-    return Array.from(countryMap.values()).filter(c => c.total >= 1).sort((a, b) => b.total - a.total);
-  }, [data, baseFilter]);
-
-  // Zoom-based visibility
-  const showCountryClusters = currentZoom < CLUSTER_ZOOM_THRESHOLD;
-  // Individual pins: always visible (no zoom restriction)
-  const showIndividualMarkers = true;
 
   const tileUrl = darkMode
     ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
@@ -1006,7 +742,7 @@ export default function MapContainer({
 
   const handleSelect = useCallback((profile: MapProfile) => { onSelectProfile(profile); }, [onSelectProfile]);
   const handleClose = useCallback(() => { onSelectProfile(null); }, [onSelectProfile]);
-  const handleZoomChange = useCallback((z: number) => { setCurrentZoom(z); onZoomChange?.(z); }, [onZoomChange]);
+  const handleZoomChange = useCallback((z: number) => { onZoomChange?.(z); }, [onZoomChange]);
 
   if (loading) {
     return (
@@ -1036,6 +772,7 @@ export default function MapContainer({
 
   return (
     <div className="relative w-full h-full">
+      <ClusterStyles />
       <LeafletMap
         center={[20, 78]}
         zoom={3}
@@ -1050,68 +787,40 @@ export default function MapContainer({
         <FlyToController target={centerOn} />
         <ZoomTracker onZoomChange={handleZoomChange} />
 
-        {/* Heatmap: uses spread coordinates to avoid diagonal blobs */}
-        <HeatmapLayer points={heatmapPoints} visible={true} fadeOnZoom={true} />
-
-        {/* India cluster bubble: only at very low zoom for raw members */}
-        {showCountryClusters && indiaCluster && (
-          <Marker
-            position={[indiaCluster.lat, indiaCluster.lng]}
-            icon={createCountryClusterIcon(indiaCluster)}
-          >
-            <Tooltip direction="top" offset={[0, -30]}>
-              <div className="text-xs">
-                <div className="font-bold text-gray-800">{indiaCluster.country}</div>
-                <div className="text-gray-500 mt-0.5">
-                  {indiaCluster.pros > 0 && <span className="text-teal-600">{indiaCluster.pros} Optometrists</span>}
-                  {indiaCluster.students > 0 && <span className="text-amber-600 ml-1.5">{indiaCluster.students} Students</span>}
-                </div>
-              </div>
-            </Tooltip>
-          </Marker>
-        )}
-
-        {/* Other country cluster circles: at low zoom for global overview */}
-        {showCountryClusters && otherCountryClusters.map(cluster => (
-          <Marker
-            key={`cluster-${cluster.country}`}
-            position={[cluster.lat, cluster.lng]}
-            icon={createCountryClusterIcon(cluster)}
-          >
-            <Tooltip direction="top" offset={[0, -30]}>
-              <div className="text-xs">
-                <div className="font-bold text-gray-800">{cluster.country}</div>
-                <div className="text-gray-500 mt-0.5">
-                  {cluster.pros > 0 && <span className="text-teal-600">{cluster.pros} Pros</span>}
-                  {cluster.students > 0 && <span className="text-amber-600 ml-1.5">{cluster.students} Students</span>}
-                </div>
-              </div>
-            </Tooltip>
-          </Marker>
-        ))}
-
-        {/* Individual markers: clinics + detailed profiles + spread India raw + other raw — ALWAYS visible */}
-        {allIndividualPins.map((profile, idx) => {
-          const isClinic = isClinicType(profile.type, profile.source);
-          return (
-            <Marker
-              key={`${profile.id}-${idx}`}
-              position={[profile.lat, profile.lng]}
-              icon={isClinic ? createClinicIcon(28, profile.verified) : profile.type === 'student' ? createStudentIcon(28, profile.verified) : createOptometristIcon(28, profile.verified)}
-            >
-              <Tooltip permanent={false} direction="top" offset={[0, -8]}>
-                <span className="text-xs font-semibold text-slate-800 dark:text-white whitespace-nowrap">{profile.name}</span>
-              </Tooltip>
-              <Popup maxWidth={300} minWidth={220}>
-                <ProfilePopup profile={profile} onSelect={handleSelect} />
-              </Popup>
-            </Marker>
-          );
-        })}
+        {/* All markers wrapped in MarkerClusterGroup for zoom-based clustering */}
+        <MarkerClusterGroup
+          maxClusterRadius={60}
+          iconCreateFunction={createClusterIcon}
+          spiderfyOnMaxZoom={true}
+          showCoverageOnHover={false}
+          zoomToBoundsOnClick={true}
+          chunkedLoading={true}
+        >
+          {allIndividualPins.map((profile) => {
+            const isClinic = isClinicType(profile.type, profile.source);
+            return (
+              <Marker
+                key={profile.id}
+                position={[profile.lat, profile.lng]}
+                icon={isClinic ? createClinicIcon(28, profile.verified) : profile.type === 'student' ? createStudentIcon(28, profile.verified) : createOptometristIcon(28, profile.verified)}
+                // Pass profile data to marker options so cluster icon can read type info
+                //@ts-expect-error leaflet marker options extension
+                profile={profile}
+              >
+                <Tooltip permanent={false} direction="top" offset={[0, -8]}>
+                  <span className="text-xs font-semibold text-slate-800 dark:text-white whitespace-nowrap">{profile.name}</span>
+                </Tooltip>
+                <Popup maxWidth={300} minWidth={220}>
+                  <ProfilePopup profile={profile} onSelect={handleSelect} />
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MarkerClusterGroup>
       </LeafletMap>
 
       {/* Legend */}
-      <MapLegend showMarkers={true} />
+      <MapLegend />
 
       {/* Detail Panel (desktop) */}
       <AnimatePresence>

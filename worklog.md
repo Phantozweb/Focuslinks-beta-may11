@@ -1,28 +1,25 @@
 ---
-Task ID: 1
+Task ID: 2
 Agent: main
-Task: Make feedback mandatory for getting certificate — popup approach
+Task: Replace Optomap heatmaps with pinpoint markers + zoom-based clustering
 
 Work Log:
-- Analyzed existing certificate claim flow in Webinar.tsx (two-step: feedback then certificate, with Step 2 locked)
-- Redesigned flow: certificate form is now always accessible, feedback popup appears only when user clicks "Claim Certificate" without having submitted feedback
-- Added state variables: showFeedbackPopup, popupFeedback, popupSubmitting
-- Updated handleCertificateClaim: shows popup if feedback not submitted, otherwise proceeds directly
-- Added submitCertificateClaim: actual claim logic (separated from popup trigger)
-- Added handlePopupFeedbackSubmit: submits feedback from popup, then auto-proceeds to claim certificate
-- Removed the two-step locked UI (Step 1 feedback + Step 2 locked certificate form)
-- Made certificate form always visible with name, email, membership ID, check eligibility, claim button
-- Added feedback notice below claim button: amber "Feedback is required" / emerald "Feedback submitted"
-- Added feedback popup modal with AnimatePresence, backdrop, textarea, "Submit & Claim Certificate" button
-- Added /api/check-feedback route.ts — server-side check if user already submitted feedback by email/membershipId
-- Added server-side enforcement in /api/submit-form — certificate-claim type requires feedbackSubmitted=true
-- Added check on page load: if user is logged in, automatically checks if they already submitted feedback for this webinar
-- Added X icon to lucide-react imports
-- Updated header description text
+- Explored entire MapContainer.tsx (1128 lines) and MiniOptoMap.tsx (423 lines)
+- Installed react-leaflet-cluster@4.1.3 for proper zoom-based marker clustering
+- Rewrote MapContainer.tsx: removed HeatmapLayer (custom canvas), removed manual country cluster circles, removed spreadOverlappingMarkers and isRawCoordinate functions
+- Added MarkerClusterGroup from react-leaflet-cluster wrapping all individual markers
+- Created createClusterIcon function: dynamic sizing by count (40-70px), colored by dominant type (teal/amber/emerald)
+- Added ClusterStyles component for CSS injection to hide default leaflet backgrounds
+- Kept all existing features: marker icons (optometrist/student/clinic SVG), DetailPanel, MobileBottomSheet, ProfilePopup, MapLegend, filtering, search
+- Updated MiniOptoMap.tsx: removed DensityHeatmapLayer, added small 8px colored circle markers + MarkerClusterGroup with mini cluster icons
+- Replaced "Density" legend with "Pins" legend on mini map
+- All lint checks pass, server running on port 3000
 
 Stage Summary:
-- Feedback is now mandatory for certificate claiming via popup approach
-- Server-side enforcement prevents bypassing the feedback requirement
-- Feedback status persists across page refreshes (checks server on load)
-- Certificate form is always accessible — no lock/dimming
-- All lint checks pass, server running on port 3000
+- Heatmaps completely removed from both main OptoMap and MiniOptoMap
+- Pinpoint markers now used everywhere with proper clustering
+- As users zoom out, pins merge into cluster bubbles showing total count
+- As users zoom in, clusters break apart into individual pins
+- Members without specific area/state/district naturally cluster together at country level
+- Members with details show as individual pinpoint markers
+- Click cluster to zoom in and expand; spiderfy at max zoom
