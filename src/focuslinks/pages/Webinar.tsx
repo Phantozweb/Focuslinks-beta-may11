@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from '../../context/NavigationContext';
-import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap } from 'lucide-react';
+import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useProfiles } from '../../hooks/useProfiles';
 import { trackEvent } from '@/lib/analytics';
@@ -97,7 +97,12 @@ export default function Webinar() {
   const [certEligibility, setCertEligibility] = useState<{ eligible: boolean; matchedBy?: string; source?: string; error?: string } | null>(null);
   const [certVerifying, setCertVerifying] = useState(false);
 
-  /* user from localStorage */
+  /* feedback popup state */
+  const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
+  const [popupFeedback, setPopupFeedback] = useState('');
+  const [popupSubmitting, setPopupSubmitting] = useState(false);
+
+  /* user from localStorage + check feedback status on load */
   useEffect(() => {
     fetchListProfiles();
     const storedUser = localStorage.getItem('fl_user');
@@ -112,6 +117,22 @@ export default function Webinar() {
         setCertName(user.name || '');
         setCertEmail(user.email || '');
         setCertMembershipId(user.membershipId || '');
+
+        // Check if user already submitted feedback for this webinar
+        if (user.email || user.membershipId) {
+          fetch('/api/check-feedback', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ slug: WEBINAR_SLUG, email: user.email, membershipId: user.membershipId }),
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.submitted) {
+                setFeedbackSubmitted(true);
+              }
+            })
+            .catch(() => { /* ignore */ });
+        }
       } catch { /* ignore */ }
     }
   }, [fetchListProfiles]);
@@ -285,17 +306,8 @@ export default function Webinar() {
     }
   }, [certEmail, certMembershipId, certName]);
 
-  /* certificate claim handler */
-  const handleCertificateClaim = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Gate: Feedback must be submitted before claiming certificate
-    if (!feedbackSubmitted) {
-      toast.error('Please submit your feedback first before claiming the certificate.');
-      return;
-    }
-
-    // Step 1: Verify eligibility first
+  /* actual certificate claim logic (called after feedback is confirmed) */
+  const submitCertificateClaim = async () => {
     setCertSubmitting(true);
     try {
       const verifyRes = await fetch('/api/verify-certificate', {
@@ -312,7 +324,7 @@ export default function Webinar() {
         return;
       }
 
-      // Step 2: If eligible, submit the claim
+      // If eligible, submit the claim
       const res = await fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -326,12 +338,58 @@ export default function Webinar() {
           flVerified: certFlVerified,
           matchedBy: verifyData.matchedBy,
           source: verifyData.source,
+          feedbackSubmitted: true,
         }),
       });
       if (res.ok) { setCertSubmitted(true); toast.success('Certificate claimed successfully!'); }
       else { const d = await res.json(); toast.error(d.error || 'Failed to claim certificate'); }
     } catch { toast.error('Unexpected error. Please try again.'); }
     finally { setCertSubmitting(false); }
+  };
+
+  /* certificate claim handler — shows feedback popup if needed */
+  const handleCertificateClaim = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // If feedback not yet submitted, show the popup first
+    if (!feedbackSubmitted) {
+      setShowFeedbackPopup(true);
+      return;
+    }
+
+    // Feedback already done, proceed directly
+    await submitCertificateClaim();
+  };
+
+  /* handle feedback submission from popup */
+  const handlePopupFeedbackSubmit = async () => {
+    if (!popupFeedback.trim()) {
+      toast.error('Please write some feedback before proceeding.');
+      return;
+    }
+    setPopupSubmitting(true);
+    try {
+      const res = await fetch('/api/submit-form', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: formData.name, email: formData.email, membershipId: formData.membershipId, feedback: popupFeedback }),
+      });
+      if (res.ok) {
+        setFeedbackSubmitted(true);
+        setFeedback(popupFeedback);
+        setShowFeedbackPopup(false);
+        toast.success('Feedback submitted! Claiming your certificate…');
+        // Now proceed with the certificate claim
+        await submitCertificateClaim();
+      } else {
+        const d = await res.json();
+        toast.error(d.error || 'Failed to submit feedback');
+      }
+    } catch {
+      toast.error('Unexpected error submitting feedback.');
+    } finally {
+      setPopupSubmitting(false);
+    }
   };
 
   /* join meeting handler */
@@ -634,11 +692,11 @@ export default function Webinar() {
                         </div>
                         <div>
                           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Claim Your Attendance Certificate</h2>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">Share your feedback, then enter your details to claim your certificate of participation.</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mt-0.5">Enter your details below to claim your certificate of participation.</p>
                         </div>
                       </div>
 
-                      {/* Form or Success — Two-step: Feedback required before certificate claim */}
+                      {/* Form or Success — Certificate Claim (always accessible) */}
                       {certSubmitted ? (
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
                           className="flex flex-col items-center gap-3 py-6 text-center"
@@ -655,148 +713,98 @@ export default function Webinar() {
                       ) : (
                         <form onSubmit={handleCertificateClaim} className="space-y-4">
 
-                          {/* ── Step 1: Feedback (mandatory) ── */}
-                          <div className={`rounded-xl border p-4 transition-colors ${feedbackSubmitted ? 'border-emerald-200 dark:border-emerald-800/30 bg-emerald-50/50 dark:bg-emerald-900/10' : 'border-violet-200 dark:border-violet-800/30 bg-violet-50/50 dark:bg-violet-900/10'}`}>
-                            <div className="flex items-center gap-2.5 mb-3">
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${feedbackSubmitted ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-violet-100 dark:bg-violet-900/40'}`}>
-                                {feedbackSubmitted ? <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Star className="w-4 h-4 text-violet-600 dark:text-violet-400" />}
+                          {/* Certificate Claim Form — always visible */}
+                          <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-800/30 bg-white/50 dark:bg-slate-900/30 p-4">
+                            <div className="space-y-3">
+                              {/* Name */}
+                              <div className="relative">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <input type="text" required placeholder="Full Name *" value={certName} onChange={e => { setCertName(e.target.value); setCertEligibility(null); }}
+                                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
                               </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="text-sm font-bold text-slate-800 dark:text-white">Step 1: Share Your Feedback</h4>
-                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${feedbackSubmitted ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-400'}`}>
-                                    {feedbackSubmitted ? 'Done' : 'Required'}
-                                  </span>
-                                </div>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Your feedback helps us improve future sessions. This is required to claim your certificate.</p>
-                              </div>
-                            </div>
-                            {feedbackSubmitted ? (
-                              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
-                                <CheckCircle2 className="w-4 h-4 shrink-0" /> Thank you for your feedback! You can now claim your certificate.
-                              </div>
-                            ) : (
-                              <div className="space-y-3">
-                                <textarea required rows={3} placeholder="How was the session? What did you learn? Any suggestions?" value={feedback} onChange={e => setFeedback(e.target.value)}
-                                  className="w-full px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500/50 transition-all resize-none placeholder:text-slate-400" />
-                                <button type="button" onClick={handleFeedbackSubmit} disabled={isSubmitting || !feedback.trim()}
-                                  className="w-full py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white rounded-xl font-semibold text-sm transition-colors flex items-center justify-center gap-2"
-                                >
-                                  {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><Send className="w-4 h-4" /> Submit Feedback</>}
-                                </button>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Divider with step indicator */}
-                          <div className="flex items-center gap-3">
-                            <div className={`h-px flex-1 ${feedbackSubmitted ? 'bg-emerald-200 dark:bg-emerald-800/40' : 'bg-slate-200 dark:bg-slate-700'}`} />
-                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 transition-colors ${feedbackSubmitted ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
-                              {feedbackSubmitted ? <CheckCircle2 className="w-4 h-4" /> : '2'}
-                            </div>
-                            <div className={`h-px flex-1 ${feedbackSubmitted ? 'bg-emerald-200 dark:bg-emerald-800/40' : 'bg-slate-200 dark:bg-slate-700'}`} />
-                          </div>
-
-                          {/* ── Step 2: Certificate Claim ── */}
-                          <div className={`rounded-xl border p-4 transition-colors ${feedbackSubmitted ? 'border-emerald-200/60 dark:border-emerald-800/30 bg-white/50 dark:bg-slate-900/30' : 'border-slate-200 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-900/20 opacity-60'}`}>
-                            <div className="flex items-center gap-2.5 mb-3">
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${feedbackSubmitted ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-slate-100 dark:bg-slate-800'}`}>
-                                {feedbackSubmitted ? <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <Lock className="w-4 h-4 text-slate-400 dark:text-slate-500" />}
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-slate-800 dark:text-white">Step 2: Claim Certificate</h4>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                                  {feedbackSubmitted ? 'Enter your details below to verify attendance and claim your certificate.' : 'Submit feedback above to unlock certificate claiming.'}
-                                </p>
-                              </div>
-                            </div>
-
-                            {!feedbackSubmitted && (
-                              <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs">
-                                <Lock className="w-3.5 h-3.5 shrink-0" /> Please submit your feedback first to unlock this step.
-                              </div>
-                            )}
-
-                            {feedbackSubmitted && (
-                              <div className="space-y-3">
-                                {/* Name */}
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Email */}
                                 <div className="relative">
-                                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                  <input type="text" required placeholder="Full Name *" value={certName} onChange={e => { setCertName(e.target.value); setCertEligibility(null); }}
+                                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                  <input type="email" placeholder="Email Address" value={certEmail} onChange={e => { setCertEmail(e.target.value); setCertEligibility(null); }}
                                     className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
                                 </div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                  {/* Email */}
-                                  <div className="relative">
-                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                    <input type="email" placeholder="Email Address" value={certEmail} onChange={e => { setCertEmail(e.target.value); setCertEligibility(null); }}
-                                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all placeholder:text-slate-400" />
-                                  </div>
-                                  {/* FL Membership ID */}
-                                  <div className="relative">
-                                    <ShieldCheck className={`absolute left-3 top-3 w-4 h-4 transition-colors ${certFlVerified === true ? 'text-emerald-500' : certFlVerified === false ? 'text-red-400' : 'text-slate-400'}`} />
-                                    <input type="text" placeholder="FL Membership ID" value={certMembershipId} onChange={e => { setCertMembershipId(e.target.value); setCertEligibility(null); }}
-                                      className={`w-full pl-9 pr-10 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-sm outline-none transition-all placeholder:text-slate-400 ${certFlVerified === true ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-500/50' : certFlVerified === false ? 'border-red-300 focus:ring-2 focus:ring-red-400/50' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'}`}
-                                    />
-                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                      {certFlVerifying && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
-                                      {certFlVerified === true && <BadgeCheck className="w-4 h-4 text-emerald-500" />}
-                                      {certFlVerified === false && <AlertCircle className="w-4 h-4 text-red-400" />}
-                                    </div>
+                                {/* FL Membership ID */}
+                                <div className="relative">
+                                  <ShieldCheck className={`absolute left-3 top-3 w-4 h-4 transition-colors ${certFlVerified === true ? 'text-emerald-500' : certFlVerified === false ? 'text-red-400' : 'text-slate-400'}`} />
+                                  <input type="text" placeholder="FL Membership ID" value={certMembershipId} onChange={e => { setCertMembershipId(e.target.value); setCertEligibility(null); }}
+                                    className={`w-full pl-9 pr-10 py-2.5 rounded-xl border bg-white dark:bg-slate-900 text-sm outline-none transition-all placeholder:text-slate-400 ${certFlVerified === true ? 'border-emerald-400 focus:ring-2 focus:ring-emerald-500/50' : certFlVerified === false ? 'border-red-300 focus:ring-2 focus:ring-red-400/50' : 'border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50'}`}
+                                  />
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    {certFlVerifying && <Loader2 className="w-4 h-4 animate-spin text-slate-400" />}
+                                    {certFlVerified === true && <BadgeCheck className="w-4 h-4 text-emerald-500" />}
+                                    {certFlVerified === false && <AlertCircle className="w-4 h-4 text-red-400" />}
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Provide at least your email or Membership ID so we can verify your attendance.</p>
-                                {certFlVerified === true && certFlMemberInfo && (
-                                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
-                                    className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
+                              </div>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500 -mt-1">Provide at least your email or Membership ID so we can verify your attendance.</p>
+                              {certFlVerified === true && certFlMemberInfo && (
+                                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}
+                                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
+                                >
+                                  <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                  <span className="text-xs text-emerald-700 dark:text-emerald-300">Verified: <strong>{certFlMemberInfo.name}</strong> — {certFlMemberInfo.title}</span>
+                                </motion.div>
+                              )}
+
+                              {/* Check Eligibility Button */}
+                              <button type="button" onClick={verifyCertificateEligibility} disabled={certVerifying || (!certEmail.trim() && !certMembershipId.trim() && !certName.trim())}
+                                className="w-full py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                              >
+                                {certVerifying ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : <><ShieldCheck className="w-4 h-4" /> Check Eligibility</>}
+                              </button>
+
+                              {/* Eligibility Result */}
+                              <AnimatePresence>
+                                {certEligibility && certEligibility.eligible && (
+                                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                    className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
                                   >
-                                    <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                    <span className="text-xs text-emerald-700 dark:text-emerald-300">Verified: <strong>{certFlMemberInfo.name}</strong> — {certFlMemberInfo.title}</span>
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                                    <div>
+                                      <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Eligible for certificate!</p>
+                                      {certEligibility.source && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">Status: {certEligibility.source}</p>}
+                                      {certEligibility.matchedBy && <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 mt-0.5">Matched by: {certEligibility.matchedBy === 'email' ? 'Email' : certEligibility.matchedBy === 'membershipId' ? 'Membership ID' : 'Name'}</p>}
+                                    </div>
                                   </motion.div>
                                 )}
+                                {certEligibility && !certEligibility.eligible && (
+                                  <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
+                                    className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30"
+                                  >
+                                    <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+                                    <div>
+                                      <p className="text-xs font-bold text-red-700 dark:text-red-300">Not eligible</p>
+                                      <p className="text-[11px] text-red-600 dark:text-red-400 mt-0.5">{certEligibility.error || 'No booking or attendance record found with your details.'}</p>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
 
-                                {/* Check Eligibility Button */}
-                                <button type="button" onClick={verifyCertificateEligibility} disabled={certVerifying || (!certEmail.trim() && !certMembershipId.trim() && !certName.trim())}
-                                  className="w-full py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2"
-                                >
-                                  {certVerifying ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking…</> : <><ShieldCheck className="w-4 h-4" /> Check Eligibility</>}
-                                </button>
+                              <button type="submit" disabled={certSubmitting}
+                                className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-70 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                              >
+                                {certSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying & Claiming…</> : <><GraduationCap className="w-4 h-4" /> Claim Certificate</>}
+                              </button>
 
-                                {/* Eligibility Result */}
-                                <AnimatePresence>
-                                  {certEligibility && certEligibility.eligible && (
-                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                      className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/30"
-                                    >
-                                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                                      <div>
-                                        <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Eligible for certificate!</p>
-                                        {certEligibility.source && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">Status: {certEligibility.source}</p>}
-                                        {certEligibility.matchedBy && <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70 mt-0.5">Matched by: {certEligibility.matchedBy === 'email' ? 'Email' : certEligibility.matchedBy === 'membershipId' ? 'Membership ID' : 'Name'}</p>}
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                  {certEligibility && !certEligibility.eligible && (
-                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}
-                                      className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30"
-                                    >
-                                      <AlertCircle className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
-                                      <div>
-                                        <p className="text-xs font-bold text-red-700 dark:text-red-300">Not eligible</p>
-                                        <p className="text-[11px] text-red-600 dark:text-red-400 mt-0.5">{certEligibility.error || 'No booking or attendance record found with your details.'}</p>
-                                      </div>
-                                    </motion.div>
-                                  )}
-                                </AnimatePresence>
+                              {/* Feedback notice below Claim button */}
+                              {feedbackSubmitted ? (
+                                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300 text-xs font-medium">
+                                  <CheckCircle2 className="w-4 h-4 shrink-0" /> Feedback submitted — your certificate will be issued upon verification.
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/15 text-amber-700 dark:text-amber-300 text-xs font-medium">
+                                  <MessageSquare className="w-4 h-4 shrink-0" /> Feedback is required before your certificate can be issued.
+                                </div>
+                              )}
 
-                                <button type="submit" disabled={certSubmitting}
-                                  className="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-70 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-                                >
-                                  {certSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying & Claiming…</> : <><GraduationCap className="w-4 h-4" /> Claim Certificate</>}
-                                </button>
-                                <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">We verify your booking or attendance record before issuing the certificate. You can use your email, Membership ID, or name for verification.</p>
-                              </div>
-                            )}
+                              <p className="text-center text-[10px] text-slate-400 dark:text-slate-500">We verify your booking or attendance record before issuing the certificate. You can use your email, Membership ID, or name for verification.</p>
+                            </div>
                           </div>
                         </form>
                       )}
@@ -1018,6 +1026,72 @@ export default function Webinar() {
           </div>
         </section>
       </div>
+
+      {/* Feedback Popup Modal */}
+      <AnimatePresence>
+        {showFeedbackPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+            onClick={() => { if (!popupSubmitting) setShowFeedbackPopup(false); }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => { if (!popupSubmitting) setShowFeedbackPopup(false); }}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="p-6 sm:p-8">
+                {/* Header */}
+                <div className="flex items-center gap-3 mb-2 pr-8">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Share Your Feedback</h3>
+                </div>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                  Your feedback is required to receive your certificate. Let us know how the session was!
+                </p>
+
+                {/* Textarea */}
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="How was the session? What did you learn? Any suggestions?"
+                  value={popupFeedback}
+                  onChange={e => setPopupFeedback(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4"
+                />
+
+                {/* Submit button */}
+                <button
+                  onClick={handlePopupFeedbackSubmit}
+                  disabled={popupSubmitting || !popupFeedback.trim()}
+                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                >
+                  {popupSubmitting ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+                  ) : (
+                    <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

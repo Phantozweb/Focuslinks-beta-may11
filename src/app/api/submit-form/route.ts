@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
       }
 
       if (body.type === 'certificate-claim') {
+        // Server-side enforcement: verify feedback was submitted before allowing certificate claim
+        if (!body.feedbackSubmitted) {
+          return NextResponse.json(
+            { success: false, error: 'Feedback is required before claiming a certificate. Please submit your feedback first.' },
+            { status: 400 }
+          );
+        }
         typeFolder = 'claim';
         const membershipIdStr = body.membershipId ? `_${body.membershipId}` : '';
         filename = `${entryId}${membershipIdStr}.json`;
