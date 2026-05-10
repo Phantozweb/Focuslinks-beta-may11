@@ -1,6 +1,7 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useEffect, type ReactNode } from 'react';
+import { useSyncExternalStore } from 'react';
 
 interface NavigationContextType {
   currentPath: string;
@@ -14,37 +15,51 @@ const NavigationContext = createContext<NavigationContextType>({
   goBack: () => {},
 });
 
-function getInitialPath(): string {
-  if (typeof window !== 'undefined') {
-    // Migrate from hash routing: if there's a hash path, use it then clean the URL
-    const hash = window.location.hash.replace('#', '');
-    if (hash && hash !== '/') {
-      // Replace the hash URL with a clean path
-      const cleanUrl = window.location.origin + window.location.pathname + hash;
-      window.history.replaceState(null, '', cleanUrl);
-      return hash;
-    }
-    return window.location.pathname || '/';
-  }
+// ── External browser-path store (useSyncExternalStore compatible) ──
+const pathListeners = new Set<() => void>();
+
+function emitChange() {
+  pathListeners.forEach((l) => l());
+}
+
+function subscribe(callback: () => void): () => void {
+  pathListeners.add(callback);
+  const onPopState = () => emitChange();
+  window.addEventListener('popstate', onPopState);
+  return () => {
+    pathListeners.delete(callback);
+    window.removeEventListener('popstate', onPopState);
+  };
+}
+
+function getSnapshot(): string {
+  return window.location.pathname || '/';
+}
+
+function getServerSnapshot(): string {
   return '/';
 }
 
-export function NavigationProvider({ children }: { children: ReactNode }) {
-  const [currentPath, setCurrentPath] = useState(getInitialPath);
+// ── Hash-route migration (one-time) ──
+let hashMigrated = false;
 
+export function NavigationProvider({ children }: { children: ReactNode }) {
+  const currentPath = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+
+  // Migrate legacy hash routes once on mount
   useEffect(() => {
-    // Listen for browser back/forward navigation
-    const handlePopState = () => {
-      const path = window.location.pathname || '/';
-      setCurrentPath(path);
-    };
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    if (hashMigrated) return;
+    hashMigrated = true;
+    const hash = window.location.hash.replace('#', '');
+    if (hash && hash !== '/') {
+      window.history.replaceState(null, '', hash);
+      emitChange(); // notify store subscribers
+    }
   }, []);
 
   const navigate = useCallback((path: string) => {
     window.history.pushState(null, '', path);
-    setCurrentPath(path);
+    emitChange();
     window.scrollTo(0, 0);
   }, []);
 
@@ -71,19 +86,25 @@ export function useLocation() {
 export function useParams() {
   const ctx = useContext(NavigationContext);
   const segments = ctx.currentPath.split('/').filter(Boolean);
-  return { 
-    slug: segments[1] || '', 
+  return {
+    slug: segments[1] || '',
     id: segments[1] || '',
-    '*': segments.slice(1).join('/')
+    '*': segments.slice(1).join('/'),
   };
 }
 
-export function Link({ to, children, className, onClick, ...props }: {
+export function Link({
+  to,
+  children,
+  className,
+  onClick,
+  ...props
+}: {
   to: string;
   children: ReactNode;
   className?: string;
   onClick?: (e: React.MouseEvent) => void;
-  [key: string]: any;
+  [key: string]: unknown;
 }) {
   const { navigate } = useContext(NavigationContext);
 

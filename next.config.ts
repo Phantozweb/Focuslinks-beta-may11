@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [
-        // Skip API routes and static files, rewrite everything else to /
         {
           source: '/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-*).*)',
           destination: '/',

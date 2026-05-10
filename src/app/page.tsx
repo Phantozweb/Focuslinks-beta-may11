@@ -68,6 +68,7 @@ const OptoMap = lazy(() => import('@/focuslinks/pages/OptoMap'));
 const HomePage = lazy(() => import('@/focuslinks/pages/HomePage'));
 const ConnectionsPage = lazy(() => import('@/focuslinks/pages/Connections'));
 const ProfessionalsDirectory = lazy(() => import('@/focuslinks/pages/ProfessionalsDirectory'));
+const CertificateEditor = lazy(() => import('@/focuslinks/pages/CertificateEditor'));
 
 function PageLoader() {
   return (
@@ -153,6 +154,7 @@ function Router() {
     '/connections': ConnectionsPage,
     '/professionals': ProfessionalsDirectory,
     '/beyond-orthok': Webinar,
+    '/certificate': CertificateEditor,
   }), []);
 
   let PageComponent: React.LazyExoticComponent<React.ComponentType> | null = null;
