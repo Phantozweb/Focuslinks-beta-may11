@@ -127,7 +127,10 @@ export default function Webinar() {
         setCertMembershipId(user.membershipId || '');
 
         // Check if user already submitted feedback for this webinar
-        if (user.email || user.membershipId) {
+        const feedbackKey = `fl_feedback_${WEBINAR_SLUG}`;
+        if (localStorage.getItem(feedbackKey) === 'true') {
+          setFeedbackSubmitted(true);
+        } else if (user.email || user.membershipId) {
           fetch('/api/check-feedback', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -137,6 +140,7 @@ export default function Webinar() {
             .then(data => {
               if (data.submitted) {
                 setFeedbackSubmitted(true);
+                localStorage.setItem(feedbackKey, 'true');
               }
             })
             .catch(() => { /* ignore */ });
@@ -233,8 +237,8 @@ export default function Webinar() {
     e.preventDefault(); setIsSubmitting(true);
     try {
       const res = await fetch('/api/submit-form', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: formData.name, email: formData.email, membershipId: formData.membershipId, feedback }) });
-      if (res.ok) { setFeedbackSubmitted(true); toast.success('Feedback submitted!'); }
-      else { const d = await res.json(); setErrorMessage(d.error || 'Failed'); }
+      if (res.ok) { setFeedbackSubmitted(true); localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true'); toast.success('Feedback submitted!'); }
+      else { const d = await res.json(); if (d.alreadyExists) { setFeedbackSubmitted(true); localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true'); toast.info('Feedback already recorded.'); } else { setErrorMessage(d.error || 'Failed'); } }
     } catch { setErrorMessage('Unexpected error.'); }
     finally { setIsSubmitting(false); }
   };
@@ -377,6 +381,12 @@ export default function Webinar() {
   const handleCertificateClaim = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // If feedback and cert already submitted, show cert download popup directly
+    if (feedbackSubmitted && certSubmitted && certImageUrl) {
+      setShowCertDownloadPopup(true);
+      return;
+    }
+
     // If feedback not yet submitted, show the popup first
     if (!feedbackSubmitted) {
       setShowFeedbackPopup(true);
@@ -394,20 +404,18 @@ export default function Webinar() {
   };
 
   /* handle feedback submission from popup */
-  const handlePopupFeedbackSubmit = async () => {
-    if (!popupFeedback.trim()) {
-      toast.error('Please write some feedback before proceeding.');
-      return;
-    }
+  const handlePopupFeedbackSubmit = async (forceFeedback?: string) => {
+    const feedbackText = forceFeedback || popupFeedback.trim() || 'No detailed feedback provided';
     setPopupSubmitting(true);
     try {
       const res = await fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: certName, email: certEmail, membershipId: certMembershipId, feedback: popupFeedback }),
+        body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: certName, email: certEmail, membershipId: certMembershipId, feedback: feedbackText }),
       });
       if (res.ok) {
         setFeedbackSubmitted(true);
+        localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true');
         setFeedback(popupFeedback);
         setShowFeedbackPopup(false);
         toast.success('Feedback submitted! Claiming your certificate…');
@@ -418,6 +426,7 @@ export default function Webinar() {
         // If feedback already exists (duplicate), treat as already submitted and proceed
         if (d.alreadyExists) {
           setFeedbackSubmitted(true);
+          localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true');
           setShowFeedbackPopup(false);
           toast.info('Feedback already recorded. Claiming your certificate…');
           await submitCertificateClaim();
@@ -1164,16 +1173,15 @@ export default function Webinar() {
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">Share Your Feedback</h3>
                 </div>
                 <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                  Your feedback is required to receive your certificate. Let us know how the session was!
+                  Share your thoughts on the session! You can also skip this step and claim your certificate directly.
                 </p>
 
                 {/* Form wrapping textarea and submit for Enter key support */}
                 <form onSubmit={handlePopupFeedbackSubmitForm}>
                   {/* Textarea */}
                   <textarea
-                    required
                     rows={4}
-                    placeholder="How was the session? What did you learn? Any suggestions?"
+                    placeholder="How was the session? What did you learn? Any suggestions? (optional)"
                     value={popupFeedback}
                     onChange={e => setPopupFeedback(e.target.value)}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4"
@@ -1182,7 +1190,7 @@ export default function Webinar() {
                   {/* Submit button */}
                   <button
                     type="submit"
-                    disabled={popupSubmitting || !popupFeedback.trim()}
+                    disabled={popupSubmitting}
                     className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
                   >
                     {popupSubmitting ? (
@@ -1190,6 +1198,16 @@ export default function Webinar() {
                     ) : (
                       <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
                     )}
+                  </button>
+
+                  {/* Skip Feedback button */}
+                  <button
+                    type="button"
+                    disabled={popupSubmitting}
+                    onClick={() => handlePopupFeedbackSubmit('No detailed feedback provided')}
+                    className="w-full mt-2 text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors py-1"
+                  >
+                    Skip feedback & claim certificate
                   </button>
                 </form>
               </div>

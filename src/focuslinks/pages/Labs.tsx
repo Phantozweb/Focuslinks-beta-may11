@@ -1,6 +1,6 @@
 'use client';
 import { Link } from '../../context/NavigationContext';
-import { Search, Camera, Eye, ArrowRight, Smartphone, Sparkles, AlertTriangle, Beaker, Lock, Zap, Globe } from 'lucide-react';
+import { Search, ArrowRight, Smartphone, Sparkles, AlertTriangle, Beaker, Lock, Zap, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import SEO from '../components/SEO';
@@ -32,32 +32,6 @@ const tools = [
     tag: 'Research',
     tagColor: 'text-emerald-500'
   },
-  {
-    id: 'ipd-measure',
-    title: 'IPD Measure Pro',
-    description: 'An AI-powered tool to accurately measure interpupillary distance using your webcam. Get precise measurements for lens fitting and frame selection.',
-    icon: Camera,
-    gradient: 'from-purple-500 to-violet-500',
-    gradientBg: 'from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30',
-    path: '/labs/ipd-measure',
-    status: 'Maintenance',
-    statusColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
-    tag: 'Temporarily Unavailable',
-    tagColor: 'text-slate-400'
-  },
-  {
-    id: 'rapd-simulator',
-    title: 'RAPD Simulator Practice',
-    description: 'Practice the swinging flashlight test to detect Relative Afferent Pupillary Defects. Master this essential clinical skill with interactive scenarios.',
-    icon: Eye,
-    gradient: 'from-amber-500 to-yellow-500',
-    gradientBg: 'from-amber-50 to-yellow-50 dark:from-amber-950/30 dark:to-yellow-950/30',
-    path: '/labs/rapd-simulator',
-    status: 'Maintenance',
-    statusColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
-    tag: 'Temporarily Unavailable',
-    tagColor: 'text-slate-400'
-  }
 ];
 
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {

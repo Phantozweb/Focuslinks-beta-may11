@@ -195,31 +195,10 @@ export default function GettingStartedModal() {
   }
 
   /* ------------------------------------------------------------------ */
-  /*  FAB (Floating Action Button) - Only after first auto-open          */
+  /*  FAB (Floating Action Button) — Removed to avoid duplicate CTA      */
+  /*  The navbar banner "Get Started" is the single entry point.         */
   /* ------------------------------------------------------------------ */
-  const fab = (
-    <AnimatePresence>
-      {hasAutoOpened && !isOpen && (
-        <motion.button
-          onClick={handleOpen}
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          transition={{
-            type: 'spring',
-            stiffness: 220,
-            damping: 20,
-          }}
-          aria-label="Getting started guide"
-          className="fixed bottom-6 left-6 z-[90] w-14 h-14 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg shadow-slate-900/30 dark:shadow-white/10 flex items-center justify-center hover:scale-110 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white md:hidden"
-        >
-          {/* Subtle breathing ring */}
-          <span className="absolute inset-0 rounded-full animate-fab-ring bg-slate-900/15 dark:bg-white/15" />
-          <Sparkles className="w-6 h-6 relative z-10" />
-        </motion.button>
-      )}
-    </AnimatePresence>
-  );
+  const fab = null;
 
   /* ------------------------------------------------------------------ */
   /*  Modal overlay + content                                            */

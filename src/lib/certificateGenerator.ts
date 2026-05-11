@@ -235,14 +235,14 @@ export async function downloadCertificate(
   name: string,
   filename?: string
 ): Promise<string> {
-  const dataUrl = await generateCertificate(name);
-  const safeFilename = filename || `certificate-${name.replace(/\s+/g, '-').toLowerCase()}.png`;
+  const dataUrl = await generateCertificateJPEG(name);
+  const safeFilename = filename || `certificate-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
   downloadDataUrl(dataUrl, safeFilename);
   return dataUrl;
 }
 
 /**
- * Downloads an already-generated data URL as a certificate PNG.
+ * Downloads an already-generated data URL as a certificate JPEG.
  * Avoids regenerating the image.
  * @param dataUrl - The already-generated certificate data URL
  * @param name - The name for the filename
