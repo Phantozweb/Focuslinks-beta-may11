@@ -1,6 +1,6 @@
 'use client';
 import { Link } from '../../context/NavigationContext';
-import { Search, Camera, Eye, ArrowRight, FlaskConical, Smartphone, Sparkles, AlertTriangle, Brain, ScanLine, Ruler, Beaker, Lock, Zap, Globe, Cpu } from 'lucide-react';
+import { Search, Camera, Eye, ArrowRight, Smartphone, Sparkles, AlertTriangle, Beaker, Lock, Zap, Globe } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import SEO from '../components/SEO';
@@ -57,36 +57,6 @@ const tools = [
     statusColor: 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
     tag: 'Temporarily Unavailable',
     tagColor: 'text-slate-400'
-  }
-];
-
-const comingSoonTools = [
-  {
-    id: 'ai-diagnosis',
-    title: 'AI Diagnosis Assistant',
-    description: 'Intelligent differential diagnosis powered by advanced AI. Input symptoms and receive evidence-based diagnostic suggestions.',
-    icon: Brain,
-    gradient: 'from-emerald-500 to-teal-500',
-    gradientBg: 'from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30',
-    tag: 'AI-Powered'
-  },
-  {
-    id: 'retinal-scan',
-    title: 'Retinal Scan Simulator',
-    description: 'Interactive retinal imaging simulator for learning fundus examination techniques and identifying common pathologies.',
-    icon: ScanLine,
-    gradient: 'from-pink-500 to-rose-500',
-    gradientBg: 'from-pink-50 to-rose-50 dark:from-pink-950/30 dark:to-rose-950/30',
-    tag: 'Imaging'
-  },
-  {
-    id: 'pupilometry',
-    title: 'Pupilometry Tool',
-    description: 'Advanced pupillary assessment simulator with dynamic pupil measurement, light reflex testing, and anisocoria detection.',
-    icon: Ruler,
-    gradient: 'from-indigo-500 to-purple-500',
-    gradientBg: 'from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30',
-    tag: 'Assessment'
   }
 ];
 
@@ -194,13 +164,8 @@ export default function Labs() {
             className="flex items-center justify-center gap-12 mb-10"
           >
             <div className="text-center">
-              <AnimatedCounter target={4} suffix=" tools" />
+              <AnimatedCounter target={2} suffix=" tools" />
               <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1">Available Now</p>
-            </div>
-            <div className="w-px h-12 bg-gray-200 dark:bg-gray-700" />
-            <div className="text-center">
-              <AnimatedCounter target={2} suffix=" coming" />
-              <p className="text-sm font-medium text-gray-400 dark:text-gray-500 mt-1">Coming Soon</p>
             </div>
             <div className="w-px h-12 bg-gray-200 dark:bg-gray-700" />
             <div className="text-center">
@@ -305,66 +270,6 @@ export default function Labs() {
                       </span>
                     </div>
                   )}
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Coming Soon Section */}
-        <div className="mt-20">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-8"
-          >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-              <FlaskConical className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white">Coming Soon</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Innovative tools currently in development</p>
-            </div>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {comingSoonTools.map((tool, i) => {
-              const Icon = tool.icon;
-              return (
-                <motion.div
-                  key={tool.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.12, duration: 0.5 }}
-                  className="relative rounded-[2rem] p-8 border border-dashed border-gray-200 dark:border-slate-700 bg-white/40 dark:bg-slate-900/40 backdrop-blur-sm group overflow-hidden transition-all duration-500 hover:border-gray-300 dark:hover:border-slate-600 hover:-translate-y-1 shimmer-loading-card"
-                >
-                  {/* Glass-morphism effect */}
-                  <div className={`absolute -top-20 -right-20 w-48 h-48 bg-gradient-to-br ${tool.gradient} rounded-full blur-[60px] opacity-5 group-hover:opacity-15 transition-opacity duration-700 pointer-events-none`} />
-
-                  <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-6">
-                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br ${tool.gradient} bg-opacity-10 shadow-md opacity-60 group-hover:opacity-100 transition-opacity duration-500`}>
-                        <Icon className="w-7 h-7 text-white" />
-                      </div>
-                      <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-400 flex items-center gap-1">
-                        <Lock className="w-3 h-3" /> Coming Soon
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                      {tool.title}
-                    </h3>
-                    <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm mb-6">
-                      {tool.description}
-                    </p>
-
-                    <div className="flex items-center gap-2 text-xs font-semibold text-purple-600 dark:text-purple-400">
-                      <Cpu className="w-3.5 h-3.5" />
-                      {tool.tag}
-                    </div>
-                  </div>
                 </motion.div>
               );
             })}

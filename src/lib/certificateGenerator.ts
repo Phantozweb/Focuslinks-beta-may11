@@ -158,6 +158,56 @@ export async function generateCertificate(name: string): Promise<string> {
 }
 
 /**
+ * Generates a certificate image as a data URL (JPEG, quality 1.0).
+ * @param name - The name to overlay on the certificate
+ * @returns data URL of the generated certificate JPEG
+ */
+export async function generateCertificateJPEG(name: string): Promise<string> {
+  // Fetch config and template image in parallel
+  const [config, templateImg] = await Promise.all([
+    fetchCertificateConfig(),
+    loadTemplateImage(),
+  ]);
+
+  const width = templateImg.naturalWidth;
+  const height = templateImg.naturalHeight;
+
+  if (!width || !height) {
+    throw new Error('Template image has invalid dimensions');
+  }
+
+  // Create canvas at full resolution
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Could not get canvas 2d context');
+
+  // Draw the template image as background
+  ctx.drawImage(templateImg, 0, 0, width, height);
+
+  // Calculate pixel position from percentage
+  const x = (config.namePosition.x / 100) * width;
+  const y = (config.namePosition.y / 100) * height;
+
+  // Scale font size proportionally based on template width vs assumed design width (1536)
+  const scaleFactor = width / 1536;
+  const scaledFontSize = config.fontSize * scaleFactor;
+
+  // Set up text rendering
+  ctx.font = `bold ${scaledFontSize}px ${config.fontFamily}`;
+  ctx.fillStyle = config.fontColor;
+  ctx.textAlign = config.textAlign;
+  ctx.textBaseline = 'middle';
+
+  // Draw the name text
+  ctx.fillText(name, x, y);
+
+  // Return as JPEG data URL (maximum quality)
+  return canvas.toDataURL('image/jpeg', 1.0);
+}
+
+/**
  * Downloads a data URL as a file.
  * @param dataUrl - The data URL to download
  * @param filename - The filename for the download
@@ -198,8 +248,38 @@ export async function downloadCertificate(
  * @param name - The name for the filename
  */
 export function downloadExistingCertificate(dataUrl: string, name: string): void {
-  const safeFilename = `certificate-${name.replace(/\s+/g, '-').toLowerCase()}.png`;
-  downloadDataUrl(dataUrl, safeFilename);
+  const safeFilename = `certificate-${name.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+  // Ensure we download as JPEG with maximum quality
+  // If the dataUrl is already a JPEG, use it directly; otherwise convert
+  if (dataUrl.startsWith('data:image/jpeg')) {
+    downloadDataUrl(dataUrl, safeFilename);
+  } else {
+    // Convert PNG data URL to JPEG with quality 1.0
+    try {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Fill white background (JPEG doesn't support transparency)
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          const jpegDataUrl = canvas.toDataURL('image/jpeg', 1.0);
+          downloadDataUrl(jpegDataUrl, safeFilename);
+        } else {
+          // Fallback: download as-is
+          downloadDataUrl(dataUrl, safeFilename);
+        }
+      };
+      img.src = dataUrl;
+    } catch {
+      // Fallback: download as-is with .jpg extension
+      downloadDataUrl(dataUrl, safeFilename);
+    }
+  }
 }
 
 /**

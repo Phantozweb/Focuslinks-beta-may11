@@ -139,21 +139,15 @@ export default function GettingStartedModal() {
   });
 
   const [isOpen, setIsOpen] = useState(false);
-  const [hasAutoOpened, setHasAutoOpened] = useState(false);
+  const [hasAutoOpened, setHasAutoOpened] = useState(true);
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   /* ------------------------------------------------------------------ */
   /*  Auto-open on first visit after 2-second delay                     */
   /* ------------------------------------------------------------------ */
   useEffect(() => {
-    if (!mounted || isLoggedIn || isPermanentlyDismissed || hasAutoOpened) return;
-
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-      setHasAutoOpened(true);
-    }, 2000);
-
-    return () => clearTimeout(timer);
+    // Auto-popup disabled — user can still open via FAB if hasAutoOpened is set
+    return;
   }, [mounted, isLoggedIn, isPermanentlyDismissed, hasAutoOpened]);
 
   /* ------------------------------------------------------------------ */

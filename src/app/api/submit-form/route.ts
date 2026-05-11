@@ -49,6 +49,62 @@ export async function POST(request: NextRequest) {
         filename = `${entryId}${membershipIdStr}.json`;
       }
       
+      // Duplicate check for feedback submissions
+      if (body.type === 'feedback' && body.slug && (body.email || body.membershipId)) {
+        const headers: Record<string, string> = {
+          Accept: 'application/vnd.github.v3+json',
+          'User-Agent': 'FocusLinks-App',
+        };
+        if (GITHUB_PAT) {
+          headers.Authorization = `token ${GITHUB_PAT}`;
+        }
+        try {
+          const encodedPath = `Webinar/${body.slug}/feedback`;
+          const listRes = await fetch(
+            `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedPath}`,
+            { headers, cache: 'no-store' }
+          );
+          if (listRes.ok) {
+            const files = await listRes.json();
+            if (Array.isArray(files)) {
+              const normalizedEmail = (body.email || '').trim().toLowerCase();
+              const normalizedMid = (body.membershipId || '').trim().toLowerCase();
+              const rawBase = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/main`;
+
+              for (const file of files) {
+                if (!file.name?.endsWith('.json')) continue;
+                try {
+                  let content: any = null;
+                  let fileRes = await fetch(`${rawBase}/${encodedPath}/${file.name}?t=${Date.now()}`, { cache: 'no-store' });
+                  if (fileRes.ok) {
+                    content = JSON.parse(await fileRes.text());
+                  } else if (GITHUB_PAT) {
+                    const apiRes = await fetch(
+                      `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedPath}/${file.name}`,
+                      { headers: { ...headers, Authorization: `token ${GITHUB_PAT}` }, cache: 'no-store' }
+                    );
+                    if (apiRes.ok) {
+                      const fileData = await apiRes.json();
+                      content = JSON.parse(Buffer.from(fileData.content, 'base64').toString('utf-8'));
+                    }
+                  }
+                  if (content) {
+                    const fbEmail = (content.email || '').trim().toLowerCase();
+                    const fbMid = (content.membershipId || '').trim().toLowerCase();
+                    if ((normalizedEmail && fbEmail === normalizedEmail) || (normalizedMid && fbMid === normalizedMid)) {
+                      return NextResponse.json(
+                        { success: false, error: 'Feedback already submitted', alreadyExists: true },
+                        { status: 409 }
+                      );
+                    }
+                  }
+                } catch { /* skip unparseable files */ }
+              }
+            }
+          }
+        } catch { /* if check fails, allow submission */ }
+      }
+
       GITHUB_FILE_PATH = `Webinar/${body.slug}/${typeFolder}/${filename}`;
     } else if (body.type === 'membership_application') {
       const membershipId = body.membershipId;

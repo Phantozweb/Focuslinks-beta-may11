@@ -8,7 +8,7 @@ import { trackEvent } from '@/lib/analytics';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
 import { fetchGitHubJson } from '../../services/githubService';
-import { generateCertificate, downloadExistingCertificate } from '@/lib/certificateGenerator';
+import { generateCertificateJPEG, downloadExistingCertificate } from '@/lib/certificateGenerator';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TYPES & CONSTANTS
@@ -106,6 +106,9 @@ export default function Webinar() {
   /* certificate image state */
   const [certImageUrl, setCertImageUrl] = useState<string | null>(null);
   const [certGenerating, setCertGenerating] = useState(false);
+
+  /* certificate download popup state */
+  const [showCertDownloadPopup, setShowCertDownloadPopup] = useState(false);
 
   /* user from localStorage + check feedback status on load */
   useEffect(() => {
@@ -353,8 +356,9 @@ export default function Webinar() {
         setCertGenerating(true);
         try {
           const displayName = verifyData.name || certName;
-          const imageUrl = await generateCertificate(displayName);
+          const imageUrl = await generateCertificateJPEG(displayName);
           setCertImageUrl(imageUrl);
+          setShowCertDownloadPopup(true);
         } catch (genErr) {
           console.error('Certificate generation error:', genErr);
           toast.error('Could not generate certificate image, but your claim was recorded.');
@@ -383,6 +387,12 @@ export default function Webinar() {
     await submitCertificateClaim();
   };
 
+  /* handle feedback submission from popup (form onSubmit) */
+  const handlePopupFeedbackSubmitForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handlePopupFeedbackSubmit();
+  };
+
   /* handle feedback submission from popup */
   const handlePopupFeedbackSubmit = async () => {
     if (!popupFeedback.trim()) {
@@ -405,7 +415,15 @@ export default function Webinar() {
         await submitCertificateClaim();
       } else {
         const d = await res.json();
-        toast.error(d.error || 'Failed to submit feedback');
+        // If feedback already exists (duplicate), treat as already submitted and proceed
+        if (d.alreadyExists) {
+          setFeedbackSubmitted(true);
+          setShowFeedbackPopup(false);
+          toast.info('Feedback already recorded. Claiming your certificate…');
+          await submitCertificateClaim();
+        } else {
+          toast.error(d.error || 'Failed to submit feedback');
+        }
       }
     } catch {
       toast.error('Unexpected error submitting feedback.');
@@ -781,8 +799,9 @@ export default function Webinar() {
                                   setCertGenerating(true);
                                   try {
                                     const displayName = certEligibility?.name || certName;
-                                    const imageUrl = await generateCertificate(displayName);
+                                    const imageUrl = await generateCertificateJPEG(displayName);
                                     setCertImageUrl(imageUrl);
+                                    setShowCertDownloadPopup(true);
                                   } catch { toast.error('Could not generate certificate image.'); }
                                   finally { setCertGenerating(false); }
                                 }}
@@ -1148,28 +1167,106 @@ export default function Webinar() {
                   Your feedback is required to receive your certificate. Let us know how the session was!
                 </p>
 
-                {/* Textarea */}
-                <textarea
-                  required
-                  rows={4}
-                  placeholder="How was the session? What did you learn? Any suggestions?"
-                  value={popupFeedback}
-                  onChange={e => setPopupFeedback(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4"
-                />
+                {/* Form wrapping textarea and submit for Enter key support */}
+                <form onSubmit={handlePopupFeedbackSubmitForm}>
+                  {/* Textarea */}
+                  <textarea
+                    required
+                    rows={4}
+                    placeholder="How was the session? What did you learn? Any suggestions?"
+                    value={popupFeedback}
+                    onChange={e => setPopupFeedback(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4"
+                  />
 
-                {/* Submit button */}
-                <button
-                  onClick={handlePopupFeedbackSubmit}
-                  disabled={popupSubmitting || !popupFeedback.trim()}
-                  className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
-                >
-                  {popupSubmitting ? (
-                    <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
-                  ) : (
-                    <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
-                  )}
-                </button>
+                  {/* Submit button */}
+                  <button
+                    type="submit"
+                    disabled={popupSubmitting || !popupFeedback.trim()}
+                    className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                  >
+                    {popupSubmitting ? (
+                      <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+                    ) : (
+                      <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Certificate Download Popup Modal */}
+      <AnimatePresence>
+        {showCertDownloadPopup && certImageUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={() => setShowCertDownloadPopup(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-emerald-200 dark:border-emerald-800/40 overflow-hidden"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Close button */}
+              <button
+                onClick={() => setShowCertDownloadPopup(false)}
+                className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {/* Success header */}
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-white">
+                <div className="flex items-center gap-3 pr-8">
+                  <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center shrink-0">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold">Certificate Ready!</h3>
+                    <p className="text-sm text-white/80">Your attendance certificate has been generated</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {/* Certificate Preview */}
+                <div className="relative rounded-xl overflow-hidden border-2 border-emerald-200 dark:border-emerald-800/40 shadow-lg mb-5">
+                  <img
+                    src={certImageUrl}
+                    alt="Your Certificate"
+                    className="w-full h-auto block"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => downloadExistingCertificate(certImageUrl, certEligibility?.name || certName)}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+                  >
+                    <Download className="w-4 h-4" /> Download Certificate
+                  </button>
+                  <button
+                    onClick={() => {
+                      const w = window.open('', '_blank');
+                      if (w) { w.document.write(`<img src="${certImageUrl}" style="max-width:100%;" />`); w.document.title = 'Certificate'; }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-2 px-5 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all"
+                  >
+                    <Eye className="w-4 h-4" /> View Full Size
+                  </button>
+                </div>
+
+                <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center mt-3">Your certificate is also being sent to your email. You can download it anytime from the certificate section below.</p>
               </div>
             </motion.div>
           </motion.div>

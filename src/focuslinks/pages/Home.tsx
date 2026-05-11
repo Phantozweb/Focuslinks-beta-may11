@@ -800,14 +800,14 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-flex items-center gap-2 py-1.5 px-3 sm:px-4 rounded-full bg-white/80 dark:bg-slate-900/80 text-blue-700 text-xs sm:text-sm font-semibold mb-6 sm:mb-8 border border-blue-100 shadow-sm backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer group">
+            <Link to="/membership" className="inline-flex items-center gap-2 py-1.5 px-3 sm:px-4 rounded-full bg-white/80 dark:bg-slate-900/80 text-blue-700 text-xs sm:text-sm font-semibold mb-6 sm:mb-8 border border-blue-100 shadow-sm backdrop-blur-md hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer group">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
               </span>
               Join our growing community
               <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-400 group-hover:translate-x-1 transition-transform" />
-            </span>
+            </Link>
           </motion.div>
           
           <motion.h1 
