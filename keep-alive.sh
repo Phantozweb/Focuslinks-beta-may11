@@ -1,6 +1,7 @@
 #!/bin/bash
 cd /home/z/my-project
 while true; do
-  node ./node_modules/next/dist/bin/next dev -p 3000 2>&1
-  sleep 2
+  npx next dev --port 3000 > dev.log 2>&1
+  echo "Server crashed at $(date), restarting in 3s..." >> dev.log
+  sleep 3
 done
