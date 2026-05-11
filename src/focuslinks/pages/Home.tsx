@@ -38,7 +38,8 @@ import {
   Rss,
   PenLine,
   Beaker,
-  ThumbsUp
+  ThumbsUp,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
@@ -1170,46 +1171,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* New Animated Webinar Banner */}
+      {/* Webinar Ended — Claim Certificate Banner */}
       <section className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-        <Link to="/webinar/beyond-orthok-practical-and-affordable-myopia-management-with-contact-lens" className="relative block w-full rounded-3xl overflow-hidden bg-slate-900 shadow-2xl group">
+        <Link to="/beyond-orthok" className="relative block w-full rounded-3xl overflow-hidden bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 shadow-2xl group">
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/30 rounded-full blur-[100px] group-hover:bg-blue-500/40 transition-colors duration-700"></div>
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/30 rounded-full blur-[100px] group-hover:bg-purple-500/40 transition-colors duration-700"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/20 rounded-full blur-[100px] group-hover:bg-emerald-500/30 transition-colors duration-700"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/20 rounded-full blur-[100px] group-hover:bg-teal-500/30 transition-colors duration-700"></div>
           
           <div className="relative z-10 p-6 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div className="flex-1 w-full max-w-3xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-bold uppercase tracking-wider mb-4">
-                <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
-                Upcoming Masterclass
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
+                <CheckCircle2 className="w-3 h-3" />
+                Masterclass Completed
               </div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">
-                Beyond Ortho-K: Practical & Affordable Myopia Management with <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">Contact Lenses</span>
+                Beyond Ortho-K: Practical & Affordable Myopia Management with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Contact Lenses</span>
               </h2>
-              <p className="text-slate-300 dark:text-gray-600 text-base sm:text-lg mb-6">
-                Join Manish Bhagat on May 6th for an exclusive interactive learning session. Prebook now to secure your spot and earn FL Credits!
+              <p className="text-slate-300 text-base sm:text-lg mb-6">
+                The masterclass has concluded. Claim your certificate of participation now!
               </p>
               <div className="flex flex-wrap items-center gap-y-3 gap-x-4 sm:gap-x-6">
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-400 shrink-0" />
-                  <span className="text-white font-medium text-sm sm:text-base">May 6, 2026</span>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span className="text-white font-medium text-sm sm:text-base">Completed May 6, 2026</span>
                 </div>
                 <div className="hidden sm:block w-px h-6 bg-slate-700"></div>
                 <div className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-purple-400 shrink-0" />
+                  <Users className="w-5 h-5 text-teal-400 shrink-0" />
                   <span className="text-white font-medium text-sm sm:text-base">Manish Bhagat</span>
                 </div>
                 <div className="hidden sm:block w-px h-6 bg-slate-700"></div>
                 <div className="flex items-center gap-2">
-                  <Award className="w-5 h-5 text-amber-400 shrink-0" />
-                  <span className="text-white font-medium text-sm sm:text-base">50 FL Credits</span>
+                  <GraduationCap className="w-5 h-5 text-amber-400 shrink-0" />
+                  <span className="text-white font-medium text-sm sm:text-base">Certificate Available</span>
                 </div>
               </div>
             </div>
             
             <div className="w-full lg:w-auto mt-2 lg:mt-0 flex-shrink-0">
-              <div className="px-6 sm:px-8 py-3 sm:py-4 bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-xl font-bold text-base sm:text-lg shadow-[0_0_30px_rgba(255,255,255,0.2)] group-hover:scale-105 transition-transform duration-300 flex items-center justify-center gap-2 w-full sm:w-auto whitespace-nowrap">
-                Prebook Now <ArrowRight className="w-5 h-5" />
+              <div className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl font-bold text-base sm:text-lg shadow-[0_0_30px_rgba(16,185,129,0.3)] group-hover:from-emerald-600 group-hover:to-teal-600 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto whitespace-nowrap">
+                Claim Certificate <GraduationCap className="w-5 h-5" />
               </div>
             </div>
           </div>

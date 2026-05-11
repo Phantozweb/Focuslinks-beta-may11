@@ -889,13 +889,6 @@ export default function Webinar() {
                       )}
                     </div>
 
-                    {/* Recording Coming Soon Banner */}
-                    <div className="relative border-t border-emerald-200/40 dark:border-emerald-800/20 bg-emerald-100/40 dark:bg-emerald-900/10 px-6 sm:px-8 py-3.5">
-                      <div className="flex items-center gap-2.5 text-sm text-emerald-700 dark:text-emerald-300">
-                        <Video className="w-4 h-4 shrink-0" />
-                        <span className="font-medium">Session recording will be available soon. Stay tuned!</span>
-                      </div>
-                    </div>
                   </motion.div>
                 )}
 

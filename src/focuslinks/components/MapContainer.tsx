@@ -796,11 +796,11 @@ export default function MapContainer({
           zoomToBoundsOnClick={true}
           chunkedLoading={true}
         >
-          {allIndividualPins.map((profile) => {
+          {allIndividualPins.map((profile, idx) => {
             const isClinic = isClinicType(profile.type, profile.source);
             return (
               <Marker
-                key={profile.id}
+                key={`${profile.id}-${idx}`}
                 position={[profile.lat, profile.lng]}
                 icon={isClinic ? createClinicIcon(28, profile.verified) : profile.type === 'student' ? createStudentIcon(28, profile.verified) : createOptometristIcon(28, profile.verified)}
                 // Pass profile data to marker options so cluster icon can read type info

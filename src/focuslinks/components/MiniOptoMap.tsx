@@ -110,7 +110,7 @@ export default function MiniOptoMap() {
             lat: p.lat, lng: p.lng,
             type: p.type || 'professional', source: p.source,
             name: p.name, country: p.country || '',
-            id: p.id || p.name || `pt-${idx}`,
+            id: p.id || `${p.source || 'pt'}-${idx}`,
           }));
         setPoints(valid);
 
@@ -195,7 +195,7 @@ export default function MiniOptoMap() {
         >
           {points.map((p, idx) => (
             <Marker
-              key={p.id || idx}
+              key={`${p.id}-${idx}`}
               position={[p.lat, p.lng]}
               icon={createMiniIcon(p.type)}
             >
