@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from '../../context/NavigationContext';
-import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap, X, Download, Eye } from 'lucide-react';
+import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap, X, Download, Eye, VideoOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useProfiles } from '../../hooks/useProfiles';
 import { trackEvent } from '@/lib/analytics';
@@ -608,6 +608,10 @@ export default function Webinar() {
                       <p className="text-sm text-white/50 max-w-md text-center lg:text-left">
                         The Beyond Ortho-K masterclass has concluded. Claim your certificate of participation below.
                       </p>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/[0.06] border border-white/[0.08] text-white/40 text-xs font-medium">
+                        <VideoOff className="w-3.5 h-3.5" />
+                        No session recording available
+                      </div>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2">
@@ -1035,6 +1039,13 @@ export default function Webinar() {
                       </div>
                       <div className="flex items-center gap-2 text-xs text-teal-600 dark:text-teal-400">
                         <Video className="w-3.5 h-3.5" /> Google Meet link activates at 7:00 PM IST
+                      </div>
+                    </div>
+                  )}
+                  {isEventEnded && (
+                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                      <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        <VideoOff className="w-3.5 h-3.5" /> No session recording available
                       </div>
                     </div>
                   )}

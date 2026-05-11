@@ -1181,14 +1181,14 @@ export default function Home() {
           <div className="relative z-10 p-6 sm:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
             <div className="flex-1 w-full max-w-3xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-4">
-                <CheckCircle2 className="w-3 h-3" />
-                Masterclass Completed
+                <GraduationCap className="w-3 h-3" />
+                Webinar Ended — Claim Your Certificate
               </div>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">
                 Beyond Ortho-K: Practical & Affordable Myopia Management with <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Contact Lenses</span>
               </h2>
               <p className="text-slate-300 text-base sm:text-lg mb-6">
-                The masterclass has concluded. Claim your certificate of participation now!
+                This webinar has ended. Claim your certificate of participation now!
               </p>
               <div className="flex flex-wrap items-center gap-y-3 gap-x-4 sm:gap-x-6">
                 <div className="flex items-center gap-2">

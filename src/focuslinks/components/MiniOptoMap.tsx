@@ -110,7 +110,7 @@ export default function MiniOptoMap() {
             lat: p.lat, lng: p.lng,
             type: p.type || 'professional', source: p.source,
             name: p.name, country: p.country || '',
-            id: p.id || `${p.source || 'pt'}-${idx}`,
+            id: `${p.source || 'pt'}-${idx}`,
           }));
         setPoints(valid);
 
