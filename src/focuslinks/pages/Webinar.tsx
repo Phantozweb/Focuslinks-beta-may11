@@ -8,7 +8,7 @@ import { trackEvent } from '@/lib/analytics';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
 import { fetchGitHubJson } from '../../services/githubService';
-import { generateCertificate, downloadCertificate } from '@/lib/certificateGenerator';
+import { generateCertificate, downloadExistingCertificate } from '@/lib/certificateGenerator';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TYPES & CONSTANTS
@@ -750,7 +750,7 @@ export default function Webinar() {
                               {/* Action Buttons */}
                               <div className="flex flex-col sm:flex-row gap-3">
                                 <button
-                                  onClick={() => downloadCertificate(certEligibility?.name || certName)}
+                                  onClick={() => downloadExistingCertificate(certImageUrl!, certEligibility?.name || certName)}
                                   className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
                                 >
                                   <Download className="w-4 h-4" /> Download Certificate

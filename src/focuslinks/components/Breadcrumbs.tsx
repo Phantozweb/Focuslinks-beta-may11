@@ -51,7 +51,6 @@ const ROUTE_LABELS: Record<string, string> = {
   'webinar': 'Webinar',
   'profile': 'Profile',
   'event': 'Event',
-  'certificate': 'Certificate Editor',
 };
 
 function formatSegment(segment: string): string {

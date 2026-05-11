@@ -59,3 +59,30 @@ Stage Summary:
 - Full certificate generation pipeline: template background + name overlay via Canvas API
 - Users can view, download, and open their certificate in full size after claiming
 - Config on GitHub updated with new template URL
+
+---
+Task ID: 6
+Agent: main
+Task: Remove certificate editor page, fix certificate PNG download functionality
+
+Work Log:
+- Removed CertificateEditor lazy import from src/app/page.tsx
+- Removed `/certificate` route from route map in page.tsx
+- Removed `certificate: 'Certificate Editor'` from Breadcrumbs.tsx ROUTE_LABELS
+- Improved certificateGenerator.ts:
+  - Added in-memory config caching (avoid refetch on every generation)
+  - Added `downloadExistingCertificate()` — reuses already-generated data URL instead of regenerating
+  - Added `downloadDataUrl()` — clean download helper with proper cleanup
+  - Made font bold (`bold ${fontSize}px`) for better visibility on certificate
+  - Set PNG quality to 1.0 for maximum quality
+  - Cleaned up redundant text alignment code
+- Updated Webinar.tsx download button:
+  - Changed from `downloadCertificate()` (regenerates) to `downloadExistingCertificate()` (reuses data URL)
+  - Import updated to use `downloadExistingCertificate` instead of `downloadCertificate`
+- Verified all tests: home 200, config API returns GitHub raw URL, template image 200 (1.2MB), lint clean
+
+Stage Summary:
+- Certificate Editor page completely removed (no /certificate route)
+- Certificate download is now efficient: generates once, reuses data URL for download
+- Bold font for name text, maximum PNG quality
+- All lint checks pass, server running on port 3000
