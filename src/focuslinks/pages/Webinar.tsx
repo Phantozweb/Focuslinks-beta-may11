@@ -1,13 +1,14 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { Link, useParams } from '../../context/NavigationContext';
-import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap, X } from 'lucide-react';
+import { Calendar, Clock, Award, ArrowRight, CheckCircle2, ExternalLink, MessageSquare, Loader2, Monitor, Globe, Users, Zap, Lock, Send, Star, Video, ShieldCheck, User, Mail, BadgeCheck, AlertCircle, GraduationCap, X, Download, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useProfiles } from '../../hooks/useProfiles';
 import { trackEvent } from '@/lib/analytics';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
 import { fetchGitHubJson } from '../../services/githubService';
+import { generateCertificate, downloadCertificate } from '@/lib/certificateGenerator';
 
 /* ═══════════════════════════════════════════════════════════════════════
    TYPES & CONSTANTS
@@ -101,6 +102,10 @@ export default function Webinar() {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [popupFeedback, setPopupFeedback] = useState('');
   const [popupSubmitting, setPopupSubmitting] = useState(false);
+
+  /* certificate image state */
+  const [certImageUrl, setCertImageUrl] = useState<string | null>(null);
+  const [certGenerating, setCertGenerating] = useState(false);
 
   /* user from localStorage + check feedback status on load */
   useEffect(() => {
@@ -341,8 +346,25 @@ export default function Webinar() {
           feedbackSubmitted: true,
         }),
       });
-      if (res.ok) { setCertSubmitted(true); toast.success('Certificate claimed successfully!'); }
-      else { const d = await res.json(); toast.error(d.error || 'Failed to claim certificate'); }
+      if (res.ok) {
+        setCertSubmitted(true);
+        toast.success('Certificate claimed! Generating your certificate…');
+        // Generate the certificate image with the user's name
+        setCertGenerating(true);
+        try {
+          const displayName = verifyData.name || certName;
+          const imageUrl = await generateCertificate(displayName);
+          setCertImageUrl(imageUrl);
+        } catch (genErr) {
+          console.error('Certificate generation error:', genErr);
+          toast.error('Could not generate certificate image, but your claim was recorded.');
+        } finally {
+          setCertGenerating(false);
+        }
+      } else {
+        const d = await res.json();
+        toast.error(d.error || 'Failed to claim certificate');
+      }
     } catch { toast.error('Unexpected error. Please try again.'); }
     finally { setCertSubmitting(false); }
   };
@@ -699,15 +721,72 @@ export default function Webinar() {
                       {/* Form or Success — Certificate Claim (always accessible) */}
                       {certSubmitted ? (
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-                          className="flex flex-col items-center gap-3 py-6 text-center"
+                          className="flex flex-col items-center gap-4 py-4 text-center"
                         >
-                          <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                            <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                          <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                            <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
                           </div>
                           <h3 className="text-lg font-bold text-emerald-700 dark:text-emerald-300">Certificate Claimed!</h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm">Check your email for your certificate of participation.</p>
                           {certEligibility?.source && (
-                            <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">Status: {certEligibility.source}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-500">Status: {certEligibility.source}</p>
+                          )}
+
+                          {/* Certificate Image Preview */}
+                          {certGenerating ? (
+                            <div className="w-full flex flex-col items-center gap-3 py-8">
+                              <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                              <p className="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Generating your certificate…</p>
+                            </div>
+                          ) : certImageUrl ? (
+                            <div className="w-full space-y-4">
+                              {/* Certificate Preview */}
+                              <div className="relative rounded-xl overflow-hidden border-2 border-emerald-200 dark:border-emerald-800/40 shadow-lg">
+                                <img
+                                  src={certImageUrl}
+                                  alt="Your Certificate"
+                                  className="w-full h-auto block"
+                                />
+                              </div>
+                              {/* Action Buttons */}
+                              <div className="flex flex-col sm:flex-row gap-3">
+                                <button
+                                  onClick={() => downloadCertificate(certEligibility?.name || certName)}
+                                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-emerald-500/20"
+                                >
+                                  <Download className="w-4 h-4" /> Download Certificate
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    if (certImageUrl) {
+                                      const w = window.open('', '_blank');
+                                      if (w) { w.document.write(`<img src="${certImageUrl}" style="max-width:100%;" />`); w.document.title = 'Certificate'; }
+                                    }
+                                  }}
+                                  className="flex-1 flex items-center justify-center gap-2 px-5 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-semibold text-sm transition-all"
+                                >
+                                  <Eye className="w-4 h-4" /> View Full Size
+                                </button>
+                              </div>
+                              <p className="text-[11px] text-slate-400 dark:text-slate-500">Your certificate is also being sent to your email. You can download it anytime.</p>
+                            </div>
+                          ) : (
+                            <div className="w-full space-y-3">
+                              <p className="text-sm text-slate-600 dark:text-slate-400 max-w-sm">Your certificate claim has been recorded. The certificate image will be available shortly.</p>
+                              <button
+                                onClick={async () => {
+                                  setCertGenerating(true);
+                                  try {
+                                    const displayName = certEligibility?.name || certName;
+                                    const imageUrl = await generateCertificate(displayName);
+                                    setCertImageUrl(imageUrl);
+                                  } catch { toast.error('Could not generate certificate image.'); }
+                                  finally { setCertGenerating(false); }
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-all"
+                              >
+                                <Loader2 className={`w-4 h-4 ${certGenerating ? 'animate-spin' : ''}`} /> Generate Certificate
+                              </button>
+                            </div>
                           )}
                         </motion.div>
                       ) : (

@@ -23,3 +23,39 @@ Stage Summary:
 - Members without specific area/state/district naturally cluster together at country level
 - Members with details show as individual pinpoint markers
 - Click cluster to zoom in and expand; spiderfy at max zoom
+
+---
+Task ID: 5
+Agent: main
+Task: Fix certificate image loading — upload to GitHub, use raw URL, build certificate generation
+
+Work Log:
+- Checked uploaded certificate template: "Head of Contact Lens and Myopia Department Visual Eyez India.png" (1.2MB, 1536x1024 RGB)
+- Uploaded certificate template image to GitHub at path `Certificate/certificate-template.png` using GitHub Contents API
+- Raw URL: https://raw.githubusercontent.com/Phantozweb/Fldatas/main/Certificate/certificate-template.png
+- Copied the image to /public/certificate-template.png as fallback
+- Updated CertificateEditor.tsx: changed template URL from local `/certificate-template.png` to GitHub raw URL, added fallback on error, updated dimensions to 1536x1024, added `unoptimized` prop
+- Updated certificate-config/route.ts: default templateImage now uses GitHub raw URL
+- Updated GitHub stored config (certificate-config.json) to use the new GitHub raw URL
+- Created `/src/lib/certificateGenerator.ts` — full certificate generation utility:
+  - Fetches config from `/api/certificate-config`
+  - Loads template image from GitHub raw URL (with fallback to local)
+  - Creates HTML5 Canvas, draws template as background
+  - Overlays user's name at configured position with proper scaling
+  - Returns PNG data URL
+  - Includes `downloadCertificate()` and `generateCertificateBlob()` helpers
+- Updated Webinar.tsx certificate claim flow:
+  - Added `certImageUrl` and `certGenerating` state
+  - After successful claim, auto-generates certificate image via `generateCertificate()`
+  - Success view now shows: certificate image preview, Download button, View Full Size button
+  - If generation fails, shows retry button
+  - If generation takes time, shows loading spinner
+- Added `Download` and `Eye` icons to Webinar imports
+- All lint checks pass, server running without errors on port 3000
+
+Stage Summary:
+- Certificate template image uploaded to GitHub and accessible via raw URL
+- Certificate Editor uses GitHub raw URL with local fallback
+- Full certificate generation pipeline: template background + name overlay via Canvas API
+- Users can view, download, and open their certificate in full size after claiming
+- Config on GitHub updated with new template URL

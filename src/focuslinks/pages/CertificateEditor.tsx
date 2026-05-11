@@ -24,13 +24,16 @@ interface CertificateConfig {
   nameText?: string;
 }
 
+const GITHUB_RAW_TEMPLATE_URL = 'https://raw.githubusercontent.com/Phantozweb/Fldatas/main/Certificate/certificate-template.png';
+const FALLBACK_TEMPLATE_URL = '/certificate-template.png';
+
 const DEFAULT_CONFIG: CertificateConfig = {
   namePosition: { x: 50, y: 50 },
   fontSize: 36,
   fontFamily: 'Georgia, serif',
   fontColor: '#1e293b',
   textAlign: 'center',
-  templateImage: '/certificate-template.png',
+  templateImage: GITHUB_RAW_TEMPLATE_URL,
   nameText: 'Dr. John Smith',
 };
 
@@ -208,16 +211,24 @@ export default function CertificateEditor() {
             >
               {/* Certificate Template Image — using next/image goes through /_next/image which bypasses SPA rewrite */}
               <Image
-                src="/certificate-template.png"
+                src={GITHUB_RAW_TEMPLATE_URL}
                 alt="Certificate Template"
-                width={1344}
-                height={768}
+                width={1536}
+                height={1024}
                 className="w-full h-auto block"
                 draggable={false}
+                unoptimized
                 onLoad={(e) => {
                   const img = e.target as HTMLImageElement;
                   setImageNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
                   setImageLoaded(true);
+                }}
+                onError={(e) => {
+                  // Fallback to local copy if GitHub raw fails
+                  const img = e.target as HTMLImageElement;
+                  if (!img.src.includes(FALLBACK_TEMPLATE_URL)) {
+                    img.src = FALLBACK_TEMPLATE_URL;
+                  }
                 }}
                 priority
               />

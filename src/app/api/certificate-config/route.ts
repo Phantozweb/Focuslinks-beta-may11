@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const GITHUB_OWNER = 'Phantozweb';
 const GITHUB_REPO = 'Fldatas';
 const CONFIG_PATH = 'Certificate/certificate-config.json';
+const GITHUB_RAW_TEMPLATE_URL = 'https://raw.githubusercontent.com/Phantozweb/Fldatas/main/Certificate/certificate-template.png';
 
 export async function GET() {
   try {
@@ -29,7 +30,7 @@ export async function GET() {
           fontFamily: 'Georgia, serif',
           fontColor: '#1e293b',
           textAlign: 'center',
-          templateImage: '/certificate-template.png',
+          templateImage: GITHUB_RAW_TEMPLATE_URL,
         },
       });
     }
