@@ -52,7 +52,20 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
   }
 
   const encodedPath = directoryPath.split('/').map(encodeURIComponent).join('/');
-  const listRes = await fetch(`${API_BASE}/${encodedPath}`, { headers, cache: 'no-store' });
+
+  // Add 10s timeout to prevent hanging on GitHub API issues
+  const listController = new AbortController();
+  const listTimeout = setTimeout(() => listController.abort(), 10000);
+
+  let listRes: Response;
+  try {
+    listRes = await fetch(`${API_BASE}/${encodedPath}`, { headers, cache: 'no-store', signal: listController.signal });
+  } catch (err) {
+    clearTimeout(listTimeout);
+    console.error(`[verify-certificate] Timeout/error listing directory ${directoryPath}:`, err);
+    return users;
+  }
+  clearTimeout(listTimeout);
 
   if (!listRes.ok) {
     console.error(`[verify-certificate] Failed to list directory ${directoryPath}: ${listRes.status}`);
@@ -65,16 +78,23 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
     return users;
   }
 
-  // Fetch each JSON file in parallel (batched)
+  // Fetch each JSON file in parallel (batched) with timeout
   const filePromises = files
     .filter((file: { name?: string }) => file.name?.endsWith('.json'))
     .map(async (file: { name: string }) => {
       try {
+        // Add 8s timeout per file fetch
+        const fileController = new AbortController();
+        const fileTimeout = setTimeout(() => fileController.abort(), 8000);
+
         // Try raw URL first (faster, works for public repos)
-        let fileRes = await fetch(`${RAW_BASE}/${directoryPath}/${file.name}?t=${Date.now()}`, { cache: 'no-store' });
+        let fileRes = await fetch(`${RAW_BASE}/${directoryPath}/${file.name}?t=${Date.now()}`, { cache: 'no-store', signal: fileController.signal });
 
         // If raw URL fails, try with PAT via Contents API
         if (!fileRes.ok && GITHUB_PAT) {
+          clearTimeout(fileTimeout);
+          const apiFileController = new AbortController();
+          const apiFileTimeout = setTimeout(() => apiFileController.abort(), 8000);
           const apiFileRes = await fetch(`${API_BASE}/${encodedPath}/${file.name}`, {
             headers: {
               Accept: 'application/vnd.github.v3+json',
@@ -82,7 +102,9 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
               Authorization: `token ${GITHUB_PAT}`,
             },
             cache: 'no-store',
+            signal: apiFileController.signal,
           });
+          clearTimeout(apiFileTimeout);
           if (apiFileRes.ok) {
             const fileData = await apiFileRes.json();
             const decoded = Buffer.from(fileData.content, 'base64').toString('utf-8');
@@ -92,10 +114,12 @@ async function fetchUsersFromDirectory(directoryPath: string): Promise<WebinarUs
         }
 
         if (fileRes.ok) {
+          clearTimeout(fileTimeout);
           const text = await fileRes.text();
           const sanitized = text.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
           return JSON.parse(sanitized) as WebinarUser;
         }
+        clearTimeout(fileTimeout);
       } catch (e) {
         console.error(`[verify-certificate] Error parsing ${file.name}:`, e);
       }

@@ -14,9 +14,10 @@ export interface CertificateConfig {
   textAlign: 'center' | 'left' | 'right';
 }
 
+// Match the actual GitHub config to avoid wrong positioning on fallback
 const DEFAULT_CONFIG: CertificateConfig = {
-  namePosition: { x: 50, y: 50 },
-  fontSize: 36,
+  namePosition: { x: 50.5, y: 39.5 },
+  fontSize: 25,
   fontFamily: 'Georgia, serif',
   fontColor: '#1e293b',
   textAlign: 'center',
@@ -34,6 +35,7 @@ async function fetchCertificateConfig(): Promise<CertificateConfig> {
 
   try {
     const res = await fetch('/api/certificate-config');
+    if (!res.ok) throw new Error(`Config API returned ${res.status}`);
     const data = await res.json();
     if (data.success && data.config) {
       cachedConfig = {
@@ -52,28 +54,56 @@ async function fetchCertificateConfig(): Promise<CertificateConfig> {
 }
 
 /**
- * Loads an image from a URL with crossOrigin support.
- * Retries with fallback URL on failure.
+ * Loads an image from a URL.
+ * @param src - Image URL
+ * @param crossOrigin - Whether to set crossOrigin='anonymous' (only for cross-origin URLs)
+ * @param timeoutMs - Timeout in milliseconds (default 15s)
  */
-function loadImage(src: string): Promise<HTMLImageElement> {
+function loadImage(src: string, crossOrigin: boolean = true, timeoutMs: number = 15000): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    if (crossOrigin) img.crossOrigin = 'anonymous';
+
+    const timer = setTimeout(() => {
+      img.src = ''; // Cancel the load
+      reject(new Error(`Image load timeout: ${src}`));
+    }, timeoutMs);
+
+    img.onload = () => {
+      clearTimeout(timer);
+      resolve(img);
+    };
+    img.onerror = () => {
+      clearTimeout(timer);
+      reject(new Error(`Failed to load image: ${src}`));
+    };
     img.src = src;
   });
 }
 
 /**
  * Loads the template image, trying GitHub first then local fallback.
+ * Key fix: Only set crossOrigin='anonymous' for cross-origin URLs (GitHub),
+ * NOT for same-origin fallback (which would taint the canvas).
+ * Also adds cache-busting to the GitHub URL to avoid stale CORS responses.
  */
 async function loadTemplateImage(): Promise<HTMLImageElement> {
+  // Try GitHub raw URL first with cache-busting and CORS
   try {
-    return await loadImage(GITHUB_RAW_TEMPLATE_URL);
-  } catch {
-    console.warn('[certificateGenerator] GitHub raw URL failed, trying local fallback');
-    return await loadImage(FALLBACK_TEMPLATE_URL);
+    const cacheBustedUrl = `${GITHUB_RAW_TEMPLATE_URL}?t=${Date.now()}`;
+    return await loadImage(cacheBustedUrl, true, 15000);
+  } catch (githubErr) {
+    console.warn('[certificateGenerator] GitHub template failed, trying local fallback:', githubErr);
+  }
+
+  // Fallback: load from local public directory — NO crossOrigin needed (same origin)
+  // This is the critical fix: crossOrigin='anonymous' on same-origin images
+  // causes canvas taint because Next.js dev server doesn't send CORS headers for static files
+  try {
+    return await loadImage(FALLBACK_TEMPLATE_URL, false, 10000);
+  } catch (fallbackErr) {
+    console.error('[certificateGenerator] Local fallback also failed:', fallbackErr);
+    throw new Error('Could not load certificate template image from any source.');
   }
 }
 
@@ -91,6 +121,10 @@ export async function generateCertificate(name: string): Promise<string> {
 
   const width = templateImg.naturalWidth;
   const height = templateImg.naturalHeight;
+
+  if (!width || !height) {
+    throw new Error('Template image has invalid dimensions');
+  }
 
   // Create canvas at full resolution
   const canvas = document.createElement('canvas');

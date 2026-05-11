@@ -394,7 +394,7 @@ export default function Webinar() {
       const res = await fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: formData.name, email: formData.email, membershipId: formData.membershipId, feedback: popupFeedback }),
+        body: JSON.stringify({ type: 'feedback', webinar: WEBINAR_TITLE, slug: WEBINAR_SLUG, name: certName, email: certEmail, membershipId: certMembershipId, feedback: popupFeedback }),
       });
       if (res.ok) {
         setFeedbackSubmitted(true);
