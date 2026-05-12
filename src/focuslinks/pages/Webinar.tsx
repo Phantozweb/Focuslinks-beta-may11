@@ -102,6 +102,7 @@ export default function Webinar() {
   const [showFeedbackPopup, setShowFeedbackPopup] = useState(false);
   const [popupFeedback, setPopupFeedback] = useState('');
   const [popupSubmitting, setPopupSubmitting] = useState(false);
+  const [popupSuccess, setPopupSuccess] = useState(false); // shows checkmark after feedback submits
 
   /* certificate image state */
   const [certImageUrl, setCertImageUrl] = useState<string | null>(null);
@@ -110,7 +111,11 @@ export default function Webinar() {
   /* certificate download popup state */
   const [showCertDownloadPopup, setShowCertDownloadPopup] = useState(false);
 
-  /* user from localStorage + check feedback status on load */
+  /* processing overlay — shown between feedback submission and cert download */
+  const [certProcessing, setCertProcessing] = useState(false);
+  const [certProcessingStep, setCertProcessingStep] = useState('');
+
+  /* user from localStorage + check feedback/certificate status on load */
   useEffect(() => {
     fetchListProfiles();
     const storedUser = localStorage.getItem('fl_user');
@@ -128,6 +133,9 @@ export default function Webinar() {
 
         // Check if user already submitted feedback for this webinar
         const feedbackKey = `fl_feedback_${WEBINAR_SLUG}`;
+        const certClaimedKey = `fl_cert_claimed_${WEBINAR_SLUG}`;
+        const certNameKey = `fl_cert_name_${WEBINAR_SLUG}`;
+
         if (localStorage.getItem(feedbackKey) === 'true') {
           setFeedbackSubmitted(true);
         } else if (user.email || user.membershipId) {
@@ -144,6 +152,17 @@ export default function Webinar() {
               }
             })
             .catch(() => { /* ignore */ });
+        }
+
+        // Check if user already claimed certificate for this webinar
+        if (localStorage.getItem(certClaimedKey) === 'true') {
+          setCertSubmitted(true);
+          // Restore the name used for certificate
+          const savedCertName = localStorage.getItem(certNameKey);
+          if (savedCertName) {
+            // We'll try to generate the cert image on demand (when user clicks the button)
+            // rather than auto-generating on page load
+          }
         }
       } catch { /* ignore */ }
     }
@@ -321,6 +340,8 @@ export default function Webinar() {
   /* actual certificate claim logic (called after feedback is confirmed) */
   const submitCertificateClaim = async () => {
     setCertSubmitting(true);
+    setCertProcessing(true);
+    setCertProcessingStep('Verifying your eligibility…');
     try {
       const verifyRes = await fetch('/api/verify-certificate', {
         method: 'POST',
@@ -333,10 +354,12 @@ export default function Webinar() {
       if (!verifyData.eligible) {
         toast.error(verifyData.error || 'You are not eligible for a certificate. Please check your details.');
         setCertSubmitting(false);
+        setCertProcessing(false);
         return;
       }
 
       // If eligible, submit the claim
+      setCertProcessingStep('Claiming your certificate…');
       const res = await fetch('/api/submit-form', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -355,25 +378,57 @@ export default function Webinar() {
       });
       if (res.ok) {
         setCertSubmitted(true);
-        toast.success('Certificate claimed! Generating your certificate…');
+        localStorage.setItem(`fl_cert_claimed_${WEBINAR_SLUG}`, 'true');
+        localStorage.setItem(`fl_cert_name_${WEBINAR_SLUG}`, verifyData.name || certName);
+        setCertProcessingStep('Generating your certificate…');
         // Generate the certificate image with the user's name
         setCertGenerating(true);
         try {
           const displayName = verifyData.name || certName;
           const imageUrl = await generateCertificateJPEG(displayName);
           setCertImageUrl(imageUrl);
+          setCertProcessing(false);
           setShowCertDownloadPopup(true);
+          toast.success('Certificate ready! Download it below.');
         } catch (genErr) {
           console.error('Certificate generation error:', genErr);
+          setCertProcessing(false);
           toast.error('Could not generate certificate image, but your claim was recorded.');
         } finally {
           setCertGenerating(false);
         }
       } else {
         const d = await res.json();
-        toast.error(d.error || 'Failed to claim certificate');
+        // If certificate already claimed, still try to generate the image
+        if (d.alreadyExists || d.error?.includes('already')) {
+          setCertSubmitted(true);
+          localStorage.setItem(`fl_cert_claimed_${WEBINAR_SLUG}`, 'true');
+          localStorage.setItem(`fl_cert_name_${WEBINAR_SLUG}`, certEligibility?.name || certName);
+          setCertProcessingStep('Generating your certificate…');
+          setCertGenerating(true);
+          try {
+            const displayName = certEligibility?.name || certName;
+            const imageUrl = await generateCertificateJPEG(displayName);
+            setCertImageUrl(imageUrl);
+            setCertProcessing(false);
+            setShowCertDownloadPopup(true);
+            toast.success('Certificate ready! Download it below.');
+          } catch (genErr) {
+            console.error('Certificate generation error:', genErr);
+            setCertProcessing(false);
+            toast.error('Could not generate certificate image.');
+          } finally {
+            setCertGenerating(false);
+          }
+        } else {
+          setCertProcessing(false);
+          toast.error(d.error || 'Failed to claim certificate');
+        }
       }
-    } catch { toast.error('Unexpected error. Please try again.'); }
+    } catch {
+      setCertProcessing(false);
+      toast.error('Unexpected error. Please try again.');
+    }
     finally { setCertSubmitting(false); }
   };
 
@@ -381,19 +436,20 @@ export default function Webinar() {
   const handleCertificateClaim = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // If feedback and cert already submitted, show cert download popup directly
-    if (feedbackSubmitted && certSubmitted && certImageUrl) {
+    // If cert already generated, show download popup directly
+    if (certImageUrl) {
       setShowCertDownloadPopup(true);
       return;
     }
 
     // If feedback not yet submitted, show the popup first
     if (!feedbackSubmitted) {
+      setPopupSuccess(false);
       setShowFeedbackPopup(true);
       return;
     }
 
-    // Feedback already done, proceed directly
+    // Feedback already done, proceed directly to claim
     await submitCertificateClaim();
   };
 
@@ -417,8 +473,12 @@ export default function Webinar() {
         setFeedbackSubmitted(true);
         localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true');
         setFeedback(popupFeedback);
+        // Show success confirmation in the popup for 1.5 seconds
+        setPopupSuccess(true);
+        toast.success('Feedback submitted!');
+        // Wait briefly so user sees the confirmation, then proceed
+        await new Promise(resolve => setTimeout(resolve, 1500));
         setShowFeedbackPopup(false);
-        toast.success('Feedback submitted! Claiming your certificate…');
         // Now proceed with the certificate claim
         await submitCertificateClaim();
       } else {
@@ -427,8 +487,10 @@ export default function Webinar() {
         if (d.alreadyExists) {
           setFeedbackSubmitted(true);
           localStorage.setItem(`fl_feedback_${WEBINAR_SLUG}`, 'true');
+          setPopupSuccess(true);
+          toast.info('Feedback already recorded.');
+          await new Promise(resolve => setTimeout(resolve, 1000));
           setShowFeedbackPopup(false);
-          toast.info('Feedback already recorded. Claiming your certificate…');
           await submitCertificateClaim();
         } else {
           toast.error(d.error || 'Failed to submit feedback');
@@ -1146,7 +1208,7 @@ export default function Webinar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={() => { if (!popupSubmitting) setShowFeedbackPopup(false); }}
+            onClick={() => { if (!popupSubmitting && !popupSuccess) setShowFeedbackPopup(false); }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -1156,60 +1218,84 @@ export default function Webinar() {
               className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden"
               onClick={e => e.stopPropagation()}
             >
-              {/* Close button */}
-              <button
-                onClick={() => { if (!popupSubmitting) setShowFeedbackPopup(false); }}
-                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              {/* Close button — hidden during submission/success */}
+              {!popupSubmitting && !popupSuccess && (
+                <button
+                  onClick={() => setShowFeedbackPopup(false)}
+                  className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
 
               <div className="p-6 sm:p-8">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-2 pr-8">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Share Your Feedback</h3>
-                </div>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                  Share your thoughts on the session! You can also skip this step and claim your certificate directly.
-                </p>
-
-                {/* Form wrapping textarea and submit for Enter key support */}
-                <form onSubmit={handlePopupFeedbackSubmitForm}>
-                  {/* Textarea */}
-                  <textarea
-                    rows={4}
-                    placeholder="How was the session? What did you learn? Any suggestions? (optional)"
-                    value={popupFeedback}
-                    onChange={e => setPopupFeedback(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4"
-                  />
-
-                  {/* Submit button */}
-                  <button
-                    type="submit"
-                    disabled={popupSubmitting}
-                    className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                {popupSuccess ? (
+                  /* ── Success Confirmation ── */
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center gap-4 py-4 text-center"
                   >
-                    {popupSubmitting ? (
-                      <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
-                    ) : (
-                      <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
-                    )}
-                  </button>
+                    <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                      <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Feedback Submitted!</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Claiming your certificate…</p>
+                    </div>
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-500" />
+                  </motion.div>
+                ) : (
+                  /* ── Feedback Form ── */
+                  <>
+                    {/* Header */}
+                    <div className="flex items-center gap-3 mb-2 pr-8">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white">Share Your Feedback</h3>
+                    </div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                      Share your thoughts on the session! You can also skip this step and claim your certificate directly.
+                    </p>
 
-                  {/* Skip Feedback button */}
-                  <button
-                    type="button"
-                    disabled={popupSubmitting}
-                    onClick={() => handlePopupFeedbackSubmit('No detailed feedback provided')}
-                    className="w-full mt-2 text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors py-1"
-                  >
-                    Skip feedback & claim certificate
-                  </button>
-                </form>
+                    {/* Form wrapping textarea and submit for Enter key support */}
+                    <form onSubmit={handlePopupFeedbackSubmitForm}>
+                      {/* Textarea */}
+                      <textarea
+                        rows={4}
+                        placeholder="How was the session? What did you learn? Any suggestions? (optional)"
+                        value={popupFeedback}
+                        onChange={e => setPopupFeedback(e.target.value)}
+                        disabled={popupSubmitting}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none placeholder:text-slate-400 dark:text-slate-300 mb-4 disabled:opacity-60"
+                      />
+
+                      {/* Submit button */}
+                      <button
+                        type="submit"
+                        disabled={popupSubmitting}
+                        className="w-full py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 disabled:opacity-60 text-white rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                      >
+                        {popupSubmitting ? (
+                          <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
+                        ) : (
+                          <><Send className="w-4 h-4" /> Submit & Claim Certificate</>
+                        )}
+                      </button>
+
+                      {/* Skip Feedback button */}
+                      <button
+                        type="button"
+                        disabled={popupSubmitting}
+                        onClick={() => handlePopupFeedbackSubmit('No detailed feedback provided')}
+                        className="w-full mt-2 text-center text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors py-1 disabled:opacity-40"
+                      >
+                        Skip feedback & claim certificate
+                      </button>
+                    </form>
+                  </>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -1285,6 +1371,36 @@ export default function Webinar() {
                 </div>
 
                 <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center mt-3">Your certificate is also being sent to your email. You can download it anytime from the certificate section below.</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Processing Overlay — shown while verifying/claiming/generating certificate */}
+      <AnimatePresence>
+        {certProcessing && !showFeedbackPopup && !showCertDownloadPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-emerald-200 dark:border-emerald-800/40 overflow-hidden p-8 text-center"
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Processing Certificate</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{certProcessingStep || 'Please wait…'}</p>
+                </div>
               </div>
             </motion.div>
           </motion.div>
