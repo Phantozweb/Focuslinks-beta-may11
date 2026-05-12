@@ -17,8 +17,8 @@ export interface CertificateConfig {
 // Match the actual GitHub config to avoid wrong positioning on fallback
 const DEFAULT_CONFIG: CertificateConfig = {
   namePosition: { x: 50.5, y: 39.5 },
-  fontSize: 25,
-  fontFamily: 'Georgia, serif',
+  fontSize: 52,
+  fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif',
   fontColor: '#1e293b',
   textAlign: 'center',
 };

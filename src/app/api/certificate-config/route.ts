@@ -25,9 +25,9 @@ export async function GET() {
       return NextResponse.json({
         success: true,
         config: {
-          namePosition: { x: 50, y: 50 },
-          fontSize: 36,
-          fontFamily: 'Georgia, serif',
+          namePosition: { x: 50.5, y: 39.5 },
+          fontSize: 52,
+          fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif',
           fontColor: '#1e293b',
           textAlign: 'center',
           templateImage: GITHUB_RAW_TEMPLATE_URL,
