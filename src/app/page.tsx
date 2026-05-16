@@ -96,7 +96,7 @@ function Router() {
         const storedUser = localStorage.getItem('fl_user');
         if (storedUser) {
           hasRedirected.current = true;
-          navigate('/home');
+          navigate('/dashboard');
         } else {
           hasRedirected.current = true;
           navigate('/onboarding');

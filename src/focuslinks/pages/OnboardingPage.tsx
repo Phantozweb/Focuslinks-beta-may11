@@ -450,7 +450,7 @@ export default function OnboardingPage() {
       const isComplete = localStorage.getItem(ONBOARDING_COMPLETE_KEY) === 'true';
       const hasUser = localStorage.getItem('fl_user');
       if (isComplete && hasUser) {
-        navigate('/home');
+        navigate('/dashboard');
       }
     } catch { /* ignore */ }
   }, [mounted, navigate]);
@@ -476,7 +476,7 @@ export default function OnboardingPage() {
         location: data.cityState ? `${data.cityState}, ${data.country}` : data.country || '',
       }));
     } catch { /* ignore */ }
-    navigate('/home');
+    navigate('/dashboard');
   }, [data, navigate]);
 
   const handleComplete = useCallback(async () => {
@@ -498,9 +498,7 @@ export default function OnboardingPage() {
         });
       } catch { /* non-blocking */ }
 
-      const recommendations = getFeatureRecommendations(data);
-      const bestRoute = recommendations.length > 0 ? recommendations[0].route : '/home';
-      navigate(bestRoute);
+      navigate('/dashboard');
     } catch {
       setIsSubmitting(false);
     }

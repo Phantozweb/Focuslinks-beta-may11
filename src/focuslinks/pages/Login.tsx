@@ -177,7 +177,7 @@ export default function Login() {
 
       toast.success(`Welcome back, ${user.name || 'Member'}!`);
       setIsLoading(false);
-      navigate('/home');
+      navigate('/dashboard');
     } catch {
       setError('Unable to connect. Please check your internet connection and try again.');
       setIsLoading(false);

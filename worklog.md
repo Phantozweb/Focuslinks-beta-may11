@@ -421,3 +421,33 @@ Stage Summary:
 - Tag labels are simple pills below each card
 - AI badge sparkle is static (no rotation)
 - Lint passes clean
+
+---
+Task ID: 5
+Agent: Main Agent
+Task: Add Profile Completion widget to Dashboard + redirect to /dashboard after onboarding/login
+
+Work Log:
+- Read existing Dashboard.tsx (~725 lines) — already has welcome banner, quick actions, community feed, user info card, public profile status, edit profile modals
+- Added Profile Completion widget between Welcome Banner and Quick Actions:
+  - Animated progress bar (gradient blue-purple-fuchsia) showing completion percentage
+  - 6-item checklist: Name, Email, Role, Location, Photo, Publish Public Profile
+  - Each item shows checkmark (emerald) if done, or clickable card with arrow if not
+  - Clicking incomplete items opens edit profile modal or navigates to /create-profile
+  - Widget auto-hides when profile is 100% complete
+  - "Publish My Profile" CTA button links to /create-profile
+  - Gradient top accent bar for visual polish
+- Changed onboarding redirects: all 3 scenarios now go to /dashboard instead of /home or feature-specific routes
+  - Already complete redirect: /dashboard
+  - Skip onboarding: /dashboard
+  - Complete onboarding: /dashboard (removed smart route recommendation)
+- Changed Login.tsx redirect: /dashboard instead of /home
+- Changed root / redirect in page.tsx: /dashboard instead of /home
+- Lint passes clean, dev server running without errors
+
+Stage Summary:
+- Dashboard now has prominent "Complete Your Profile" widget with progress bar and actionable checklist
+- Users are always redirected to /dashboard after onboarding, login, or visiting /
+- Profile completion tracked: name, email, role, location, photo, public profile
+- Widget disappears when profile is 100% complete
+- Publish My Profile CTA drives users to create their directory listing

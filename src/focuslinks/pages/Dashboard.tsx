@@ -348,6 +348,118 @@ export default function Dashboard() {
         </motion.div>
 
         {/* -------------------------------------------------------- */}
+        {/* Profile Completion Widget                                 */}
+        {/* -------------------------------------------------------- */}
+        {(() => {
+          const completionItems = [
+            { key: 'name', label: 'Add your name', done: !!(user.name || user.fullName), icon: User, action: () => setIsEditing(true) },
+            { key: 'email', label: 'Add your email', done: !!user.email, icon: Mail, action: () => setIsEditing(true) },
+            { key: 'role', label: 'Set your role', done: !!user.role, icon: Briefcase, action: () => setIsEditing(true) },
+            { key: 'location', label: 'Add your location', done: !!(user.location || user.country), icon: MapPin, action: () => setIsEditing(true) },
+            { key: 'photo', label: 'Add a profile photo', done: !!user.image, icon: User, action: () => navigate('/create-profile') },
+            { key: 'publicProfile', label: 'Publish public profile', done: userProfileStatus.hasProfile, icon: ExternalLink, action: () => navigate('/create-profile') },
+          ];
+          const completed = completionItems.filter(i => i.done).length;
+          const total = completionItems.length;
+          const pct = Math.round((completed / total) * 100);
+          const isComplete = pct === 100;
+
+          if (isComplete) return null;
+
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+              className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-blue-100 dark:border-blue-900/50 mb-8 relative overflow-hidden"
+            >
+              {/* Decorative gradient accent */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500" />
+
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    Complete Your Profile
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Publish your profile to connect with optometrists worldwide
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <span className="text-2xl font-extrabold text-blue-600 dark:text-blue-400">{pct}%</span>
+                    <span className="text-xs text-gray-400 ml-1">complete</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-3 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden mb-5">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${pct}%` }}
+                  transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                  className="h-full rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-fuchsia-500"
+                />
+              </div>
+
+              {/* Completion items grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
+                {completionItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.button
+                      key={item.key}
+                      whileHover={item.done ? {} : { scale: 1.01 }}
+                      whileTap={item.done ? {} : { scale: 0.99 }}
+                      onClick={item.done ? undefined : item.action}
+                      disabled={item.done}
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                        item.done
+                          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/50 cursor-default'
+                          : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-700 cursor-pointer hover:shadow-sm'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        item.done
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 dark:bg-slate-700 text-gray-400 dark:text-gray-500'
+                      }`}>
+                        {item.done ? (
+                          <CheckCircle2 className="w-5 h-5" />
+                        ) : (
+                          <Icon className="w-4 h-4" />
+                        )}
+                      </div>
+                      <span className={`text-sm font-semibold ${
+                        item.done
+                          ? 'text-emerald-700 dark:text-emerald-400 line-through'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {item.label}
+                      </span>
+                      {!item.done && (
+                        <ArrowRight className="w-4 h-4 text-gray-300 dark:text-gray-600 ml-auto shrink-0" />
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* CTA */}
+              {!userProfileStatus.hasProfile && (
+                <Link
+                  to="/create-profile"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold text-sm shadow-lg shadow-blue-600/25 transition-all"
+                >
+                  Publish My Profile <ArrowRight className="w-4 h-4" />
+                </Link>
+              )}
+            </motion.div>
+          );
+        })()}
+
+        {/* -------------------------------------------------------- */}
         {/* Quick Actions Grid                                        */}
         {/* -------------------------------------------------------- */}
         <motion.div
