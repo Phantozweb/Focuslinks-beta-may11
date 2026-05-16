@@ -180,15 +180,6 @@ const slideTransition = {
 function DecorativePanel() {
   return (
     <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900">
-      {/* Banner image as background */}
-      <div className="absolute inset-0">
-        <img
-          src="/images/onboarding/desktop-banner.png"
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity"
-        />
-      </div>
-
       {/* Abstract decorative shapes */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large circle */}
@@ -884,17 +875,17 @@ export default function OnboardingPage() {
 
       {/* Right Side — Step Content */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile — subtle banner peek at top */}
-        <div className="lg:hidden relative h-28 overflow-hidden">
-          {/* Banner image — show only top portion (head area) */}
+        {/* Mobile — banner with visible character */}
+        <div className="lg:hidden relative h-52 overflow-hidden">
+          {/* Banner image */}
           <img 
             src="/images/onboarding/mobile-banner.png" 
             alt="" 
-            className="absolute inset-0 w-full h-full object-cover object-top scale-110"
+            className="absolute inset-0 w-full h-full object-cover object-center"
           />
-          {/* Gradient overlay to blend seamlessly into white content area */}
-          <div className="absolute inset-0 bg-gradient-to-b from-blue-600/50 via-blue-700/30 to-white" />
-          {/* Minimal logo — single line, no bar feel */}
+          {/* Gradient overlay — light touch to blend bottom into white */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 via-transparent to-white" />
+          {/* Logo on top */}
           <div className="relative z-10 flex items-center gap-2 pt-4 px-5">
             <div className="w-7 h-7 rounded-lg bg-white/25 backdrop-blur-sm flex items-center justify-center">
               <Eye className="w-4 h-4 text-white" />

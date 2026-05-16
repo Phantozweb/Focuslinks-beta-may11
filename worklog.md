@@ -184,3 +184,21 @@ Stage Summary:
 - Mobile shows a subtle head-area peek of the banner, blending cleanly
 - icon.png removed from all usages
 - Lint passes clean
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix desktop duplicate overlay and mobile invisible banner
+
+Work Log:
+- VLM confirmed desktop had character showing twice: once as faded background overlay, once as foreground illustration
+- Removed the background overlay img (opacity-20 mix-blend-luminosity) from DecorativePanel, kept only the featured illustration at bottom
+- VLM confirmed mobile banner was completely invisible — the heavy gradient overlay (from-blue-600/50 via-blue-700/30 to-white) covered everything
+- Increased mobile banner height from h-28 to h-52 (208px) for better visibility
+- Changed object-top scale-110 to object-center for natural framing
+- Lightened gradient overlay to from-blue-900/30 via-transparent to-white — character now clearly visible
+- Verified with VLM: desktop shows single illustration, mobile shows cute character clearly
+
+Stage Summary:
+- Desktop: Single illustration only, no more duplicate
+- Mobile: Banner with cute character clearly visible at top, blends into white content below
