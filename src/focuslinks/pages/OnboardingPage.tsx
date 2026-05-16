@@ -657,12 +657,32 @@ export default function OnboardingPage() {
         )}
       </motion.div>
 
+      {/* Continue button — right below email, centered for easy access */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55, type: 'spring', stiffness: 200, damping: 20 }}
+        className="flex justify-center pt-1"
+      >
+        <motion.button
+          type="button"
+          onClick={goNext}
+          disabled={!canContinue()}
+          whileHover={{ scale: canContinue() ? 1.03 : 1 }}
+          whileTap={{ scale: canContinue() ? 0.97 : 1 }}
+          className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer w-full sm:w-auto sm:min-w-[200px] justify-center"
+        >
+          Continue
+          <ArrowRight className="w-4 h-4" />
+        </motion.button>
+      </motion.div>
+
       {/* Social proof hint */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
-        className="flex items-center justify-center gap-2 pt-2"
+        className="flex items-center justify-center gap-2 pt-1"
       >
         <div className="flex -space-x-2">
           {['bg-blue-500', 'bg-emerald-500', 'bg-orange-500', 'bg-purple-500'].map((color, i) => (
