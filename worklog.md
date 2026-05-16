@@ -396,3 +396,28 @@ Stage Summary:
 - No scrolling needed to find the Continue button on Step 1
 - Bottom navigation bar still present for all steps
 - Lint passes clean
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fix blurry perception on right panel - remove constant floating animations and visual noise
+
+Work Log:
+- Identified root cause: 6 visual tag cards had continuous floating animations (y: [0, -3, 0] repeat Infinity) making everything appear blurry
+- Rotating sparkle icon in AI badge also contributed to "everything moving" feel
+- Dotted connector lines on tag labels added visual noise
+- Removed all continuous floating animations from visual tag cards — they now stay static and sharp
+- Removed rotation from cards (no more wobble/tilt)
+- Replaced motion.div with plain div for card images (no infinite animation)
+- Cleaned up tag labels: removed dotted connector lines, placed clean pill tags below cards with mt-2
+- Removed infinite rotation from AI badge sparkle icon
+- Kept only entry animations (spring fade-in) and hover effects
+- Cleaned up visualTagCards data: removed unused rotate, floatDur, delay properties
+- VLM rates clarity 9/10
+
+Stage Summary:
+- Right panel is now crisp and sharp — no constant animations causing blur perception
+- Cards are static with clean entry animations only
+- Tag labels are simple pills below each card
+- AI badge sparkle is static (no rotation)
+- Lint passes clean

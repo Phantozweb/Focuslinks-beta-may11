@@ -216,9 +216,6 @@ const visualTagCards = [
     tag: 'AI Tools',
     tagColor: 'bg-amber-500',
     tagText: 'text-white',
-    rotate: -5,
-    floatDur: 3.4,
-    delay: 0.8,
   },
   {
     id: 'tag-academy',
@@ -226,9 +223,6 @@ const visualTagCards = [
     tag: 'Academy',
     tagColor: 'bg-emerald-500',
     tagText: 'text-white',
-    rotate: 4,
-    floatDur: 4.0,
-    delay: 1.0,
   },
   {
     id: 'tag-global',
@@ -236,9 +230,6 @@ const visualTagCards = [
     tag: 'Community',
     tagColor: 'bg-sky-500',
     tagText: 'text-white',
-    rotate: -3,
-    floatDur: 3.7,
-    delay: 1.1,
   },
   {
     id: 'tag-events',
@@ -246,9 +237,6 @@ const visualTagCards = [
     tag: 'Events',
     tagColor: 'bg-purple-500',
     tagText: 'text-white',
-    rotate: 6,
-    floatDur: 4.3,
-    delay: 1.2,
   },
   {
     id: 'tag-career',
@@ -256,9 +244,6 @@ const visualTagCards = [
     tag: 'Career',
     tagColor: 'bg-orange-500',
     tagText: 'text-white',
-    rotate: -4,
-    floatDur: 3.5,
-    delay: 1.3,
   },
   {
     id: 'tag-trust',
@@ -266,9 +251,6 @@ const visualTagCards = [
     tag: 'Free & Safe',
     tagColor: 'bg-blue-600',
     tagText: 'text-white',
-    rotate: 3,
-    floatDur: 3.9,
-    delay: 1.4,
   },
 ];
 
@@ -1090,48 +1072,32 @@ export default function OnboardingPage() {
               {/* Soft separator */}
               <div className="h-px w-full mb-5" style={{ background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.12), transparent)' }} />
 
-              {/* 3×2 grid of cartoon visual cards with tag labels */}
+              {/* 3×2 grid of cartoon visual cards with tag labels — clean & sharp */}
               <div className="grid grid-cols-3 gap-3">
                 {visualTagCards.map((card, i) => (
                   <motion.div
                     key={card.id}
-                    initial={{ opacity: 0, y: 20, scale: 0.9, rotate: card.rotate * 2 }}
-                    animate={{ opacity: 1, y: 0, scale: 1, rotate: card.rotate }}
-                    transition={{ delay: card.delay, type: 'spring', stiffness: 180, damping: 18 }}
-                    whileHover={{ scale: 1.05, y: -4, rotate: 0 }}
+                    initial={{ opacity: 0, y: 16, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.6 + i * 0.07, type: 'spring', stiffness: 200, damping: 22 }}
+                    whileHover={{ scale: 1.04, y: -3 }}
                     className="relative group cursor-default"
                   >
-                    <motion.div
-                      animate={{
-                        y: [0, -3, 0],
-                      }}
-                      transition={{ duration: card.floatDur, repeat: Infinity, ease: 'easeInOut' }}
-                      className="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-white"
-                    >
-                      {/* Cartoon image */}
+                    {/* Card image — no floating animation, stays sharp */}
+                    <div className="relative rounded-2xl overflow-hidden shadow-md border border-gray-100 bg-white">
                       <img
                         src={card.img}
-                        alt=""
+                        alt={card.tag}
                         className="w-full aspect-square object-cover"
                       />
                       {/* Subtle overlay on hover */}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    </motion.div>
+                    </div>
 
-                    {/* Tag label — connected to the image like a tag/sticker */}
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.7 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: card.delay + 0.15, type: 'spring', stiffness: 250, damping: 20 }}
-                      className={`absolute -bottom-3 left-1/2 -translate-x-1/2 ${card.tagColor} ${card.tagText} px-3 py-1 rounded-full text-[11px] font-bold shadow-md whitespace-nowrap z-10`}
-                    >
-                      {/* Tag connector — dotted line + dot */}
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex flex-col items-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300 mb-0.5" />
-                        <div className="w-0.5 h-3 bg-gray-300" style={{ backgroundImage: 'repeating-linear-gradient(to bottom, #d1d5db 0px, #d1d5db 2px, transparent 2px, transparent 5px)' }} />
-                      </div>
+                    {/* Tag label — clean pill below the card */}
+                    <div className={`mt-2 mx-auto w-fit ${card.tagColor} ${card.tagText} px-3 py-1 rounded-full text-[11px] font-bold shadow-sm whitespace-nowrap`}>
                       {card.tag}
-                    </motion.div>
+                    </div>
                   </motion.div>
                 ))}
               </div>
@@ -1140,16 +1106,12 @@ export default function OnboardingPage() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.8, type: 'spring', stiffness: 200, damping: 22 }}
-                className="mt-6 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-white mx-auto w-fit"
+                transition={{ delay: 1.2, type: 'spring', stiffness: 200, damping: 22 }}
+                className="mt-5 flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-white mx-auto w-fit"
               >
-                <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                  className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-sm"
-                >
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-sm">
                   <Sparkles className="w-3.5 h-3.5 text-white" />
-                </motion.div>
+                </div>
                 <span className="text-xs font-semibold text-gray-600">AI-Powered Personalization</span>
                 <span className="text-[10px] text-gray-400">— adapts as you go</span>
               </motion.div>
