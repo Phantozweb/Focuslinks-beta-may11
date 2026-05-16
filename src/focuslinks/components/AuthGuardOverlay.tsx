@@ -116,6 +116,7 @@ const PUBLIC_ROUTES = new Set([
   '/membership-application',
   '/contactus',
   '/help-center',
+  '/onboarding',
 ]);
 
 function isPublicRoute(pathname: string): boolean {

@@ -432,10 +432,10 @@ export default function Navbar() {
                         {/* Settings, Onboarding & Logout */}
                         <div className="py-1.5 border-t border-gray-100 dark:border-slate-700">
                           <button
-                            onClick={() => { import('../components/OnboardingWizard').then(m => m.triggerOnboarding()); }}
-                            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors mx-1"
+                            onClick={() => { try { localStorage.removeItem('fl_onboarding_complete'); localStorage.removeItem('fl_onboarding_data'); } catch {} navigate('/onboarding'); }}
+                            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors mx-1"
                           >
-                            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                            <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
                               <Sparkles className="w-3.5 h-3.5" />
                             </div>
                             Restart Onboarding

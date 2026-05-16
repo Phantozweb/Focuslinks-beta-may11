@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Navbar from '@/focuslinks/components/Navbar';
 import Footer from '@/focuslinks/components/Footer';
 import GettingStartedModal from '@/focuslinks/components/GettingStartedModal';
-import OnboardingWizard from '@/focuslinks/components/OnboardingWizard';
+// OnboardingWizard removed — now using full-page OnboardingPage
 import CommandPalette from '@/focuslinks/components/CommandPalette';
 import OnboardingTour from '@/focuslinks/components/OnboardingTour';
 import Breadcrumbs from '@/focuslinks/components/Breadcrumbs';
@@ -70,6 +70,7 @@ const OptoMap = lazy(() => import('@/focuslinks/pages/OptoMap'));
 const HomePage = lazy(() => import('@/focuslinks/pages/HomePage'));
 const ConnectionsPage = lazy(() => import('@/focuslinks/pages/Connections'));
 const ProfessionalsDirectory = lazy(() => import('@/focuslinks/pages/ProfessionalsDirectory'));
+const OnboardingPage = lazy(() => import('@/focuslinks/pages/OnboardingPage'));
 
 function PageLoader() {
   return (
@@ -86,7 +87,7 @@ function PageLoader() {
 function Router() {
   const { pathname } = useLocation();
   const path = pathname || '/';
-  // Redirect logged-in users from / to /home (one-time only)
+  // Redirect from / based on auth state (one-time only)
   const hasRedirected = useRef(false);
   const navigate = useNavigate();
   useEffect(() => {
@@ -96,6 +97,9 @@ function Router() {
         if (storedUser) {
           hasRedirected.current = true;
           navigate('/home');
+        } else {
+          hasRedirected.current = true;
+          navigate('/onboarding');
         }
       } catch { /* ignore */ }
     }
@@ -161,6 +165,7 @@ function Router() {
     '/connections': ConnectionsPage,
     '/professionals': ProfessionalsDirectory,
     '/beyond-orthok': Webinar,
+    '/onboarding': OnboardingPage,
   }), []);
 
   let PageComponent: React.LazyExoticComponent<React.ComponentType> | null = null;
@@ -182,7 +187,7 @@ function Router() {
           transition={{ duration: 0.2, ease: 'easeInOut' }}
           className={needsGuard ? 'blur-lg pointer-events-none select-none' : ''}
         >
-          {path !== '/' && !needsGuard && <Breadcrumbs />}
+          {path !== '/' && path !== '/onboarding' && !needsGuard && <Breadcrumbs />}
           <Suspense fallback={<PageLoader />}>
             {PageComponent && <PageComponent />}
           </Suspense>
@@ -195,22 +200,26 @@ function Router() {
 
 export default function Page() {
   const isAuthenticated = useIsAuthenticated();
-  
+  const { pathname } = useLocation();
+  const path = pathname || '/';
+  const isOnboarding = path === '/onboarding';
+
   return (
     <NavigationProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-200">
-        <Navbar />
-        {isAuthenticated && <GettingStartedModal />}
-        {isAuthenticated && <OnboardingWizard />}
-        {isAuthenticated && <CommandPalette />}
-        {isAuthenticated && <OnboardingTour />}
-        {isAuthenticated && <BottomNav />}
-        <main className="flex-grow">
+        {!isOnboarding && <Navbar />}
+        {isAuthenticated && !isOnboarding && <GettingStartedModal />}
+        {isAuthenticated && !isOnboarding && <CommandPalette />}
+        {isAuthenticated && !isOnboarding && <OnboardingTour />}
+        {isAuthenticated && !isOnboarding && <BottomNav />}
+        <main className={isOnboarding ? '' : 'flex-grow'}>
           <Router />
         </main>
-        <div className="hidden md:block">
-          <Footer />
-        </div>
+        {!isOnboarding && (
+          <div className="hidden md:block">
+            <Footer />
+          </div>
+        )}
       </div>
     </NavigationProvider>
   );
