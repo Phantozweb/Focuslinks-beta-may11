@@ -248,31 +248,13 @@ function DecorativePanel() {
           </motion.div>
         </div>
 
-        {/* Middle — cute mascot + inspirational text */}
+        {/* Middle — inspirational text */}
         <div className="space-y-6">
-          {/* Cute mascot icon */}
-          <motion.div
-            initial={{ scale: 0, rotate: -15 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 18, delay: 0.3 }}
-            className="w-28 h-28 mx-auto relative"
-          >
-            <img 
-              src="/images/onboarding/icon.png" 
-              alt="FocusLinks Mascot" 
-              className="w-full h-full object-contain drop-shadow-xl"
-            />
-            <motion.div
-              animate={{ scale: [1, 1.1, 1], opacity: [0.2, 0.1, 0.2] }}
-              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute inset-0 rounded-full bg-white/15 -m-3"
-            />
-          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-3xl xl:text-4xl font-bold text-white leading-tight text-center"
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="text-3xl xl:text-4xl font-bold text-white leading-tight"
           >
             The Future of<br />
             Optometry Starts<br />
@@ -471,29 +453,18 @@ export default function OnboardingPage() {
       className="flex flex-col gap-6"
     >
       <div className="mb-2">
-        {/* Cute mascot icon */}
         <motion.div
-          initial={{ scale: 0, rotate: -10 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-          className="w-24 h-24 mx-auto mb-5 relative"
+          className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/25"
         >
-          <img 
-            src="/images/onboarding/icon.png" 
-            alt="FocusLinks Mascot" 
-            className="w-full h-full object-contain drop-shadow-lg"
-          />
-          {/* Cute bounce animation ring */}
-          <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.15, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="absolute inset-0 rounded-full bg-blue-400/20 -m-2"
-          />
+          <Sparkles className="w-7 h-7 text-white" />
         </motion.div>
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center">
           Welcome to FocusLinks
         </h2>
-        <p className="text-gray-500 mt-2 leading-relaxed text-center text-base">
+        <p className="text-gray-500 mt-2 leading-relaxed text-center text-sm sm:text-base">
           The global platform for optometry professionals. Let&apos;s personalize your experience in just a few steps.
         </p>
       </div>
@@ -891,34 +862,24 @@ export default function OnboardingPage() {
 
       {/* Right Side — Step Content */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile gradient header with cute banner */}
+        {/* Mobile header with blended banner */}
         <div className="lg:hidden relative overflow-hidden">
-          {/* Banner image area */}
-          <div className="relative bg-gradient-to-br from-blue-500 via-blue-600 to-blue-800 pt-6 pb-4 px-6">
-            {/* Abstract shapes */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
-              <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-60 h-60 rounded-full bg-blue-400/10" />
-            </div>
-            <div className="relative z-10 flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                <Eye className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-lg font-bold text-white">FocusLinks</span>
-            </div>
-          </div>
-          {/* Cute mascot banner */}
-          <div className="relative -mt-2 mx-auto max-w-[280px]">
+          {/* Banner as background */}
+          <div className="relative h-44 overflow-hidden">
             <img 
               src="/images/onboarding/mobile-banner.png" 
-              alt="Welcome to FocusLinks" 
-              className="w-full h-auto rounded-3xl shadow-xl shadow-blue-600/20 border-2 border-white/50"
+              alt="" 
+              className="absolute inset-0 w-full h-full object-cover object-top"
             />
-          </div>
-          <div className="text-center px-6 pt-4 pb-2">
-            <h1 className="text-xl font-bold text-gray-900">Welcome aboard ✨</h1>
-            <p className="text-gray-500 text-sm mt-1">Let&apos;s set up your experience</p>
+            {/* Gradient overlay to blend into white */}
+            <div className="absolute inset-0 bg-gradient-to-b from-blue-600/60 via-blue-700/40 to-white" />
+            {/* Logo on top */}
+            <div className="relative z-10 flex items-center gap-2.5 pt-5 px-5">
+              <div className="w-7 h-7 rounded-lg bg-white/25 backdrop-blur-sm flex items-center justify-center">
+                <Eye className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-base font-bold text-white drop-shadow-sm">FocusLinks</span>
+            </div>
           </div>
         </div>
 
