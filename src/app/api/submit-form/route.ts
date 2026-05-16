@@ -126,6 +126,9 @@ export async function POST(request: NextRequest) {
       GITHUB_FILE_PATH = `TeamApplications/${entryId}${membershipId}.json`;
     } else if (body.type === 'rapd_simulator_feedback') {
       GITHUB_FILE_PATH = `Labs/RAPDSimulator/feedback/${entryId}.json`;
+    } else if (body.type === 'onboarding') {
+      const emailSlug = (body.email || 'unknown').replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      GITHUB_FILE_PATH = `Onboarding/${entryId}_${emailSlug}.json`;
     }
 
     if (!GITHUB_FILE_PATH) {

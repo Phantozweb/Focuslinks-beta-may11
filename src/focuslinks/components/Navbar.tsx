@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Eye, Menu, X, ArrowRight, LogIn, UserPlus, User, LogOut, LayoutDashboard, Moon, Sun, Bell, Search, PenSquare, Settings, MessageCircle, Bookmark, Trophy, Library, ShoppingBag, ChevronDown, MoreHorizontal, Home, Users, Rss, FlaskConical, GraduationCap, BookOpen, Info, MessageSquare, Calendar, Heart, Briefcase, MapPin, Link2, Stethoscope } from 'lucide-react';
+import { Eye, Menu, X, ArrowRight, LogIn, UserPlus, User, LogOut, LayoutDashboard, Moon, Sun, Bell, Search, PenSquare, Settings, MessageCircle, Bookmark, Trophy, Library, ShoppingBag, ChevronDown, MoreHorizontal, Home, Users, Rss, FlaskConical, GraduationCap, BookOpen, Info, MessageSquare, Calendar, Heart, Briefcase, MapPin, Link2, Stethoscope, Sparkles, InfoIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { motion, AnimatePresence } from 'motion/react';
@@ -132,15 +132,20 @@ export default function Navbar() {
     ...moreNavLinks,
   ];
 
+  // For non-logged-in users, show a minimal navbar
+  const isGuest = !user;
+
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white text-xs sm:text-sm py-2 px-4 text-center flex items-center justify-center gap-2 relative z-50">
-        <span className="font-medium text-blue-50">New to Focus Links? Join our global network of eye care professionals.</span>
-        <Link to="/membership" className="font-bold text-white hover:text-blue-200 transition-colors flex items-center group shrink-0">
-          Get Started <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
-        </Link>
-      </div>
+      {/* Top Banner — only for logged-in users */}
+      {!isGuest && (
+        <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white text-xs sm:text-sm py-2 px-4 text-center flex items-center justify-center gap-2 relative z-50">
+          <span className="font-medium text-blue-50">New to Focus Links? Join our global network of eye care professionals.</span>
+          <Link to="/membership" className="font-bold text-white hover:text-blue-200 transition-colors flex items-center group shrink-0">
+            Get Started <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+      )}
 
       {/* Main Navbar */}
       <nav
@@ -161,7 +166,8 @@ export default function Navbar() {
               <span className="text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">FocusLinks</span>
             </Link>
 
-            {/* Desktop Center Navigation */}
+            {/* Desktop Center Navigation — only for logged-in users */}
+            {!isGuest && (
             <div className="hidden lg:flex items-center justify-center absolute left-1/2 -translate-x-1/2">
               <div className="flex items-center space-x-0.5 bg-gray-50/80 dark:bg-slate-800/80 p-1 rounded-full border border-gray-100 dark:border-slate-700 backdrop-blur-md">
                 {primaryNavLinks.map((link) => (
@@ -255,10 +261,12 @@ export default function Navbar() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Desktop Right Actions */}
             <div className="hidden lg:flex items-center space-x-2 shrink-0">
-              {/* Search Button */}
+              {/* Search Button — only for logged-in users */}
+              {!isGuest && (
               <Link
                 to="/search"
                 className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200 border border-gray-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800/40"
@@ -266,6 +274,7 @@ export default function Navbar() {
               >
                 <Search className="h-4 w-4" />
               </Link>
+              )}
 
               {/* Create Post Button (logged in) */}
               {user && (
@@ -287,7 +296,8 @@ export default function Navbar() {
                 {resolvedTheme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </button>
 
-              {/* Notification Bell */}
+              {/* Notification Bell — only for logged-in users */}
+              {!isGuest && (
               <Link
                 to="/notifications"
                 className="relative p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full transition-all duration-200 border border-gray-200 dark:border-slate-700 hover:border-gray-300 dark:hover:border-slate-600"
@@ -300,6 +310,7 @@ export default function Navbar() {
                   </span>
                 )}
               </Link>
+              )}
 
               {user ? (
                 <div className="relative" ref={dropdownRef}>
@@ -418,8 +429,17 @@ export default function Navbar() {
                           </Link>
                         </div>
 
-                        {/* Settings & Logout */}
+                        {/* Settings, Onboarding & Logout */}
                         <div className="py-1.5 border-t border-gray-100 dark:border-slate-700">
+                          <button
+                            onClick={() => { import('../components/OnboardingWizard').then(m => m.triggerOnboarding()); }}
+                            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-colors mx-1"
+                          >
+                            <div className="w-7 h-7 rounded-lg bg-teal-50 dark:bg-teal-900/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                              <Sparkles className="w-3.5 h-3.5" />
+                            </div>
+                            Restart Onboarding
+                          </button>
                           <Link
                             to="/settings"
                             className="flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 transition-colors mx-1"

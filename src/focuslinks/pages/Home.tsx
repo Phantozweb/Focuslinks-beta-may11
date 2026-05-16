@@ -1,5 +1,5 @@
 'use client';
-import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { useRef, useState, useEffect, useMemo, useCallback, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { 
@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
+import { DirectoryIcon, FeedIcon, BlogIcon, LabsIcon, ProfilesIcon, EventsIcon, AcademyIcon } from '../components/CustomIcons';
 import { globalSearchData } from '../../data/searchData';
 import { useProfiles, generateSlug } from '../../hooks/useProfiles';
 import dynamic from 'next/dynamic';
@@ -585,6 +586,13 @@ const FloatingParticles = () => (
 export default function Home() {
   const { listProfiles, loadingList, errorList, fetchListProfiles } = useProfiles();
   
+  // Auth state
+  const isGuest = useSyncExternalStore(
+    () => () => {},
+    () => !localStorage.getItem('fl_user'),
+    () => true
+  );
+  
   useEffect(() => {
     fetchListProfiles();
   }, [fetchListProfiles]);
@@ -682,9 +690,13 @@ export default function Home() {
   const handleSearchItemClick = useCallback((query: string) => {
     setSearchQuery(query);
     addRecentSearch(query);
-    navigate(`/explore?query=${encodeURIComponent(query)}`);
+    if (isGuest) {
+      navigate('/login');
+    } else {
+      navigate(`/explore?query=${encodeURIComponent(query)}`);
+    }
     setIsSearchFocused(false);
-  }, [navigate, addRecentSearch]);
+  }, [navigate, addRecentSearch, isGuest]);
 
   // Close search dropdown when clicking outside
   useEffect(() => {
@@ -739,7 +751,11 @@ export default function Home() {
   const handleSearchSubmit = () => {
     if (searchQuery.trim()) {
       addRecentSearch(searchQuery);
-      navigate(`/explore?query=${encodeURIComponent(searchQuery.trim())}`);
+      if (isGuest) {
+        navigate('/login');
+      } else {
+        navigate(`/explore?query=${encodeURIComponent(searchQuery.trim())}`);
+      }
       setIsSearchFocused(false);
     }
   };
@@ -986,7 +1002,56 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Quick Links Row ─── */}
+      {/* ─── Guest CTA: Join FocusLinks ─── */}
+      {isGuest && (
+        <section className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="max-w-2xl mx-auto"
+          >
+            <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-teal-600 via-emerald-600 to-green-600 p-8 sm:p-12 text-center shadow-2xl shadow-teal-500/20">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/10 rounded-full translate-y-1/2 -translate-x-1/2" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-white/5 rounded-full" />
+              
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-bold mb-5">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Free to Join · No Credit Card Required
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight mb-3 leading-tight">
+                  Ready to grow your<br />optometry career?
+                </h2>
+                <p className="text-teal-100 text-sm sm:text-base mb-8 max-w-md mx-auto leading-relaxed">
+                  Join 600+ optometrists and students already connecting, learning, and growing on FocusLinks.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
+                  <Link
+                    to="/register"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-teal-700 font-bold rounded-xl text-center shadow-lg hover:shadow-xl hover:bg-teal-50 transition-all active:scale-[0.98] text-sm sm:text-base"
+                  >
+                    <Users className="w-5 h-5" />
+                    Become a Member
+                  </Link>
+                  <Link
+                    to="/login"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white/40 text-white font-bold rounded-xl text-center hover:bg-white/10 transition-all active:scale-[0.98] text-sm sm:text-base"
+                  >
+                    <ArrowRight className="w-5 h-5" />
+                    Sign In
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </section>
+      )}
+
+      {/* ─── Quick Links Row (logged-in only) ─── */}
+      {!isGuest && (
       <section className="py-6 sm:py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <motion.div
@@ -997,17 +1062,17 @@ export default function Home() {
             className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4"
           >
             {[
-              { name: 'Directory', icon: <Users className="w-5 h-5" />, path: '/directory', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-950/30' },
-              { name: 'Feed', icon: <Rss className="w-5 h-5" />, path: '/feed', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-950/30' },
-              { name: 'Blog', icon: <PenLine className="w-5 h-5" />, path: '/blog', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-950/30' },
-              { name: 'Labs', icon: <Beaker className="w-5 h-5" />, path: '/labs', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30' },
+              { name: 'Directory', icon: <DirectoryIcon className="w-6 h-6" />, path: '/directory', color: 'text-blue-600 dark:text-blue-400', bg: 'bg-gradient-to-br from-blue-50 to-blue-100/80 dark:from-blue-950/40 dark:to-blue-900/30', ring: 'ring-blue-200/60 dark:ring-blue-800/40' },
+              { name: 'Feed', icon: <FeedIcon className="w-6 h-6" />, path: '/feed', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-gradient-to-br from-emerald-50 to-emerald-100/80 dark:from-emerald-950/40 dark:to-emerald-900/30', ring: 'ring-emerald-200/60 dark:ring-emerald-800/40' },
+              { name: 'Blog', icon: <BlogIcon className="w-6 h-6" />, path: '/blog', color: 'text-purple-600 dark:text-purple-400', bg: 'bg-gradient-to-br from-purple-50 to-purple-100/80 dark:from-purple-950/40 dark:to-purple-900/30', ring: 'ring-purple-200/60 dark:ring-purple-800/40' },
+              { name: 'Labs', icon: <LabsIcon className="w-6 h-6" />, path: '/labs', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-gradient-to-br from-amber-50 to-amber-100/80 dark:from-amber-950/40 dark:to-amber-900/30', ring: 'ring-amber-200/60 dark:ring-amber-800/40' },
             ].map((link) => (
               <Link
                 key={link.name}
                 to={link.path}
                 className="glass-card-hover glass-panel rounded-2xl p-4 sm:p-5 flex flex-col items-center gap-3 cursor-pointer group text-center"
               >
-                <div className={`w-12 h-12 rounded-xl ${link.bg} ${link.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
+                <div className={`w-14 h-14 rounded-2xl ${link.bg} ${link.color} flex items-center justify-center group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 ring-1 ${link.ring} shadow-sm`}>
                   {link.icon}
                 </div>
                 <span className="font-bold text-gray-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{link.name}</span>
@@ -1016,8 +1081,10 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
+      )}
 
-      {/* ─── Quick Links Floating Bar ─── */}
+      {/* ─── Quick Links Floating Bar (logged-in only) ─── */}
+      {!isGuest && (
       <motion.section
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1027,11 +1094,11 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-center gap-3 sm:gap-4 flex-wrap">
             {[
-              { icon: <Users className="w-5 h-5" />, label: 'Profiles', path: '/directory', color: 'text-blue-600 dark:text-blue-400', glow: 'hover:shadow-blue-500/25' },
-              { icon: <Rss className="w-5 h-5" />, label: 'Blog', path: '/blog', color: 'text-purple-600 dark:text-purple-400', glow: 'hover:shadow-purple-500/25' },
-              { icon: <Calendar className="w-5 h-5" />, label: 'Events', path: '/events', color: 'text-amber-600 dark:text-amber-400', glow: 'hover:shadow-amber-500/25' },
-              { icon: <FlaskConical className="w-5 h-5" />, label: 'Labs', path: '/labs', color: 'text-emerald-600 dark:text-emerald-400', glow: 'hover:shadow-emerald-500/25' },
-              { icon: <GraduationCap className="w-5 h-5" />, label: 'Academy', path: '/academy', color: 'text-rose-600 dark:text-rose-400', glow: 'hover:shadow-rose-500/25' },
+              { icon: <ProfilesIcon className="w-6 h-6" />, label: 'Profiles', path: '/directory', color: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/40', ring: 'ring-blue-200/60 dark:ring-blue-800/40', glow: 'hover:shadow-blue-500/25' },
+              { icon: <BlogIcon className="w-6 h-6" />, label: 'Blog', path: '/blog', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/40', ring: 'ring-purple-200/60 dark:ring-purple-800/40', glow: 'hover:shadow-purple-500/25' },
+              { icon: <EventsIcon className="w-6 h-6" />, label: 'Events', path: '/events', color: 'text-amber-600 dark:text-amber-400', gradient: 'from-amber-50 to-amber-100 dark:from-amber-950/50 dark:to-amber-900/40', ring: 'ring-amber-200/60 dark:ring-amber-800/40', glow: 'hover:shadow-amber-500/25' },
+              { icon: <LabsIcon className="w-6 h-6" />, label: 'Labs', path: '/labs', color: 'text-emerald-600 dark:text-emerald-400', gradient: 'from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/40', ring: 'ring-emerald-200/60 dark:ring-emerald-800/40', glow: 'hover:shadow-emerald-500/25' },
+              { icon: <AcademyIcon className="w-6 h-6" />, label: 'Academy', path: '/academy', color: 'text-rose-600 dark:text-rose-400', gradient: 'from-rose-50 to-rose-100 dark:from-rose-950/50 dark:to-rose-900/40', ring: 'ring-rose-200/60 dark:ring-rose-800/40', glow: 'hover:shadow-rose-500/25' },
             ].map((item, i) => (
               <motion.div
                 key={item.label}
@@ -1042,9 +1109,9 @@ export default function Home() {
               >
                 <Link
                   to={item.path}
-                  className={`flex flex-col items-center gap-2 px-5 sm:px-7 py-4 sm:py-5 rounded-2xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-gray-200/60 dark:border-slate-700/60 shadow-lg ${item.glow} hover:shadow-xl hover:border-gray-300 dark:hover:border-slate-600 transition-all duration-300 group cursor-pointer`}
+                  className={`flex flex-col items-center gap-2.5 px-5 sm:px-7 py-4 sm:py-5 rounded-2xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-gray-200/60 dark:border-slate-700/60 shadow-lg ${item.glow} hover:shadow-xl hover:border-gray-300 dark:hover:border-slate-600 transition-all duration-300 group cursor-pointer`}
                 >
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center ${item.color} group-hover:scale-110 transition-transform duration-300`}>
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${item.gradient} flex items-center justify-center ${item.color} ring-1 ${item.ring} shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                     {item.icon}
                   </div>
                   <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{item.label}</span>
@@ -1054,6 +1121,7 @@ export default function Home() {
           </div>
         </div>
       </motion.section>
+      )}
 
       {/* ─── Activity Pulse Indicator ─── */}
       <motion.div

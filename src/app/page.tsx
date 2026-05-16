@@ -6,10 +6,12 @@ import { AnimatePresence, motion } from 'motion/react';
 import Navbar from '@/focuslinks/components/Navbar';
 import Footer from '@/focuslinks/components/Footer';
 import GettingStartedModal from '@/focuslinks/components/GettingStartedModal';
+import OnboardingWizard from '@/focuslinks/components/OnboardingWizard';
 import CommandPalette from '@/focuslinks/components/CommandPalette';
 import OnboardingTour from '@/focuslinks/components/OnboardingTour';
 import Breadcrumbs from '@/focuslinks/components/Breadcrumbs';
 import BottomNav from '@/focuslinks/components/BottomNav';
+import AuthGuardOverlay, { useIsAuthenticated, isRouteProtected, getPageName } from '@/focuslinks/components/AuthGuardOverlay';
 
 const Home = lazy(() => import('@/focuslinks/pages/Home'));
 const About = lazy(() => import('@/focuslinks/pages/About'));
@@ -99,6 +101,12 @@ function Router() {
     }
   }, [path, navigate]);
 
+  // Auth guard
+  const isAuthenticated = useIsAuthenticated();
+  const isProtected = isRouteProtected(path);
+  const needsGuard = !isAuthenticated && isProtected;
+  const pageName = getPageName(path);
+
   const routes: Record<string, React.LazyExoticComponent<React.ComponentType>> = useMemo(() => ({
     '/': Home,
     '/about': About,
@@ -164,32 +172,39 @@ function Router() {
   else PageComponent = routes[path] || (path === '/' ? Home : NotFound);
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={path}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.2, ease: 'easeInOut' }}
-      >
-        {path !== '/' && <Breadcrumbs />}
-        <Suspense fallback={<PageLoader />}>
-          {PageComponent && <PageComponent />}
-        </Suspense>
-      </motion.div>
-    </AnimatePresence>
+    <>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={path}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.2, ease: 'easeInOut' }}
+          className={needsGuard ? 'blur-lg pointer-events-none select-none' : ''}
+        >
+          {path !== '/' && !needsGuard && <Breadcrumbs />}
+          <Suspense fallback={<PageLoader />}>
+            {PageComponent && <PageComponent />}
+          </Suspense>
+        </motion.div>
+      </AnimatePresence>
+      {needsGuard && <AuthGuardOverlay pageName={pageName} />}
+    </>
   );
 }
 
 export default function Page() {
+  const isAuthenticated = useIsAuthenticated();
+  
   return (
     <NavigationProvider>
       <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-200">
         <Navbar />
-        <GettingStartedModal />
-        <CommandPalette />
-        <OnboardingTour />
-        <BottomNav />
+        {isAuthenticated && <GettingStartedModal />}
+        {isAuthenticated && <OnboardingWizard />}
+        {isAuthenticated && <CommandPalette />}
+        {isAuthenticated && <OnboardingTour />}
+        {isAuthenticated && <BottomNav />}
         <main className="flex-grow">
           <Router />
         </main>

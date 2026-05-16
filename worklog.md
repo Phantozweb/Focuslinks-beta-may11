@@ -86,3 +86,77 @@ Stage Summary:
 - Certificate download is now efficient: generates once, reuses data URL for download
 - Bold font for name text, maximum PNG quality
 - All lint checks pass, server running on port 3000
+
+---
+Task ID: 2 (sub-agent: frontend-styling-expert)
+Task: Build custom SVG icon components for FocusLinks hero section menu items
+
+Work Log:
+- Analyzed Home.tsx to identify current icon usage: Lucide icons (Users, Rss, PenLine, Beaker, Calendar, FlaskConical, GraduationCap) used in two sections:
+  1. Quick Links Row (lines 989-1018): Directory, Feed, Blog, Labs — uses Users, Rss, PenLine, Beaker
+  2. Quick Links Floating Bar (lines 1020-1056): Profiles, Blog, Events, Labs, Academy — uses Users, Rss, Calendar, FlaskConical, GraduationCap
+- Created `/src/focuslinks/components/CustomIcons.tsx` with 8 custom optometry-themed SVG icon components:
+  1. **DirectoryIcon** — Person silhouette + magnifying glass with eye/iris inside (finding people + vision)
+  2. **FeedIcon** — Flowing speech-bubble streams with central iris ring (dynamic feed + eye motif)
+  3. **BlogIcon** — Quill pen with iris detail at the nib tip (writing + vision creation point)
+  4. **LabsIcon** — Lab flask with contact lens/iris pattern at the base (scientific + optometry fusion)
+  5. **ProfilesIcon** — ID badge card with person silhouette + eye watermark (professional identity + vision)
+  6. **EventsIcon** — Calendar page with iris ring as featured date + small date dots (events + eye marks date)
+  7. **AcademyIcon** — Graduation cap with eye/iris as tassel charm (learning + gaining vision)
+  8. **CommunityIcon** — Connected people forming triangle around central eye/iris (community + shared vision)
+- All icons share consistent design:
+  - viewBox="0 0 24 24" for Lucide compatibility
+  - stroke="currentColor" + fill="none" for Tailwind color inheritance
+  - strokeWidth={2}, strokeLinecap="round", strokeLinejoin="round"
+  - Accept `className?: string` prop for sizing and coloring
+  - Subtle but recognizable eye/iris motifs throughout the set
+- TypeScript compilation verified (tsc --noEmit with JSX/ESModule flags — zero errors)
+- Next.js build verified — compiled successfully, no new errors introduced
+
+Stage Summary:
+- 8 custom SVG icon components created in CustomIcons.tsx
+- Each icon has a unique optometry/eye-themed design while maintaining visual cohesion
+- Icons are ready to replace Lucide icons in Home.tsx Quick Links sections
+- Drop-in replacement: same API pattern as Lucide (className prop, currentColor stroke)
+- Build passes, no regressions
+
+---
+Task ID: 1
+Agent: main
+Task: Build comprehensive multi-step OnboardingWizard component for FocusLinks
+
+Work Log:
+- Read worklog.md, existing GettingStartedModal.tsx, NavigationContext.tsx, submit-form API route, and page.tsx to understand project patterns
+- Created `/src/focuslinks/components/OnboardingWizard.tsx` — full 6-step onboarding wizard:
+  - Step 1: Welcome + Name & Email (with validation, icon inputs)
+  - Step 2: Choose Your Status (6 cards: Student, Practicing Optometrist, Researcher, Clinic Owner, Educator, Other — each with unique icon, color, description)
+  - Step 3: Your Purpose on FocusLinks (8 toggleable chips: Career, Visibility, Clinical, Education, Research, Management, Mentorship, Community)
+  - Step 4: Specialty/Interests (12 toggleable pills: Contact Lenses, Myopia Control, Pediatric Optometry, etc.)
+  - Step 5: Profile Details (Country dropdown, City/State, Organization, Membership ID)
+  - Step 6: Discover Features (personalized feature recommendations based on selections)
+- Features:
+  - Slide animations between steps (carousel-style, direction-aware)
+  - Progress bar at top showing current step (animated width)
+  - Spring animations for cards, chips, and feature items
+  - Subtle "Skip for now" button
+  - Auto-opens for new users (checks `fl_onboarding_complete` localStorage key)
+  - Persists partial data to `fl_onboarding_data` in localStorage on change
+  - On completion: sets `fl_onboarding_complete='true'`, sets `fl_user` with name/email/role/location
+  - Submits data to `/api/submit-form` with type `onboarding`
+  - Navigates to most relevant page based on user selections
+  - Full dark mode support
+  - Mobile responsive design
+  - Glass morphism backdrop with blur
+  - Teal/emerald gradient accent colors matching FocusLinks theme
+- Updated `/src/app/api/submit-form/route.ts`: added `onboarding` type handler saving to `Onboarding/{entryId}_{emailSlug}.json`
+- Updated `/src/app/page.tsx`: added OnboardingWizard import and rendered alongside GettingStartedModal
+- Fixed lint error: moved localStorage data restoration from useEffect into useState lazy initializer
+- All lint checks pass, dev server running on port 3000
+
+Stage Summary:
+- Production-quality 6-step onboarding wizard built with motion/react animations
+- Each step focused and quick (~5 min total experience)
+- Personalized feature recommendations in final step based on user selections
+- Data saved to GitHub via submit-form API on completion
+- Auto-opens for new users, with subtle skip option
+- Full dark mode, mobile responsive, glass morphism design
