@@ -325,3 +325,30 @@ Stage Summary:
 - Step-aware content continues to work
 - Mobile untouched
 - VLM rating: 8/10
+---
+Task ID: 1
+Agent: Main Agent
+Task: Redesign desktop onboarding - left panel card alignment + right side scattered papers mood board
+
+Work Log:
+- Read full OnboardingPage.tsx to understand current state
+- Generated 2 new images: cute-doodle.png (kawaii optometry workspace), sticky-collage.png (brainstorm sticky notes)
+- Fixed left panel DecorativePanel: better card alignment with flex justify-between for branding + step pill, removed messy absolute positioning for cards, made overlapping glassmorphism cards more visible with higher opacity and spring animations
+- Replaced right side 2x2 feature card grid with scattered papers/mood board aesthetic:
+  - 5 scattered image thumbnails (clinical-tools, cute-doodle, global-network, sticky-collage, academy-learn) at various angles with pin dots on top
+  - 6 speech bubble text labels (AI Tools, Learn & Grow, Connect Globally, Your Career, Events & Talks, Free Forever) with colored pill shapes
+  - 3 SVG dotted arrow lines connecting elements with animated path drawing
+  - Cute animated elements: stars, sparkles, lightbulb icons with floating/rotating animations
+  - AI-Powered Personalization badge at bottom center
+  - Grid dots background pattern
+- Fixed invalid Tailwind classes: border-white/22 → border-white/20, border-white/12 → border-white/10
+- Fixed speech bubble tail CSS (removed invalid current-border)
+- Replaced Math.random() with deterministic floatDur values to prevent hydration mismatches
+- Verified: lint passes, no compilation errors, VLM rates 8/10
+- Mobile view confirmed untouched and still looking great (8/10)
+
+Stage Summary:
+- Desktop onboarding redesigned with scattered papers mood board aesthetic
+- Left panel: girl character background with properly aligned overlapping glassmorphism cards
+- Right panel: form at top, scattered papers/bubbles/arrows below
+- All 5 requested elements visible: scattered images, text bubbles, dotted arrows, cute animations, AI badge

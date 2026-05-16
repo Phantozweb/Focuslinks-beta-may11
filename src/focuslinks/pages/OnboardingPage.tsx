@@ -36,6 +36,9 @@ import {
   LayoutGrid,
   Shield,
   Zap,
+  Pin,
+  Lightbulb,
+  Star,
   type LucideIcon,
 } from 'lucide-react';
 import { useNavigate } from '@/context/NavigationContext';
@@ -205,12 +208,28 @@ const stepDescriptions: Record<number, { headline: string; sub: string }> = {
   5: { headline: 'Your Journey Begins Now', sub: 'Everything is set. Welcome to the future of optometry.' },
 };
 
-/* ─── Right side visuals — feature cards that blend below the form ─── */
-const rightSideFeatures = [
-  { icon: Zap, title: 'Clinical Tools', desc: 'OD CAM, IPD Measure & more', color: 'from-amber-400/20 to-orange-500/10' },
-  { icon: BookOpen, title: 'Academy', desc: 'Courses, webinars & certs', color: 'from-emerald-400/20 to-teal-500/10' },
-  { icon: Users, title: 'Directory', desc: '600+ optometrists globally', color: 'from-blue-400/20 to-indigo-500/10' },
-  { icon: Award, title: 'Events', desc: 'Live sessions & talks', color: 'from-purple-400/20 to-pink-500/10' },
+/* ─── Scattered papers data for right side mood board ─── */
+const scatteredPapers = [
+  { id: 'img-clinical', type: 'image' as const, src: '/images/onboarding/clinical-tools.png', rotate: -6, x: -20, y: 10, w: 110, delay: 0.8, floatDur: 3.2 },
+  { id: 'img-doodle', type: 'image' as const, src: '/images/onboarding/cute-doodle.png', rotate: 4, x: 140, y: -15, w: 100, delay: 1.0, floatDur: 4.1 },
+  { id: 'img-global', type: 'image' as const, src: '/images/onboarding/global-network.png', rotate: -3, x: 300, y: 5, w: 95, delay: 1.1, floatDur: 3.7 },
+  { id: 'img-sticky', type: 'image' as const, src: '/images/onboarding/sticky-collage.png', rotate: 7, x: 30, y: 140, w: 105, delay: 1.2, floatDur: 4.5 },
+  { id: 'img-academy', type: 'image' as const, src: '/images/onboarding/academy-learn.png', rotate: -5, x: 220, y: 150, w: 90, delay: 1.3, floatDur: 3.9 },
+];
+
+const scatteredBubbles = [
+  { id: 'bub-1', text: 'AI Tools ✨', icon: Zap, color: 'bg-amber-50 border-amber-200 text-amber-700', rotate: -3, x: 80, y: 30, delay: 1.0, floatDur: 2.8 },
+  { id: 'bub-2', text: 'Learn & Grow 📚', icon: BookOpen, color: 'bg-emerald-50 border-emerald-200 text-emerald-700', rotate: 4, x: 260, y: -10, delay: 1.15, floatDur: 3.3 },
+  { id: 'bub-3', text: 'Connect Globally 🌍', icon: Users, color: 'bg-sky-50 border-sky-200 text-sky-700', rotate: -5, x: 20, y: 120, delay: 1.25, floatDur: 2.9 },
+  { id: 'bub-4', text: 'Your Career 🚀', icon: Briefcase, color: 'bg-purple-50 border-purple-200 text-purple-700', rotate: 3, x: 200, y: 130, delay: 1.35, floatDur: 3.6 },
+  { id: 'bub-5', text: 'Events & Talks 🎤', icon: Award, color: 'bg-rose-50 border-rose-200 text-rose-700', rotate: -2, x: 330, y: 100, delay: 1.45, floatDur: 3.1 },
+  { id: 'bub-6', text: 'Free Forever 💙', icon: Shield, color: 'bg-blue-50 border-blue-200 text-blue-700', rotate: 5, x: 130, y: 190, delay: 1.55, floatDur: 2.7 },
+];
+
+const dottedArrows = [
+  { id: 'arrow-1', x1: 130, y1: 50, x2: 240, y2: 0, delay: 1.6 },
+  { id: 'arrow-2', x1: 80, y1: 140, x2: 190, y2: 155, delay: 1.7 },
+  { id: 'arrow-3', x1: 260, y1: 30, x2: 310, y2: 95, delay: 1.8 },
 ];
 
 /* ─── Decorative Left Panel (Desktop Only) ─── */
@@ -218,7 +237,7 @@ function DecorativePanel({ currentStep }: { currentStep: number }) {
   const stepInfo = stepDescriptions[currentStep] || stepDescriptions[0];
 
   return (
-    <div className="hidden lg:flex lg:w-[50%] relative overflow-hidden flex-col">
+    <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col">
       {/* Girl as FULL background */}
       <motion.img
         key={`bg-girl-${currentStep}`}
@@ -231,38 +250,39 @@ function DecorativePanel({ currentStep }: { currentStep: number }) {
       />
 
       {/* Multi-layer gradient overlays for edge blending */}
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/80 via-blue-800/60 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-blue-900/90 via-blue-900/40 to-blue-800/20" />
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-transparent to-blue-900/50" />
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-900/75 via-blue-800/50 to-blue-700/30" />
+      <div className="absolute inset-0 bg-gradient-to-t from-blue-900/85 via-blue-900/30 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/25 via-transparent to-blue-900/40" />
       {/* Right edge blend into white panel */}
-      <div className="absolute inset-y-0 -right-1 w-16 bg-gradient-to-l from-white to-transparent z-20" />
+      <div className="absolute inset-y-0 -right-1 w-20 bg-gradient-to-l from-white to-transparent z-20" />
 
       {/* Subtle noise texture */}
-      <div className="absolute inset-0 opacity-[0.04] z-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+      <div className="absolute inset-0 opacity-[0.03] z-10" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
 
       {/* Animated floating particles */}
       <div className="absolute inset-0 z-10 overflow-hidden">
-        <motion.div {...floatAnimation} className="absolute top-[18%] right-[20%] w-2 h-2 rounded-full bg-white/40" />
-        <motion.div {...floatAnimationSlow} className="absolute top-[35%] left-[12%] w-1.5 h-1.5 rounded-full bg-cyan-300/50" />
-        <motion.div {...floatAnimation} className="absolute top-[65%] right-[15%] w-2.5 h-2.5 rounded-full bg-white/20" />
-        <motion.div {...floatAnimationSlow} className="absolute bottom-[20%] left-[20%] w-2 h-2 rounded-full bg-blue-200/30" />
+        <motion.div {...floatAnimation} className="absolute top-[15%] right-[18%] w-2 h-2 rounded-full bg-white/40" />
+        <motion.div {...floatAnimationSlow} className="absolute top-[30%] left-[10%] w-1.5 h-1.5 rounded-full bg-cyan-300/50" />
+        <motion.div {...floatAnimation} className="absolute top-[60%] right-[12%] w-2.5 h-2.5 rounded-full bg-white/20" />
+        <motion.div {...floatAnimationSlow} className="absolute bottom-[25%] left-[18%] w-2 h-2 rounded-full bg-blue-200/30" />
+        <motion.div {...floatAnimation} className="absolute top-[45%] left-[35%] w-1.5 h-1.5 rounded-full bg-cyan-400/30" />
         {/* Pulse rings */}
         <motion.div
-          animate={{ scale: [1, 1.5, 1], opacity: [0.15, 0, 0.15] }}
+          animate={{ scale: [1, 1.5, 1], opacity: [0.12, 0, 0.12] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-[30%] right-[25%] w-12 h-12 rounded-full border border-white/15"
+          className="absolute top-[28%] right-[22%] w-12 h-12 rounded-full border border-white/12"
         />
         <motion.div
-          animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0, 0.1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
-          className="absolute bottom-[30%] left-[15%] w-16 h-16 rounded-full border border-cyan-300/15"
+          animate={{ scale: [1, 1.3, 1], opacity: [0.08, 0, 0.08] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 1.5 }}
+          className="absolute bottom-[32%] left-[12%] w-16 h-16 rounded-full border border-cyan-300/12"
         />
       </div>
 
-      {/* Glassmorphism content overlaid on the girl — OVERLAPPING layout */}
-      <div className="relative z-20 flex flex-col justify-end p-8 xl:p-10 w-full h-full">
-        {/* Top: FocusLinks text only — NO icon */}
-        <div className="absolute top-8 xl:top-10 left-8 xl:left-10">
+      {/* Content overlaid on the girl */}
+      <div className="relative z-20 flex flex-col justify-between p-8 xl:p-10 w-full h-full">
+        {/* Top bar: FocusLinks branding + Step pill — aligned on same row */}
+        <div className="flex items-center justify-between">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -270,60 +290,56 @@ function DecorativePanel({ currentStep }: { currentStep: number }) {
           >
             <span className="text-2xl font-bold text-white tracking-tight drop-shadow-lg">FocusLinks</span>
           </motion.div>
+
+          <motion.div
+            key={`step-pill-${currentStep}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 border border-white/20"
+          >
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white">{currentStep + 1}</span>
+            </div>
+            <span className="text-xs font-semibold text-blue-100">of 6</span>
+          </motion.div>
         </div>
 
-        {/* Step pill — top right */}
-        <motion.div
-          key={`step-pill-${currentStep}`}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-          className="absolute top-8 xl:top-10 right-8 xl:right-10 flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 border border-white/20"
-        >
-          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
-            <span className="text-[10px] font-bold text-white">{currentStep + 1}</span>
-          </div>
-          <span className="text-xs font-semibold text-blue-100">of 6</span>
-        </motion.div>
+        {/* Center spacer — lets girl face show through */}
+        <div className="flex-1" />
 
-        {/* Overlapping glassmorphism cards — DRAMATIC stacking with visible layers */}
+        {/* Bottom section: Overlapping glassmorphism cards — properly aligned */}
         <div className="relative">
-          {/* Card 4 — trailing card peeking from bottom-left */}
+          {/* Card peeking top-right — clearly visible overlap */}
           <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 0.3, y: 12, x: -8 }}
-            transition={{ delay: 0.9, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute -bottom-4 left-0 w-[60%] h-10 bg-white/[0.06] backdrop-blur-xl rounded-2xl border border-white/10 shadow-lg"
-          />
-
-          {/* Card 3 — behind, peeking from top-right (clearly visible) */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 0.4, y: -24, x: 24 }}
+            initial={{ opacity: 0, x: 10, y: -10 }}
+            animate={{ opacity: 1, x: 10, y: -14 }}
             transition={{ delay: 0.7, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute -top-6 right-0 w-[60%] h-20 bg-white/[0.08] backdrop-blur-xl rounded-2xl border border-white/15 shadow-xl"
+            className="absolute -top-4 right-0 w-[60%] h-16 bg-white/[0.12] backdrop-blur-xl rounded-2xl border border-white/15 shadow-xl"
+            style={{ transform: 'rotate(2.5deg)' }}
           />
 
-          {/* Card 2 — middle, peeking from top (clearly visible) */}
+          {/* Card peeking bottom-left — clearly visible overlap */}
           <motion.div
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 0.55, y: -12, x: 12 }}
-            transition={{ delay: 0.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute -top-3 right-0 w-[72%] h-16 bg-white/[0.12] backdrop-blur-xl rounded-2xl border border-white/18 shadow-xl"
+            initial={{ opacity: 0, x: -5, y: 5 }}
+            animate={{ opacity: 1, x: -5, y: 8 }}
+            transition={{ delay: 0.9, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute -bottom-2 left-2 w-[50%] h-10 bg-white/[0.10] backdrop-blur-xl rounded-2xl border border-white/12 shadow-lg"
+            style={{ transform: 'rotate(-2deg)' }}
           />
 
-          {/* Card 1 — FRONT, main headline card — covers the bottom portions */}
+          {/* Main headline card — front and center */}
           <motion.div
             key={`headline-${currentStep}`}
-            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-            className="relative backdrop-blur-2xl rounded-3xl p-6 xl:p-8 border border-white/25 shadow-2xl shadow-black/30"
+            className="relative backdrop-blur-2xl rounded-3xl p-6 xl:p-8 border border-white/20 shadow-2xl shadow-black/25"
             style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.06) 100%)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.05) 100%)',
             }}
           >
-            <h1 className="text-2xl xl:text-3xl font-bold text-white leading-tight mb-3 drop-shadow-lg">
+            <h1 className="text-2xl xl:text-3xl font-bold text-white leading-tight mb-2.5 drop-shadow-lg">
               {stepInfo.headline.split(' ').map((word, i, arr) => (
                 i === arr.length - 1 ? (
                   <span key={i} className="bg-gradient-to-r from-cyan-300 to-white bg-clip-text text-transparent">{word}</span>
@@ -332,12 +348,12 @@ function DecorativePanel({ currentStep }: { currentStep: number }) {
                 )
               ))}
             </h1>
-            <p className="text-blue-100/90 text-sm leading-relaxed drop-shadow">
+            <p className="text-blue-100/85 text-sm leading-relaxed drop-shadow">
               {stepInfo.sub}
             </p>
 
-            {/* Stats row — inside the headline card, OVERLAPPING its bottom edge */}
-            <div className="flex items-center gap-3 mt-5 -mb-12 pb-3">
+            {/* Stats row inside the headline card */}
+            <div className="flex items-center gap-2.5 mt-5">
               {[
                 { value: '600+', label: 'Optometrists' },
                 { value: '25+', label: 'Countries' },
@@ -345,19 +361,19 @@ function DecorativePanel({ currentStep }: { currentStep: number }) {
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.6 + i * 0.08, type: 'spring', stiffness: 200, damping: 20 }}
-                  className="bg-white/[0.15] backdrop-blur-lg rounded-xl px-3.5 py-2.5 border border-white/25 shadow-lg"
+                  transition={{ delay: 0.55 + i * 0.07, type: 'spring', stiffness: 200, damping: 20 }}
+                  className="bg-white/[0.12] backdrop-blur-lg rounded-xl px-3 py-2 border border-white/20 shadow-lg"
                 >
-                  <div className="text-sm font-extrabold text-white drop-shadow">{stat.value}</div>
-                  <div className="text-blue-200/80 text-[9px] font-semibold">{stat.label}</div>
+                  <div className="text-xs font-extrabold text-white drop-shadow">{stat.value}</div>
+                  <div className="text-blue-200/70 text-[8px] font-semibold">{stat.label}</div>
                 </motion.div>
               ))}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.9 }}
+                transition={{ delay: 0.85 }}
                 className="ml-auto flex items-center gap-1.5 bg-white/[0.08] backdrop-blur-md rounded-full px-3 py-1.5 border border-white/15"
               >
                 <Shield className="w-3 h-3 text-green-300" />
@@ -941,7 +957,7 @@ export default function OnboardingPage() {
       {/* Desktop Left Panel */}
       <DecorativePanel currentStep={currentStep} />
 
-      {/* Right Side — Step Content */}
+      {/* Right Side — Step Content + Scattered Visuals */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
         {/* Mobile — banner with visible character */}
         <div className="lg:hidden relative h-52 overflow-hidden">
@@ -1009,65 +1025,168 @@ export default function OnboardingPage() {
               {renderCurrentStep()}
             </AnimatePresence>
 
-            {/* Desktop only: Visual feature cards BELOW the form with edge blends */}
-            <div className="hidden lg:block mt-8">
-              {/* Blended separator line */}
-              <div className="h-px w-full mb-6" style={{ background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.15), transparent)' }} />
-              
-              <div className="grid grid-cols-2 gap-3">
-                {rightSideFeatures.map((feature, i) => {
-                  const Icon = feature.icon;
+            {/* Desktop only: Scattered papers / mood board below the form */}
+            <div className="hidden lg:block mt-6">
+              {/* Soft separator */}
+              <div className="h-px w-full mb-4" style={{ background: 'linear-gradient(to right, transparent, rgba(37,99,235,0.12), transparent)' }} />
+
+              {/* Scattered papers container — relative positioning playground */}
+              <div className="relative h-[300px] w-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-50/80 via-white to-blue-50/30 border border-gray-100/60">
+                {/* Subtle grid dots background */}
+                <div className="absolute inset-0 opacity-[0.15]" style={{
+                  backgroundImage: 'radial-gradient(circle, #94a3b8 0.5px, transparent 0.5px)',
+                  backgroundSize: '20px 20px',
+                }} />
+
+                {/* Scattered image cards — like photos pinned on a board */}
+                {scatteredPapers.map((paper) => (
+                  <motion.div
+                    key={paper.id}
+                    initial={{ opacity: 0, scale: 0.5, rotate: paper.rotate * 3 }}
+                    animate={{ opacity: 1, scale: 1, rotate: paper.rotate }}
+                    transition={{ delay: paper.delay, type: 'spring', stiffness: 180, damping: 18 }}
+                    className="absolute"
+                    style={{ left: paper.x, top: paper.y, width: paper.w, zIndex: 2 }}
+                  >
+                    <motion.div
+                      animate={{
+                        y: [0, -4, 0],
+                        rotate: [paper.rotate, paper.rotate + 0.5, paper.rotate],
+                      }}
+                      transition={{ duration: paper.floatDur, repeat: Infinity, ease: 'easeInOut' }}
+                      className="relative"
+                    >
+                      {/* Pin dot */}
+                      <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-blue-400/80 shadow-sm z-10 border border-white/50" />
+                      {/* Image */}
+                      <img
+                        src={paper.src}
+                        alt=""
+                        className="w-full aspect-square object-cover rounded-xl shadow-lg border-2 border-white/80"
+                        style={{ transform: `rotate(${paper.rotate}deg)` }}
+                      />
+                      {/* Paper shadow */}
+                      <div className="absolute -bottom-1 left-1 right-1 h-2 bg-black/5 rounded-b-xl blur-sm" />
+                    </motion.div>
+                  </motion.div>
+                ))}
+
+                {/* Speech bubble text notes — like sticky notes scattered around */}
+                {scatteredBubbles.map((bubble) => {
+                  const Icon = bubble.icon;
                   return (
                     <motion.div
-                      key={feature.title}
-                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ delay: 0.8 + i * 0.1, type: 'spring', stiffness: 200, damping: 22 }}
-                      whileHover={{ scale: 1.03, y: -2 }}
-                      className={`relative overflow-hidden rounded-2xl p-4 border border-gray-100 bg-gradient-to-br ${feature.color} cursor-default transition-shadow hover:shadow-md`}
+                      key={bubble.id}
+                      initial={{ opacity: 0, scale: 0.6 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: bubble.delay, type: 'spring', stiffness: 200, damping: 20 }}
+                      className="absolute z-10"
+                      style={{ left: bubble.x, top: bubble.y }}
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-white/80 backdrop-blur-sm flex items-center justify-center flex-shrink-0 shadow-sm border border-gray-100">
-                          <Icon className="w-4 h-4 text-blue-600" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-gray-800">{feature.title}</div>
-                          <div className="text-[11px] text-gray-500 mt-0.5 leading-tight">{feature.desc}</div>
-                        </div>
-                      </div>
-                      {/* Edge blend — fades into the bg at the bottom */}
-                      <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white/50 to-transparent" />
+                      <motion.div
+                        animate={{
+                          y: [0, -3, 0],
+                          rotate: [bubble.rotate, bubble.rotate + 0.8, bubble.rotate],
+                        }}
+                        transition={{ duration: bubble.floatDur, repeat: Infinity, ease: 'easeInOut' }}
+                        className={`relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[11px] font-semibold shadow-sm ${bubble.color}`}
+                        style={{ transform: `rotate(${bubble.rotate}deg)` }}
+                      >
+                        {/* Speech bubble tail */}
+                        <div className="absolute -bottom-1.5 left-3 w-2.5 h-2.5 rotate-45" style={{ backgroundColor: 'inherit' }} />
+                        <Icon className="w-3 h-3" />
+                        <span>{bubble.text}</span>
+                      </motion.div>
                     </motion.div>
                   );
                 })}
-              </div>
 
-              {/* AI-powered hint with animated shimmer */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2, type: 'spring', stiffness: 200, damping: 22 }}
-                className="mt-4 flex items-center gap-3 px-4 py-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50/80 to-white"
-              >
+                {/* Dotted arrow lines connecting elements */}
+                <svg className="absolute inset-0 w-full h-full z-[5] pointer-events-none" viewBox="0 0 450 280">
+                  {dottedArrows.map((arrow) => (
+                    <motion.line
+                      key={arrow.id}
+                      x1={arrow.x1} y1={arrow.y1} x2={arrow.x2} y2={arrow.y2}
+                      stroke="#93c5fd"
+                      strokeWidth="1.5"
+                      strokeDasharray="5 4"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 0.6 }}
+                      transition={{ delay: arrow.delay, duration: 1.2, ease: 'easeInOut' }}
+                    />
+                  ))}
+                  {/* Small arrow heads */}
+                  <motion.polygon
+                    points="237,-3 243,-3 240,3"
+                    fill="#93c5fd"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.6 }}
+                    transition={{ delay: 1.6, duration: 0.8 }}
+                  />
+                  <motion.polygon
+                    points="187,152 193,152 190,158"
+                    fill="#93c5fd"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.6 }}
+                    transition={{ delay: 1.7, duration: 0.8 }}
+                  />
+                  <motion.polygon
+                    points="307,92 313,92 310,98"
+                    fill="#93c5fd"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 0.6 }}
+                    transition={{ delay: 1.8, duration: 0.8 }}
+                  />
+                </svg>
+
+                {/* Cute animated elements — tiny stars, sparkles */}
                 <motion.div
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-                  className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm"
+                  animate={{ scale: [1, 1.3, 1], rotate: [0, 90, 0], opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                  className="absolute top-4 right-6 z-[6]"
                 >
-                  <Sparkles className="w-4 h-4 text-white" />
+                  <Star className="w-4 h-4 text-amber-300/60" />
                 </motion.div>
-                <div>
-                  <div className="text-xs font-semibold text-gray-700">AI-Powered Personalization</div>
-                  <div className="text-[10px] text-gray-400">Your experience adapts as you go</div>
-                </div>
                 <motion.div
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                  className="ml-auto"
+                  animate={{ scale: [1, 1.2, 1], rotate: [0, -60, 0], opacity: [0.25, 0.5, 0.25] }}
+                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+                  className="absolute bottom-8 left-4 z-[6]"
                 >
-                  <ArrowRight className="w-3.5 h-3.5 text-blue-300" />
+                  <Star className="w-3 h-3 text-sky-300/60" />
                 </motion.div>
-              </motion.div>
+                <motion.div
+                  animate={{ scale: [1, 1.25, 1], opacity: [0.2, 0.45, 0.2] }}
+                  transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                  className="absolute top-[40%] right-[15%] z-[6]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-purple-300/50" />
+                </motion.div>
+                <motion.div
+                  animate={{ y: [0, -2, 0], rotate: [0, 10, 0] }}
+                  transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut', delay: 0.8 }}
+                  className="absolute bottom-4 right-10 z-[6]"
+                >
+                  <Lightbulb className="w-4 h-4 text-amber-300/50" />
+                </motion.div>
+
+                {/* AI-powered badge — bottom center */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.8, type: 'spring', stiffness: 200, damping: 22 }}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-sm border border-blue-100 shadow-sm"
+                >
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                    className="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center"
+                  >
+                    <Sparkles className="w-3 h-3 text-white" />
+                  </motion.div>
+                  <span className="text-[10px] font-semibold text-gray-600">AI-Powered Personalization</span>
+                </motion.div>
+              </div>
             </div>
           </div>
         </div>
