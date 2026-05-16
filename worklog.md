@@ -226,3 +226,28 @@ Stage Summary:
 - Desktop left panel: premium glassmorphism + seamlessly fading illustration + polished stats
 - Mobile: cute character banner clearly visible, blends into white form
 - Both scored 8/10 by VLM evaluation
+
+---
+Task ID: 4
+Agent: Main Agent
+Task: Fill desktop whitespace, center form, add more animations
+
+Work Log:
+- VLM analysis confirmed right panel had whitespace below form, form was not centered, left panel lacked visual cards
+- Added 2x2 feature card grid to left panel (Clinical Tools, Academy, Directory, Events) with glassmorphism style and hover animations
+- Added "Free & Trusted" badge with Shield icon to bottom stats row
+- Added floating dot particles with infinite float animation on left panel
+- Centered form with lg:max-w-lg lg:mx-auto on step content and nav buttons
+- Added desktop step dot indicator (Welcome → Role → Purpose → Specialty → Location → Ready) with active/complete states
+- Added staggered field animations (opacity + x-slide) on Step 1 (Welcome)
+- Added whileHover and whileTap animations on all interactive buttons
+- Added social proof mini-avatar row on Step 1 ("Join 600+ optometrists worldwide")
+- Made Step 5 (Location) use 2-col grid for Org + Membership fields on desktop
+- Feature recommendation cards on Step 6 now have whileHover x-shift animation
+- VLM rated both desktop and mobile 8/10
+
+Stage Summary:
+- Desktop left panel: filled with headline card + feature cards grid + stats + trust badge + illustration
+- Desktop right panel: form centered (max-w-lg), step dot indicator at top
+- More animations: staggered reveals, whileHover/whileTap, floating particles, spring rotations
+- Mobile still 8/10, banner still visible and cute

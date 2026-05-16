@@ -34,6 +34,8 @@ import {
   Telescope,
   MessageSquare,
   LayoutGrid,
+  Shield,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 import { useNavigate } from '@/context/NavigationContext';
@@ -164,9 +166,9 @@ function getFeatureRecommendations(data: OnboardingData): FeatureRec[] {
 
 /* ─── Animation configs ─── */
 const slideVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 80 : -80, opacity: 0 }),
+  enter: (dir: number) => ({ x: dir > 0 ? 60 : -60, opacity: 0 }),
   center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -80 : 80, opacity: 0 }),
+  exit: (dir: number) => ({ x: dir > 0 ? -60 : 60, opacity: 0 }),
 };
 
 const slideTransition = {
@@ -176,51 +178,44 @@ const slideTransition = {
   mass: 0.8,
 };
 
+/* ─── Floating animation for decorative elements ─── */
+const floatAnimation = {
+  initial: { y: 0 },
+  animate: {
+    y: [0, -8, 0],
+    transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' as const },
+  },
+};
+
+const floatAnimationSlow = {
+  initial: { y: 0 },
+  animate: {
+    y: [0, -6, 0],
+    transition: { duration: 5, repeat: Infinity, ease: 'easeInOut' as const },
+  },
+};
+
 /* ─── Decorative Left Panel (Desktop Only) ─── */
 function DecorativePanel() {
   return (
-    <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col">
+    <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col">
       {/* Layered gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900" />
-      {/* Radial glow — adds depth at center */}
+      {/* Radial glow */}
       <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(96,165,250,0.25) 0%, transparent 70%)' }} />
-
-      {/* Subtle noise/texture overlay */}
+      {/* Subtle noise */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
 
       {/* Decorative floating shapes */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Large soft orb — top left */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.07 }}
-          transition={{ duration: 2, ease: 'easeOut' }}
-          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white blur-3xl"
-        />
-        {/* Medium orb — bottom right */}
-        <motion.div
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.05 }}
-          transition={{ duration: 2, delay: 0.3, ease: 'easeOut' }}
-          className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-300 blur-3xl"
-        />
-        {/* Small accent orb */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.06 }}
-          transition={{ duration: 1.5, delay: 0.6 }}
-          className="absolute top-1/4 right-1/4 w-20 h-20 rounded-full bg-white blur-xl"
-        />
-        {/* Subtle horizontal line */}
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 0.04 }}
-          transition={{ duration: 1.2, delay: 0.8 }}
-          className="absolute top-[45%] left-0 right-0 h-px bg-white origin-left"
-        />
+        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.07 }} transition={{ duration: 2, ease: 'easeOut' }} className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white blur-3xl" />
+        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.05 }} transition={{ duration: 2, delay: 0.3, ease: 'easeOut' }} className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-300 blur-3xl" />
+        <motion.div {...floatAnimation} className="absolute top-[15%] right-[15%] w-3 h-3 rounded-full bg-white/30" />
+        <motion.div {...floatAnimationSlow} className="absolute top-[60%] left-[10%] w-2 h-2 rounded-full bg-blue-300/40" />
+        <motion.div {...floatAnimation} className="absolute top-[75%] right-[20%] w-2.5 h-2.5 rounded-full bg-white/20" />
       </div>
 
-      {/* Hero illustration — blended into the gradient, bottom-anchored */}
+      {/* Hero illustration — blended into the gradient */}
       <div className="absolute bottom-0 left-0 right-0">
         <div className="relative">
           <motion.img
@@ -229,7 +224,7 @@ function DecorativePanel() {
             transition={{ duration: 1.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
             src="/images/onboarding/desktop-banner.png"
             alt="Optometry illustration"
-            className="w-[90%] mx-auto object-contain"
+            className="w-[85%] mx-auto object-contain"
             style={{
               filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.4)) brightness(1.08) saturate(1.1)',
               maskImage: 'linear-gradient(to top, black 30%, rgba(0,0,0,0.6) 60%, transparent 100%)',
@@ -237,12 +232,11 @@ function DecorativePanel() {
             }}
           />
         </div>
-        {/* Soft glow behind illustration for depth */}
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-blue-400/20 blur-3xl rounded-full" />
       </div>
 
-      {/* Content — floats above illustration with glassmorphism card */}
-      <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full h-full">
+      {/* Content — floats above illustration */}
+      <div className="relative z-10 flex flex-col justify-between p-8 xl:p-12 w-full h-full">
         {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -256,32 +250,48 @@ function DecorativePanel() {
           <span className="text-2xl font-bold text-white tracking-tight">FocusLinks</span>
         </motion.div>
 
-        {/* Middle — headline with glassmorphism card */}
-        <div className="relative -mt-8">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="bg-white/[0.08] backdrop-blur-2xl rounded-3xl p-7 xl:p-8 border border-white/20 shadow-2xl shadow-black/20 max-w-sm"
-          >
-            <h1 className="text-3xl xl:text-4xl font-bold text-white leading-tight mb-4">
-              The Future of<br />
-              Optometry Starts<br />
-              <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">With You</span>
-            </h1>
-            <p className="text-blue-100/80 text-sm xl:text-base leading-relaxed">
-              Join thousands of optometry professionals worldwide who are transforming patient care, advancing research, and building meaningful connections.
-            </p>
-          </motion.div>
+        {/* Headline card */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="bg-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 xl:p-7 border border-white/20 shadow-2xl shadow-black/20 max-w-sm"
+        >
+          <h1 className="text-2xl xl:text-3xl font-bold text-white leading-tight mb-3">
+            The Future of<br />
+            Optometry Starts<br />
+            <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">With You</span>
+          </h1>
+          <p className="text-blue-100/80 text-sm leading-relaxed">
+            Join thousands of optometry professionals worldwide who are transforming patient care and building meaningful connections.
+          </p>
+        </motion.div>
+
+        {/* Feature cards grid — fills the space */}
+        <div className="grid grid-cols-2 gap-3 max-w-sm">
+          {[
+            { icon: Zap, title: 'Clinical Tools', desc: 'OD CAM, IPD & more' },
+            { icon: BookOpen, title: 'Academy', desc: 'Courses & certs' },
+            { icon: Users, title: 'Directory', desc: 'Global network' },
+            { icon: Award, title: 'Events', desc: 'Webinars & talks' },
+          ].map((feature, i) => (
+            <motion.div
+              key={feature.title}
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ delay: 0.8 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+              whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.12)' }}
+              className="bg-white/[0.06] backdrop-blur-md rounded-2xl p-4 border border-white/10 cursor-default transition-colors"
+            >
+              <feature.icon className="w-5 h-5 text-blue-200 mb-2" />
+              <div className="text-sm font-semibold text-white">{feature.title}</div>
+              <div className="text-[11px] text-blue-200/60 mt-0.5">{feature.desc}</div>
+            </motion.div>
+          ))}
         </div>
 
-        {/* Bottom stats — pill style */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
-          className="flex items-center gap-3"
-        >
+        {/* Bottom row: stats + trust */}
+        <div className="flex items-center gap-3">
           {[
             { value: '600+', label: 'Optometrists' },
             { value: '25+', label: 'Countries' },
@@ -291,14 +301,25 @@ function DecorativePanel() {
               key={stat.label}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
-              className="bg-white/[0.08] backdrop-blur-md rounded-2xl px-5 py-3.5 border border-white/15 hover:bg-white/15 transition-colors"
+              transition={{ delay: 1.2 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+              className="bg-white/[0.08] backdrop-blur-md rounded-2xl px-4 py-2.5 border border-white/15 hover:bg-white/15 transition-colors"
             >
-              <div className="text-xl font-extrabold text-white">{stat.value}</div>
-              <div className="text-blue-200/90 text-xs font-semibold">{stat.label}</div>
+              <div className="text-lg font-extrabold text-white">{stat.value}</div>
+              <div className="text-blue-200/90 text-[10px] font-semibold">{stat.label}</div>
             </motion.div>
           ))}
-        </motion.div>
+
+          {/* Trust badge */}
+          <motion.div
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 1.5 }}
+            className="ml-auto flex items-center gap-1.5 bg-white/[0.06] backdrop-blur-md rounded-full px-3 py-2 border border-white/10"
+          >
+            <Shield className="w-3.5 h-3.5 text-green-300" />
+            <span className="text-[10px] text-blue-100/70 font-medium">Free & Trusted</span>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
@@ -385,7 +406,6 @@ export default function OnboardingPage() {
         location: data.cityState ? `${data.cityState}, ${data.country}` : data.country,
       }));
 
-      // Submit to API
       try {
         await fetch('/api/submit-form', {
           method: 'POST',
@@ -394,7 +414,6 @@ export default function OnboardingPage() {
         });
       } catch { /* non-blocking */ }
 
-      // Navigate to most relevant page
       const recommendations = getFeatureRecommendations(data);
       const bestRoute = recommendations.length > 0 ? recommendations[0].route : '/home';
       navigate(bestRoute);
@@ -457,27 +476,42 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-6"
+      className="flex flex-col gap-5"
     >
-      <div className="mb-2">
+      <div className="mb-1">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-          className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/25"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
+          className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/25"
         >
           <Sparkles className="w-7 h-7 text-white" />
         </motion.div>
-        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center">
+        <motion.h2
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center"
+        >
           Welcome to FocusLinks
-        </h2>
-        <p className="text-gray-500 mt-2 leading-relaxed text-center text-sm sm:text-base">
+        </motion.h2>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-gray-500 mt-2 leading-relaxed text-center text-sm sm:text-base"
+        >
           The global platform for optometry professionals. Let&apos;s personalize your experience in just a few steps.
-        </p>
+        </motion.p>
       </div>
 
       {/* Name */}
-      <div className="space-y-2">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.35, type: 'spring', stiffness: 200, damping: 20 }}
+        className="space-y-2"
+      >
         <label htmlFor="ob-name" className="text-sm font-semibold text-gray-700">
           Full Name <span className="text-red-500">*</span>
         </label>
@@ -493,10 +527,15 @@ export default function OnboardingPage() {
             autoFocus
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Email */}
-      <div className="space-y-2">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.45, type: 'spring', stiffness: 200, damping: 20 }}
+        className="space-y-2"
+      >
         <label htmlFor="ob-email" className="text-sm font-semibold text-gray-700">
           Email <span className="text-red-500">*</span>
         </label>
@@ -512,9 +551,26 @@ export default function OnboardingPage() {
           />
         </div>
         {data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) && (
-          <p className="text-xs text-red-500 font-medium">Please enter a valid email address</p>
+          <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-red-500 font-medium">Please enter a valid email address</motion.p>
         )}
-      </div>
+      </motion.div>
+
+      {/* Social proof hint */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.6 }}
+        className="flex items-center justify-center gap-2 pt-2"
+      >
+        <div className="flex -space-x-2">
+          {['bg-blue-500', 'bg-emerald-500', 'bg-orange-500', 'bg-purple-500'].map((color, i) => (
+            <div key={i} className={`w-6 h-6 rounded-full ${color} border-2 border-white flex items-center justify-center text-[8px] text-white font-bold`}>
+              {['J', 'A', 'R', 'M'][i]}
+            </div>
+          ))}
+        </div>
+        <span className="text-xs text-gray-400">Join 600+ optometrists worldwide</span>
+      </motion.div>
     </motion.div>
   );
 
@@ -527,18 +583,18 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
       <div className="mb-1">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           What best describes you?
         </h2>
-        <p className="text-gray-500 mt-2 text-base">
+        <p className="text-gray-500 mt-1.5 text-sm sm:text-base">
           Select the option that fits your current role
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5">
         {statusOptions.map((option, i) => {
           const Icon = option.icon;
           const isSelected = data.status === option.id;
@@ -549,31 +605,27 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06, type: 'spring', stiffness: 200, damping: 20 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setData(prev => ({ ...prev, status: option.id }))}
-              className={`relative flex flex-col items-center gap-2.5 p-4 sm:p-5 rounded-2xl border-2 transition-all cursor-pointer text-center
+              className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all cursor-pointer text-center
                 ${isSelected
                   ? 'border-blue-600 bg-blue-50 shadow-md shadow-blue-600/10'
                   : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                 }`}
             >
               {isSelected && (
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center"
-                >
+                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-2 right-2 w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
                   <Check className="w-3 h-3 text-white" />
                 </motion.div>
               )}
-              <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-100' : 'bg-gray-100'}`}>
                 <Icon className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
               </div>
               <span className={`text-xs sm:text-sm font-semibold leading-tight ${isSelected ? 'text-blue-700' : 'text-gray-700'}`}>
                 {option.label}
               </span>
-              <span className="text-[11px] text-gray-400 leading-tight hidden sm:block">
-                {option.description}
-              </span>
+              <span className="text-[11px] text-gray-400 leading-tight hidden sm:block">{option.description}</span>
             </motion.button>
           );
         })}
@@ -590,18 +642,18 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
       <div className="mb-1">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           What brings you to FocusLinks?
         </h2>
-        <p className="text-gray-500 mt-2 text-base">
+        <p className="text-gray-500 mt-1.5 text-sm sm:text-base">
           Choose all that apply <span className="text-blue-600 font-semibold">({data.purposes.length} selected)</span>
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2.5">
+      <div className="flex flex-wrap gap-2">
         {purposeOptions.map((option, i) => {
           const Icon = option.icon;
           const isSelected = data.purposes.includes(option.id);
@@ -612,6 +664,8 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.04, type: 'spring', stiffness: 200, damping: 20 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => togglePurpose(option.id)}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full border-2 transition-all cursor-pointer text-sm font-medium
                 ${isSelected
@@ -638,18 +692,18 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
       <div className="mb-1">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           Your Specialty &amp; Interests
         </h2>
-        <p className="text-gray-500 mt-2 text-base">
+        <p className="text-gray-500 mt-1.5 text-sm sm:text-base">
           Select your areas of focus <span className="text-blue-600 font-semibold">({data.specialties.length} selected)</span>
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2.5">
+      <div className="flex flex-wrap gap-2">
         {specialtyOptions.map((name, i) => {
           const isSelected = data.specialties.includes(name);
           return (
@@ -659,23 +713,23 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.03, type: 'spring', stiffness: 200, damping: 20 }}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => toggleSpecialty(name)}
-              className={`px-4 py-2.5 rounded-full border-2 transition-all cursor-pointer text-sm font-medium
+              className={`px-3.5 py-2 rounded-full border-2 transition-all cursor-pointer text-sm font-medium
                 ${isSelected
                   ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
                   : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                 }`}
             >
-              {isSelected && <Check className="w-3.5 h-3.5 inline mr-1.5" />}
+              {isSelected && <Check className="w-3.5 h-3.5 inline mr-1" />}
               {name}
             </motion.button>
           );
         })}
       </div>
 
-      <p className="text-xs text-center text-gray-400">
-        You can skip this step if you&apos;d like
-      </p>
+      <p className="text-xs text-center text-gray-400">You can skip this step if you&apos;d like</p>
     </motion.div>
   );
 
@@ -688,19 +742,19 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
       <div className="mb-1">
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
           Tell us about yourself
         </h2>
-        <p className="text-gray-500 mt-2 text-base">
+        <p className="text-gray-500 mt-1.5 text-sm sm:text-base">
           Help us connect you with the right community
         </p>
       </div>
 
       {/* Country */}
-      <div className="space-y-2">
+      <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="space-y-2">
         <label htmlFor="ob-country" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
           <Globe className="w-4 h-4 text-gray-500" /> Country / Region
         </label>
@@ -709,11 +763,9 @@ export default function OnboardingPage() {
             type="button"
             id="ob-country"
             onClick={() => setCountryDropdownOpen(v => !v)}
-            className="w-full px-4 py-3.5 rounded-xl bg-white border border-gray-200 text-left text-sm flex items-center justify-between hover:border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 shadow-sm"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-left text-sm flex items-center justify-between hover:border-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 shadow-sm"
           >
-            <span className={data.country ? 'text-gray-900' : 'text-gray-400'}>
-              {data.country || 'Select your country'}
-            </span>
+            <span className={data.country ? 'text-gray-900' : 'text-gray-400'}>{data.country || 'Select your country'}</span>
             <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${countryDropdownOpen ? 'rotate-180' : ''}`} />
           </button>
           <AnimatePresence>
@@ -726,16 +778,8 @@ export default function OnboardingPage() {
                 className="absolute z-30 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-xl max-h-48 overflow-y-auto custom-scrollbar"
               >
                 {popularCountries.map(c => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => {
-                      setData(prev => ({ ...prev, country: c }));
-                      setCountryDropdownOpen(false);
-                    }}
-                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 transition-colors
-                      ${data.country === c ? 'text-blue-700 bg-blue-50 font-semibold' : 'text-gray-700'}`}
-                  >
+                  <button key={c} type="button" onClick={() => { setData(prev => ({ ...prev, country: c })); setCountryDropdownOpen(false); }}
+                    className={`w-full px-4 py-2.5 text-left text-sm hover:bg-blue-50 transition-colors ${data.country === c ? 'text-blue-700 bg-blue-50 font-semibold' : 'text-gray-700'}`}>
                     {c}
                   </button>
                 ))}
@@ -743,51 +787,33 @@ export default function OnboardingPage() {
             )}
           </AnimatePresence>
         </div>
-      </div>
+      </motion.div>
 
       {/* City/State */}
-      <div className="space-y-2">
+      <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="space-y-2">
         <label htmlFor="ob-city" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
           <MapPin className="w-4 h-4 text-gray-500" /> City / State
         </label>
-        <input
-          id="ob-city"
-          type="text"
-          value={data.cityState}
-          onChange={e => setData(prev => ({ ...prev, cityState: e.target.value }))}
-          placeholder="Mumbai, Maharashtra"
-          className="w-full px-4 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm"
-        />
-      </div>
+        <input id="ob-city" type="text" value={data.cityState} onChange={e => setData(prev => ({ ...prev, cityState: e.target.value }))} placeholder="Mumbai, Maharashtra"
+          className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm" />
+      </motion.div>
 
-      {/* Organization */}
-      <div className="space-y-2">
-        <label htmlFor="ob-org" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-          <Building className="w-4 h-4 text-gray-500" /> Organization / Clinic <span className="text-gray-400 text-xs font-normal">(optional)</span>
-        </label>
-        <input
-          id="ob-org"
-          type="text"
-          value={data.organization}
-          onChange={e => setData(prev => ({ ...prev, organization: e.target.value }))}
-          placeholder="Vision Care Clinic"
-          className="w-full px-4 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm"
-        />
-      </div>
-
-      {/* Membership ID */}
-      <div className="space-y-2">
-        <label htmlFor="ob-mid" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-          <Hash className="w-4 h-4 text-gray-500" /> Membership ID <span className="text-gray-400 text-xs font-normal">(optional)</span>
-        </label>
-        <input
-          id="ob-mid"
-          type="text"
-          value={data.membershipId}
-          onChange={e => setData(prev => ({ ...prev, membershipId: e.target.value }))}
-          placeholder="FL-XXXXX"
-          className="w-full px-4 py-3.5 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm"
-        />
+      {/* Org + Membership side by side on desktop */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="space-y-2">
+          <label htmlFor="ob-org" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+            <Building className="w-4 h-4 text-gray-500" /> Org <span className="text-gray-400 text-xs font-normal">(opt.)</span>
+          </label>
+          <input id="ob-org" type="text" value={data.organization} onChange={e => setData(prev => ({ ...prev, organization: e.target.value }))} placeholder="Vision Care Clinic"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm" />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.25 }} className="space-y-2">
+          <label htmlFor="ob-mid" className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+            <Hash className="w-4 h-4 text-gray-500" /> ID <span className="text-gray-400 text-xs font-normal">(opt.)</span>
+          </label>
+          <input id="ob-mid" type="text" value={data.membershipId} onChange={e => setData(prev => ({ ...prev, membershipId: e.target.value }))} placeholder="FL-XXXXX"
+            className="w-full px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all text-sm shadow-sm" />
+        </motion.div>
       </div>
     </motion.div>
   );
@@ -801,26 +827,26 @@ export default function OnboardingPage() {
       animate="center"
       exit="exit"
       transition={slideTransition}
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-4"
     >
       <div className="mb-1">
         <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.1 }}
-          className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/30"
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
+          className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-600/30"
         >
           <Sparkles className="w-7 h-7 text-white" />
         </motion.div>
-        <h2 className="text-3xl font-bold text-gray-900 tracking-tight text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight text-center">
           Your FocusLinks Experience
         </h2>
-        <p className="text-gray-500 mt-2 text-base text-center">
+        <p className="text-gray-500 mt-1.5 text-sm sm:text-base text-center">
           Based on your preferences, here&apos;s what we recommend
         </p>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2.5">
         {getFeatureRecommendations(data).map((feature, i) => {
           const Icon = feature.icon;
           return (
@@ -829,9 +855,10 @@ export default function OnboardingPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.15 + i * 0.08, type: 'spring', stiffness: 200, damping: 22 }}
-              className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all"
+              whileHover={{ x: 4, borderColor: 'rgb(191 219 254)' }}
+              className="flex items-center gap-3.5 p-3.5 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition-all cursor-default"
             >
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center flex-shrink-0 shadow-sm">
                 <Icon className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0 flex-1">
@@ -844,9 +871,7 @@ export default function OnboardingPage() {
         })}
       </div>
 
-      <p className="text-xs text-center text-gray-400 mt-1">
-        You can explore all features anytime from the navigation menu
-      </p>
+      <p className="text-xs text-center text-gray-400 mt-1">You can explore all features anytime from the navigation menu</p>
     </motion.div>
   );
 
@@ -862,6 +887,9 @@ export default function OnboardingPage() {
     }
   };
 
+  /* ── Step dots indicator for desktop ── */
+  const stepLabels = ['Welcome', 'Role', 'Purpose', 'Specialty', 'Location', 'Ready'];
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white">
       {/* Desktop Left Panel */}
@@ -871,15 +899,8 @@ export default function OnboardingPage() {
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
         {/* Mobile — banner with visible character */}
         <div className="lg:hidden relative h-52 overflow-hidden">
-          {/* Banner image */}
-          <img 
-            src="/images/onboarding/mobile-banner.png" 
-            alt="" 
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-          {/* Gradient overlay — light touch to blend bottom into white */}
+          <img src="/images/onboarding/mobile-banner.png" alt="" className="absolute inset-0 w-full h-full object-cover object-center" />
           <div className="absolute inset-0 bg-gradient-to-b from-blue-900/30 via-transparent to-white" />
-          {/* Logo on top */}
           <div className="relative z-10 flex items-center gap-2 pt-4 px-5">
             <div className="w-7 h-7 rounded-lg bg-white/25 backdrop-blur-sm flex items-center justify-center">
               <Eye className="w-4 h-4 text-white" />
@@ -888,39 +909,55 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="px-6 lg:px-10 pt-4 lg:pt-8 relative z-10">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-semibold text-gray-500">
-              Step {currentStep + 1} of {totalSteps}
-            </span>
-            <button
-              onClick={handleSkip}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer font-medium"
+        {/* Desktop — step dots indicator */}
+        <div className="hidden lg:flex items-center gap-1.5 px-10 pt-6">
+          {stepLabels.map((label, i) => (
+            <motion.div
+              key={label}
+              className="flex items-center gap-1.5"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
             >
-              Skip for now
-            </button>
+              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === currentStep ? 'bg-blue-600 w-6' : i < currentStep ? 'bg-blue-400' : 'bg-gray-200'
+              }`} />
+              <span className={`text-[10px] font-medium transition-colors ${
+                i === currentStep ? 'text-blue-600' : 'text-gray-300'
+              }`}>{label}</span>
+              {i < stepLabels.length - 1 && <div className="w-2 h-px bg-gray-200 mx-0.5" />}
+            </motion.div>
+          ))}
+          <div className="flex-1" />
+          <button onClick={handleSkip} className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer font-medium">
+            Skip for now
+          </button>
+        </div>
+
+        {/* Mobile — Progress Bar */}
+        <div className="lg:hidden px-6 pt-4 relative z-10">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-semibold text-gray-500">Step {currentStep + 1} of {totalSteps}</span>
+            <button onClick={handleSkip} className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer font-medium">Skip for now</button>
           </div>
           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-blue-500 to-blue-700 rounded-full"
-              initial={false}
-              animate={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }}
-              transition={{ type: 'spring', stiffness: 200, damping: 25 }}
-            />
+            <motion.div className="h-full bg-gradient-to-r from-blue-500 to-blue-700 rounded-full" initial={false}
+              animate={{ width: `${((currentStep + 1) / totalSteps) * 100}%` }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} />
           </div>
         </div>
 
-        {/* Step Content */}
-        <div className="flex-1 overflow-y-auto px-6 lg:px-10 py-6 lg:py-8 custom-scrollbar">
-          <AnimatePresence mode="wait" custom={direction}>
-            {renderCurrentStep()}
-          </AnimatePresence>
+        {/* Step Content — centered on desktop with max-width */}
+        <div className="flex-1 overflow-y-auto px-6 lg:px-0 py-6 lg:py-4 custom-scrollbar">
+          <div className="lg:max-w-lg lg:mx-auto">
+            <AnimatePresence mode="wait" custom={direction}>
+              {renderCurrentStep()}
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="px-6 lg:px-10 py-5 border-t border-gray-100 bg-white">
-          <div className="flex items-center gap-3">
+        {/* Navigation Buttons — centered on desktop */}
+        <div className="px-6 lg:px-0 py-4 lg:py-5 border-t border-gray-100 bg-white">
+          <div className="lg:max-w-lg lg:mx-auto flex items-center gap-3">
             {currentStep > 0 && (
               <motion.button
                 initial={{ opacity: 0, x: -8 }}
@@ -928,7 +965,9 @@ export default function OnboardingPage() {
                 transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                 type="button"
                 onClick={goBack}
-                className="flex items-center gap-1.5 px-5 py-3.5 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                whileHover={{ x: -2 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex items-center gap-1.5 px-5 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold text-sm hover:bg-gray-50 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back
@@ -942,7 +981,9 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={goNext}
                 disabled={!canContinue()}
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
+                whileHover={{ scale: canContinue() ? 1.02 : 1 }}
+                whileTap={{ scale: canContinue() ? 0.98 : 1 }}
+                className="flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
               >
                 Continue
                 <ArrowRight className="w-4 h-4" />
@@ -952,7 +993,9 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={handleComplete}
                 disabled={isSubmitting}
-                className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold text-sm shadow-lg shadow-blue-600/25 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
