@@ -179,131 +179,125 @@ const slideTransition = {
 /* ─── Decorative Left Panel (Desktop Only) ─── */
 function DecorativePanel() {
   return (
-    <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900">
-      {/* Abstract decorative shapes */}
+    <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden flex-col">
+      {/* Layered gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900" />
+      {/* Radial glow — adds depth at center */}
+      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(96,165,250,0.25) 0%, transparent 70%)' }} />
+
+      {/* Subtle noise/texture overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+
+      {/* Decorative floating shapes */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Large circle */}
+        {/* Large soft orb — top left */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.08 }}
-          transition={{ duration: 1.5, ease: 'easeOut' }}
-          className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white"
+          animate={{ scale: 1, opacity: 0.07 }}
+          transition={{ duration: 2, ease: 'easeOut' }}
+          className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white blur-3xl"
         />
-        {/* Medium circle */}
+        {/* Medium orb — bottom right */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 0.05 }}
-          transition={{ duration: 1.8, delay: 0.3, ease: 'easeOut' }}
-          className="absolute bottom-20 right-10 w-72 h-72 rounded-full bg-white"
+          transition={{ duration: 2, delay: 0.3, ease: 'easeOut' }}
+          className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-300 blur-3xl"
         />
-        {/* Small circles */}
+        {/* Small accent orb */}
         <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.07 }}
-          transition={{ duration: 1.2, delay: 0.5 }}
-          className="absolute top-1/3 right-1/4 w-16 h-16 rounded-full bg-white"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 0.06 }}
+          transition={{ duration: 1.5, delay: 0.6 }}
+          className="absolute top-1/4 right-1/4 w-20 h-20 rounded-full bg-white blur-xl"
         />
-        <motion.div
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.04 }}
-          transition={{ duration: 1.2, delay: 0.7 }}
-          className="absolute top-1/2 left-1/4 w-24 h-24 rounded-full bg-white"
-        />
-        {/* Diamond shape */}
-        <motion.div
-          initial={{ rotate: 0, scale: 0, opacity: 0 }}
-          animate={{ rotate: 45, scale: 1, opacity: 0.05 }}
-          transition={{ duration: 1.5, delay: 0.4, ease: 'easeOut' }}
-          className="absolute bottom-1/3 left-10 w-32 h-32 bg-white"
-        />
-        {/* Lines */}
-        <motion.div
-          initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 0.06 }}
-          transition={{ duration: 1, delay: 0.8 }}
-          className="absolute top-1/2 left-0 right-0 h-px bg-white origin-left"
-        />
+        {/* Subtle horizontal line */}
         <motion.div
           initial={{ scaleX: 0, opacity: 0 }}
           animate={{ scaleX: 1, opacity: 0.04 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="absolute top-2/3 left-0 right-0 h-px bg-white origin-left"
+          transition={{ duration: 1.2, delay: 0.8 }}
+          className="absolute top-[45%] left-0 right-0 h-px bg-white origin-left"
         />
       </div>
 
-      {/* Featured illustration */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center">
-        <motion.img
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
-          src="/images/onboarding/desktop-banner.png"
-          alt="Optometry illustration"
-          className="w-[85%] max-w-md object-contain drop-shadow-2xl"
-          style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' }}
-        />
+      {/* Hero illustration — blended into the gradient, bottom-anchored */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <div className="relative">
+          <motion.img
+            initial={{ y: 60, opacity: 0, scale: 0.95 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            transition={{ duration: 1.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            src="/images/onboarding/desktop-banner.png"
+            alt="Optometry illustration"
+            className="w-[90%] mx-auto object-contain"
+            style={{
+              filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.4)) brightness(1.08) saturate(1.1)',
+              maskImage: 'linear-gradient(to top, black 30%, rgba(0,0,0,0.6) 60%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to top, black 30%, rgba(0,0,0,0.6) 60%, transparent 100%)',
+            }}
+          />
+        </div>
+        {/* Soft glow behind illustration for depth */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-1/2 bg-blue-400/20 blur-3xl rounded-full" />
       </div>
 
-      {/* Content overlay */}
-      <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
-        {/* Logo area */}
-        <div>
+      {/* Content — floats above illustration with glassmorphism card */}
+      <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full h-full">
+        {/* Logo */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="flex items-center gap-3"
+        >
+          <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10">
+            <Eye className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-2xl font-bold text-white tracking-tight">FocusLinks</span>
+        </motion.div>
+
+        {/* Middle — headline with glassmorphism card */}
+        <div className="relative -mt-8">
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex items-center gap-3"
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="bg-white/[0.08] backdrop-blur-2xl rounded-3xl p-7 xl:p-8 border border-white/20 shadow-2xl shadow-black/20 max-w-sm"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Eye className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-bold text-white tracking-tight">FocusLinks</span>
+            <h1 className="text-3xl xl:text-4xl font-bold text-white leading-tight mb-4">
+              The Future of<br />
+              Optometry Starts<br />
+              <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">With You</span>
+            </h1>
+            <p className="text-blue-100/80 text-sm xl:text-base leading-relaxed">
+              Join thousands of optometry professionals worldwide who are transforming patient care, advancing research, and building meaningful connections.
+            </p>
           </motion.div>
         </div>
 
-        {/* Middle — inspirational text */}
-        <div className="space-y-6">
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-3xl xl:text-4xl font-bold text-white leading-tight"
-          >
-            The Future of<br />
-            Optometry Starts<br />
-            <span className="text-blue-200">With You</span>
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="text-blue-100/80 text-base leading-relaxed max-w-sm"
-          >
-            Join thousands of optometry professionals worldwide who are transforming patient care, advancing research, and building meaningful connections.
-          </motion.p>
-        </div>
-
-        {/* Bottom stats */}
+        {/* Bottom stats — pill style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="flex items-center gap-8"
+          className="flex items-center gap-3"
         >
-          <div>
-            <div className="text-2xl font-bold text-white">600+</div>
-            <div className="text-blue-200/70 text-sm">Optometrists</div>
-          </div>
-          <div className="w-px h-10 bg-white/20" />
-          <div>
-            <div className="text-2xl font-bold text-white">25+</div>
-            <div className="text-blue-200/70 text-sm">Countries</div>
-          </div>
-          <div className="w-px h-10 bg-white/20" />
-          <div>
-            <div className="text-2xl font-bold text-white">10+</div>
-            <div className="text-blue-200/70 text-sm">Specialties</div>
-          </div>
+          {[
+            { value: '600+', label: 'Optometrists' },
+            { value: '25+', label: 'Countries' },
+            { value: '10+', label: 'Specialties' },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+              className="bg-white/[0.08] backdrop-blur-md rounded-2xl px-5 py-3.5 border border-white/15 hover:bg-white/15 transition-colors"
+            >
+              <div className="text-xl font-extrabold text-white">{stat.value}</div>
+              <div className="text-blue-200/90 text-xs font-semibold">{stat.label}</div>
+            </motion.div>
+          ))}
         </motion.div>
       </div>
     </div>

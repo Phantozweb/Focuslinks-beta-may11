@@ -202,3 +202,27 @@ Work Log:
 Stage Summary:
 - Desktop: Single illustration only, no more duplicate
 - Mobile: Banner with cute character clearly visible at top, blends into white content below
+
+---
+Task ID: 3
+Agent: Main Agent
+Task: Redesign desktop DecorativePanel with premium blending, layout, and image integration
+
+Work Log:
+- VLM analyzed current desktop: rated 7/10, issues were illustration not seamlessly fading, glassmorphism too opaque, stats too muted
+- Completely redesigned DecorativePanel with:
+  - Layered gradient background with radial glow for depth
+  - Subtle noise texture overlay for premium feel
+  - Soft floating orbs (blur-3xl) instead of hard circles
+  - Illustration with aggressive mask gradient (black 30% → rgba 60% → transparent) for seamless fade
+  - Soft glow behind illustration (bg-blue-400/20 blur-3xl) for depth
+  - Glassmorphism card reduced to bg-white/[0.08] with backdrop-blur-2xl and stronger border
+  - Stats with hover effect, extrabold values, semibold labels, backdrop-blur
+  - Gradient text on "With You" heading
+- VLM rated final design 8/10 for both desktop and mobile
+- Mobile still looks great with visible cute character banner, no duplicate navbar
+
+Stage Summary:
+- Desktop left panel: premium glassmorphism + seamlessly fading illustration + polished stats
+- Mobile: cute character banner clearly visible, blends into white form
+- Both scored 8/10 by VLM evaluation
