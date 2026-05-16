@@ -182,7 +182,7 @@ const slideTransition = {
 const floatAnimation = {
   initial: { y: 0 },
   animate: {
-    y: [0, -8, 0],
+    y: [0, -10, 0],
     transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' as const },
   },
 };
@@ -190,45 +190,166 @@ const floatAnimation = {
 const floatAnimationSlow = {
   initial: { y: 0 },
   animate: {
-    y: [0, -6, 0],
-    transition: { duration: 5, repeat: Infinity, ease: 'easeInOut' as const },
+    y: [0, -7, 0],
+    transition: { duration: 5.5, repeat: Infinity, ease: 'easeInOut' as const },
+  },
+};
+
+const floatAnimationFast = {
+  initial: { y: 0 },
+  animate: {
+    y: [0, -12, 0],
+    transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' as const },
+  },
+};
+
+const pulseGlow = {
+  initial: { opacity: 0.3 },
+  animate: {
+    opacity: [0.3, 0.6, 0.3],
+    transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' as const },
+  },
+};
+
+/* ─── Step-aware content for left panel ─── */
+const stepDescriptions: Record<number, { headline: string; sub: string; features: { icon: LucideIcon; title: string; desc: string; img?: string }[] }> = {
+  0: {
+    headline: 'The Future of Optometry Starts With You',
+    sub: 'Join thousands of optometry professionals worldwide transforming patient care.',
+    features: [
+      { icon: Zap, title: 'Clinical Tools', desc: 'OD CAM, IPD & more', img: '/images/onboarding/clinical-tools.png' },
+      { icon: BookOpen, title: 'Academy', desc: 'Courses & certs', img: '/images/onboarding/academy-learn.png' },
+      { icon: Users, title: 'Directory', desc: 'Global network', img: '/images/onboarding/global-network.png' },
+      { icon: Award, title: 'Events', desc: 'Webinars & talks' },
+    ],
+  },
+  1: {
+    headline: 'Your Role Shapes Your Experience',
+    sub: 'We personalize every feature to match how you work.',
+    features: [
+      { icon: Stethoscope, title: 'Clinical', desc: 'Patient care tools' },
+      { icon: GraduationCap, title: 'Academic', desc: 'Study & research' },
+      { icon: Building2, title: 'Practice', desc: 'Management suite' },
+      { icon: Presentation, title: 'Teaching', desc: 'Create & share' },
+    ],
+  },
+  2: {
+    headline: 'Built for What Matters Most',
+    sub: 'Tell us your goals and we\'ll tailor your dashboard.',
+    features: [
+      { icon: Briefcase, title: 'Career Growth', desc: 'Jobs & mentorship' },
+      { icon: Eye, title: 'Visibility', desc: 'Get noticed globally' },
+      { icon: Wrench, title: 'Clinical', desc: 'Smart tools' },
+      { icon: Heart, title: 'Community', desc: 'Peer support' },
+    ],
+  },
+  3: {
+    headline: 'Deep Expertise, Right Tools',
+    sub: 'From myopia control to neuro-optometry — we\'ve got you covered.',
+    features: [
+      { icon: Eye, title: 'Specialties', desc: '12+ areas of focus' },
+      { icon: Telescope, title: 'Research', desc: 'AI-powered search' },
+      { icon: LayoutGrid, title: 'Labs', desc: 'Clinical simulators' },
+      { icon: Award, title: 'Certify', desc: 'Earn credentials' },
+    ],
+  },
+  4: {
+    headline: 'Connect Locally, Impact Globally',
+    sub: 'Find peers, events, and opportunities near you.',
+    features: [
+      { icon: MapPin, title: 'OptoMap', desc: 'Global directory' },
+      { icon: Globe, title: '25+ Countries', desc: 'Worldwide reach' },
+      { icon: Users, title: 'Community', desc: 'Local chapters' },
+      { icon: MessageSquare, title: 'Discuss', desc: ' Forums & chats' },
+    ],
+  },
+  5: {
+    headline: 'Your Journey Begins Now',
+    sub: 'Everything is set. Welcome to the future of optometry.',
+    features: [
+      { icon: Sparkles, title: 'Personalized', desc: 'Your dashboard' },
+      { icon: Target, title: 'Smart Feed', desc: 'Relevant content' },
+      { icon: Shield, title: 'Secure', desc: 'Data protected' },
+      { icon: Zap, title: 'Instant', desc: 'Ready to use' },
+    ],
   },
 };
 
 /* ─── Decorative Left Panel (Desktop Only) ─── */
-function DecorativePanel() {
+function DecorativePanel({ currentStep }: { currentStep: number }) {
+  const stepInfo = stepDescriptions[currentStep] || stepDescriptions[0];
+
   return (
-    <div className="hidden lg:flex lg:w-[48%] relative overflow-hidden flex-col">
-      {/* Layered gradient background */}
+    <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden flex-col">
+      {/* Animated gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900" />
-      {/* Radial glow */}
-      <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at 50% 40%, rgba(96,165,250,0.25) 0%, transparent 70%)' }} />
+      
+      {/* Animated background pattern image */}
+      <motion.div
+        initial={{ opacity: 0, scale: 1.1 }}
+        animate={{ opacity: 0.12, scale: 1 }}
+        transition={{ duration: 2, ease: 'easeOut' }}
+        className="absolute inset-0"
+      >
+        <img
+          src="/images/onboarding/desktop-pattern.png"
+          alt=""
+          className="w-full h-full object-cover"
+          style={{ mixBlendMode: 'screen' }}
+        />
+      </motion.div>
+
+      {/* Animated radial glow that follows step */}
+      <motion.div
+        key={`glow-${currentStep}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+        className="absolute inset-0"
+        style={{ background: `radial-gradient(ellipse at ${30 + currentStep * 10}% ${35 + currentStep * 5}%, rgba(96,165,250,0.3) 0%, transparent 60%)` }}
+      />
+
       {/* Subtle noise */}
       <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
 
-      {/* Decorative floating shapes */}
+      {/* Animated floating orbs */}
       <div className="absolute inset-0 overflow-hidden">
-        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.07 }} transition={{ duration: 2, ease: 'easeOut' }} className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white blur-3xl" />
-        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.05 }} transition={{ duration: 2, delay: 0.3, ease: 'easeOut' }} className="absolute -bottom-20 -right-20 w-80 h-80 rounded-full bg-blue-300 blur-3xl" />
-        <motion.div {...floatAnimation} className="absolute top-[15%] right-[15%] w-3 h-3 rounded-full bg-white/30" />
-        <motion.div {...floatAnimationSlow} className="absolute top-[60%] left-[10%] w-2 h-2 rounded-full bg-blue-300/40" />
-        <motion.div {...floatAnimation} className="absolute top-[75%] right-[20%] w-2.5 h-2.5 rounded-full bg-white/20" />
+        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.08 }} transition={{ duration: 2, ease: 'easeOut' }} className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-white blur-3xl" />
+        <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 0.06 }} transition={{ duration: 2, delay: 0.3, ease: 'easeOut' }} className="absolute -bottom-20 -right-20 w-96 h-96 rounded-full bg-blue-300 blur-3xl" />
+        <motion.div {...floatAnimationFast} className="absolute top-[12%] right-[12%] w-3 h-3 rounded-full bg-white/40" />
+        <motion.div {...floatAnimation} className="absolute top-[25%] left-[8%] w-2 h-2 rounded-full bg-cyan-300/50" />
+        <motion.div {...floatAnimationSlow} className="absolute top-[55%] left-[15%] w-2.5 h-2.5 rounded-full bg-white/25" />
+        <motion.div {...floatAnimationFast} className="absolute top-[45%] right-[8%] w-1.5 h-1.5 rounded-full bg-blue-200/60" />
+        <motion.div {...floatAnimation} className="absolute top-[70%] right-[25%] w-2 h-2 rounded-full bg-white/20" />
+        <motion.div {...floatAnimationSlow} className="absolute top-[85%] left-[25%] w-3 h-3 rounded-full bg-cyan-400/20" />
+        {/* Animated pulse ring */}
+        <motion.div
+          {...pulseGlow}
+          className="absolute top-[20%] right-[20%] w-16 h-16 rounded-full border border-white/10"
+        />
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: [0.8, 1.2, 0.8], opacity: [0, 0.1, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute top-[50%] left-[30%] w-24 h-24 rounded-full border border-cyan-300/15"
+        />
       </div>
 
       {/* Hero illustration — blended into the gradient */}
       <div className="absolute bottom-0 left-0 right-0">
         <div className="relative">
           <motion.img
+            key={`hero-${currentStep}`}
             initial={{ y: 60, opacity: 0, scale: 0.95 }}
             animate={{ y: 0, opacity: 1, scale: 1 }}
-            transition={{ duration: 1.4, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             src="/images/onboarding/desktop-banner.png"
             alt="Optometry illustration"
-            className="w-[85%] mx-auto object-contain"
+            className="w-[80%] mx-auto object-contain"
             style={{
               filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.4)) brightness(1.08) saturate(1.1)',
-              maskImage: 'linear-gradient(to top, black 30%, rgba(0,0,0,0.6) 60%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to top, black 30%, rgba(0,0,0,0.6) 60%, transparent 100%)',
+              maskImage: 'linear-gradient(to top, black 25%, rgba(0,0,0,0.5) 55%, transparent 90%)',
+              WebkitMaskImage: 'linear-gradient(to top, black 25%, rgba(0,0,0,0.5) 55%, transparent 90%)',
             }}
           />
         </div>
@@ -236,89 +357,166 @@ function DecorativePanel() {
       </div>
 
       {/* Content — floats above illustration */}
-      <div className="relative z-10 flex flex-col justify-between p-8 xl:p-12 w-full h-full">
-        {/* Logo */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex items-center gap-3"
-        >
-          <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10">
-            <Eye className="w-6 h-6 text-white" />
-          </div>
-          <span className="text-2xl font-bold text-white tracking-tight">FocusLinks</span>
-        </motion.div>
+      <div className="relative z-10 flex flex-col justify-between p-8 xl:p-10 w-full h-full">
+        {/* Logo + Step badge */}
+        <div className="flex items-center justify-between">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="flex items-center gap-3"
+          >
+            <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/10">
+              <Eye className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-2xl font-bold text-white tracking-tight">FocusLinks</span>
+          </motion.div>
 
-        {/* Headline card */}
+          {/* Step indicator pill */}
+          <motion.div
+            key={`step-pill-${currentStep}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-4 py-2 border border-white/15"
+          >
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+              <span className="text-[10px] font-bold text-white">{currentStep + 1}</span>
+            </div>
+            <span className="text-xs font-semibold text-blue-100">of 6</span>
+          </motion.div>
+        </div>
+
+        {/* Headline card — animated per step */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="bg-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 xl:p-7 border border-white/20 shadow-2xl shadow-black/20 max-w-sm"
+          key={`headline-${currentStep}`}
+          initial={{ opacity: 0, y: 20, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="bg-white/[0.08] backdrop-blur-2xl rounded-3xl p-6 xl:p-7 border border-white/20 shadow-2xl shadow-black/20 max-w-md"
         >
           <h1 className="text-2xl xl:text-3xl font-bold text-white leading-tight mb-3">
-            The Future of<br />
-            Optometry Starts<br />
-            <span className="bg-gradient-to-r from-blue-200 to-white bg-clip-text text-transparent">With You</span>
+            {stepInfo.headline.split(' ').map((word, i) => (
+              i === stepInfo.headline.split(' ').length - 1 ? (
+                <span key={i} className="bg-gradient-to-r from-cyan-300 to-white bg-clip-text text-transparent">{word}</span>
+              ) : (
+                <span key={i}>{word} </span>
+              )
+            ))}
           </h1>
           <p className="text-blue-100/80 text-sm leading-relaxed">
-            Join thousands of optometry professionals worldwide who are transforming patient care and building meaningful connections.
+            {stepInfo.sub}
           </p>
         </motion.div>
 
-        {/* Feature cards grid — fills the space */}
-        <div className="grid grid-cols-2 gap-3 max-w-sm">
-          {[
-            { icon: Zap, title: 'Clinical Tools', desc: 'OD CAM, IPD & more' },
-            { icon: BookOpen, title: 'Academy', desc: 'Courses & certs' },
-            { icon: Users, title: 'Directory', desc: 'Global network' },
-            { icon: Award, title: 'Events', desc: 'Webinars & talks' },
-          ].map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 0.8 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
-              whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.12)' }}
-              className="bg-white/[0.06] backdrop-blur-md rounded-2xl p-4 border border-white/10 cursor-default transition-colors"
-            >
-              <feature.icon className="w-5 h-5 text-blue-200 mb-2" />
-              <div className="text-sm font-semibold text-white">{feature.title}</div>
-              <div className="text-[11px] text-blue-200/60 mt-0.5">{feature.desc}</div>
-            </motion.div>
-          ))}
+        {/* Feature cards with images — staggered entrance */}
+        <div className="grid grid-cols-2 gap-3 max-w-md">
+          {stepInfo.features.map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                key={`feat-${currentStep}-${feature.title}`}
+                initial={{ opacity: 0, y: 25, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.3 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.12)', borderColor: 'rgba(255,255,255,0.25)' }}
+                className="relative bg-white/[0.06] backdrop-blur-md rounded-2xl p-4 border border-white/10 cursor-default transition-colors overflow-hidden group"
+              >
+                {/* Subtle image background for cards with images */}
+                {feature.img && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 1.2 }}
+                    animate={{ opacity: 0.15, scale: 1 }}
+                    transition={{ delay: 0.5 + i * 0.1, duration: 0.8 }}
+                    className="absolute inset-0 overflow-hidden"
+                  >
+                    <img
+                      src={feature.img}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      style={{ mixBlendMode: 'overlay' }}
+                    />
+                  </motion.div>
+                )}
+                <div className="relative z-10">
+                  <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center mb-2 group-hover:bg-white/20 transition-colors">
+                    <Icon className="w-4 h-4 text-cyan-200" />
+                  </div>
+                  <div className="text-sm font-semibold text-white">{feature.title}</div>
+                  <div className="text-[11px] text-blue-200/60 mt-0.5">{feature.desc}</div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
-        {/* Bottom row: stats + trust */}
-        <div className="flex items-center gap-3">
-          {[
-            { value: '600+', label: 'Optometrists' },
-            { value: '25+', label: 'Countries' },
-            { value: '10+', label: 'Specialties' },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.2 + i * 0.1, type: 'spring', stiffness: 200, damping: 20 }}
-              className="bg-white/[0.08] backdrop-blur-md rounded-2xl px-4 py-2.5 border border-white/15 hover:bg-white/15 transition-colors"
-            >
-              <div className="text-lg font-extrabold text-white">{stat.value}</div>
-              <div className="text-blue-200/90 text-[10px] font-semibold">{stat.label}</div>
-            </motion.div>
-          ))}
-
-          {/* Trust badge */}
+        {/* Bottom row: stats + trust badge + dashboard preview */}
+        <div className="space-y-3">
+          {/* Dashboard hologram card */}
           <motion.div
-            initial={{ opacity: 0, x: 10 }}
+            key={`dash-${currentStep}`}
+            initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.5 }}
-            className="ml-auto flex items-center gap-1.5 bg-white/[0.06] backdrop-blur-md rounded-full px-3 py-2 border border-white/10"
+            transition={{ delay: 0.8, type: 'spring', stiffness: 200, damping: 22 }}
+            className="relative bg-white/[0.05] backdrop-blur-lg rounded-2xl p-3 border border-white/10 overflow-hidden max-w-md"
           >
-            <Shield className="w-3.5 h-3.5 text-green-300" />
-            <span className="text-[10px] text-blue-100/70 font-medium">Free & Trusted</span>
+            <div className="absolute inset-0 opacity-20">
+              <img
+                src="/images/onboarding/dashboard-hologram.png"
+                alt=""
+                className="w-full h-full object-cover"
+                style={{ mixBlendMode: 'screen' }}
+              />
+            </div>
+            <div className="relative z-10 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400/30 to-blue-500/30 backdrop-blur-sm flex items-center justify-center border border-white/15">
+                <Sparkles className="w-4 h-4 text-cyan-200" />
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-white">AI-Powered Dashboard</div>
+                <div className="text-[10px] text-blue-200/60">Personalized to your workflow</div>
+              </div>
+              <motion.div
+                animate={{ x: [0, 4, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="ml-auto"
+              >
+                <ArrowRight className="w-4 h-4 text-cyan-300/60" />
+              </motion.div>
+            </div>
           </motion.div>
+
+          {/* Stats row + trust */}
+          <div className="flex items-center gap-2.5">
+            {[
+              { value: '600+', label: 'Optometrists' },
+              { value: '25+', label: 'Countries' },
+              { value: '10+', label: 'Specialties' },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.0 + i * 0.08, type: 'spring', stiffness: 200, damping: 20 }}
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255,255,255,0.15)' }}
+                className="bg-white/[0.08] backdrop-blur-md rounded-xl px-3.5 py-2 border border-white/15 transition-colors"
+              >
+                <div className="text-base font-extrabold text-white">{stat.value}</div>
+                <div className="text-blue-200/90 text-[9px] font-semibold">{stat.label}</div>
+              </motion.div>
+            ))}
+
+            {/* Trust badge */}
+            <motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.3 }}
+              className="ml-auto flex items-center gap-1.5 bg-white/[0.06] backdrop-blur-md rounded-full px-3 py-2 border border-white/10"
+            >
+              <Shield className="w-3.5 h-3.5 text-green-300" />
+              <span className="text-[10px] text-blue-100/70 font-medium">Free & Trusted</span>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
@@ -893,7 +1091,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-white">
       {/* Desktop Left Panel */}
-      <DecorativePanel />
+      <DecorativePanel currentStep={currentStep} />
 
       {/* Right Side — Step Content */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
@@ -910,7 +1108,7 @@ export default function OnboardingPage() {
         </div>
 
         {/* Desktop — step dots indicator */}
-        <div className="hidden lg:flex items-center gap-1.5 px-10 pt-6">
+        <div className="hidden lg:flex items-center gap-1.5 px-10 pt-6 pb-2">
           {stepLabels.map((label, i) => (
             <motion.div
               key={label}
@@ -919,19 +1117,29 @@ export default function OnboardingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
             >
-              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                i === currentStep ? 'bg-blue-600 w-6' : i < currentStep ? 'bg-blue-400' : 'bg-gray-200'
-              }`} />
+              <motion.div
+                animate={{
+                  width: i === currentStep ? 24 : 8,
+                  backgroundColor: i === currentStep ? '#2563EB' : i < currentStep ? '#60A5FA' : '#E5E7EB',
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="h-2 rounded-full"
+              />
               <span className={`text-[10px] font-medium transition-colors ${
-                i === currentStep ? 'text-blue-600' : 'text-gray-300'
+                i === currentStep ? 'text-blue-600' : i < currentStep ? 'text-blue-400' : 'text-gray-300'
               }`}>{label}</span>
               {i < stepLabels.length - 1 && <div className="w-2 h-px bg-gray-200 mx-0.5" />}
             </motion.div>
           ))}
           <div className="flex-1" />
-          <button onClick={handleSkip} className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer font-medium">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSkip}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors cursor-pointer font-medium"
+          >
             Skip for now
-          </button>
+          </motion.button>
         </div>
 
         {/* Mobile — Progress Bar */}
@@ -946,9 +1154,11 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* Step Content — centered on desktop with max-width */}
-        <div className="flex-1 overflow-y-auto px-6 lg:px-0 py-6 lg:py-4 custom-scrollbar">
-          <div className="lg:max-w-lg lg:mx-auto">
+        {/* Step Content — centered on desktop with max-width, subtle bg */}
+        <div className="flex-1 overflow-y-auto px-6 lg:px-0 py-6 lg:py-4 custom-scrollbar relative">
+          {/* Subtle desktop background gradient */}
+          <div className="hidden lg:block absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(239,246,255,0.6) 0%, transparent 70%)' }} />
+          <div className="lg:max-w-lg lg:mx-auto relative z-10">
             <AnimatePresence mode="wait" custom={direction}>
               {renderCurrentStep()}
             </AnimatePresence>

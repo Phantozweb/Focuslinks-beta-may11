@@ -251,3 +251,44 @@ Stage Summary:
 - Desktop right panel: form centered (max-w-lg), step dot indicator at top
 - More animations: staggered reveals, whileHover/whileTap, floating particles, spring rotations
 - Mobile still 8/10, banner still visible and cute
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Redesign desktop onboarding left panel with image generation, step-aware content, better animations
+
+Work Log:
+- Read current OnboardingPage.tsx (1018 lines) to understand the existing DecorativePanel and right-side form layout
+- Took screenshot of current desktop view and analyzed with VLM - identified too much white space, static content
+- Generated 5 new AI images using z-ai image generation:
+  - desktop-pattern.png (1152x864) - abstract eye/vision geometric pattern for background
+  - clinical-tools.png (1024x1024) - clinical optometry equipment illustration
+  - global-network.png (1024x1024) - global professional network nodes
+  - academy-learn.png (1024x1024) - digital learning/education illustration
+  - dashboard-hologram.png (1024x1024) - futuristic holographic dashboard
+- Completely redesigned DecorativePanel with:
+  - Step-aware content system (stepDescriptions object) - headline, sub, and feature cards change per step
+  - Animated background pattern image with screen blend mode
+  - Animated radial glow that moves position based on current step
+  - More floating orbs with 3 speed variants (fast, normal, slow)
+  - Pulse ring animations and expanding ring effects
+  - Step indicator pill showing current step number
+  - Feature cards with AI-generated image overlays (mixBlendMode: overlay)
+  - Dashboard hologram preview card with animated arrow
+  - Hover animations on stats cards
+  - Wider panel (52% instead of 48%)
+- Improved right panel:
+  - Added subtle blue gradient background on desktop (radial-gradient)
+  - Animated step dots with spring animations (width morphing)
+  - Skip button with hover/tap animations
+- Verified mobile view completely untouched with VLM analysis
+- Lint passes clean
+- VLM rated final design 8/10
+
+Stage Summary:
+- 5 new AI-generated images in /public/images/onboarding/
+- DecorativePanel now accepts currentStep prop and shows step-aware content
+- All 6 steps have unique headlines, descriptions, and feature cards
+- Much richer animations: floating orbs, pulse rings, step transitions, hover effects
+- Mobile view confirmed unchanged and looking great
+- Desktop layout now fills space properly with no awkward white space
