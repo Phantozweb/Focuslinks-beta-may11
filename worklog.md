@@ -160,3 +160,27 @@ Stage Summary:
 - Data saved to GitHub via submit-form API on completion
 - Auto-opens for new users, with subtle skip option
 - Full dark mode, mobile responsive, glass morphism design
+
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix onboarding page - duplicate navbar, banner image, mobile layout
+
+Work Log:
+- Took screenshots of mobile (390x844) and desktop (1440x900) onboarding pages
+- Used VLM to analyze issues: confirmed duplicate Navbar showing on /onboarding, banner overflow on mobile, no banner on desktop left panel
+- Found root cause of duplicate navbar: `useLocation()` was called in `Page` component OUTSIDE of `NavigationProvider`, so it always returned default `/` instead of `/onboarding`
+- Fixed by extracting `AppLayout` inner component that reads NavigationContext inside the Provider
+- Generated new desktop-optimized banner image (1152x864 landscape) at `/public/images/onboarding/desktop-banner.png`
+- Updated DecorativePanel to include desktop-banner.png as both background overlay and featured illustration at bottom
+- Reduced mobile banner height from h-44 to h-28 with scale-110 and object-top for subtle head peek
+- Removed all icon.png references (user hated it)
+- Enhanced gradient overlay on mobile banner for seamless blending
+- Verified fixes with VLM analysis: no duplicate navbar, banner well-blended, desktop has illustration
+
+Stage Summary:
+- Critical bug fixed: Navbar was always showing on /onboarding because useLocation() was called outside NavigationProvider
+- Desktop left panel now features the cute 2D optometrist illustration
+- Mobile shows a subtle head-area peek of the banner, blending cleanly
+- icon.png removed from all usages
+- Lint passes clean

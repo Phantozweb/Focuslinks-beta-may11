@@ -180,58 +180,80 @@ const slideTransition = {
 function DecorativePanel() {
   return (
     <div className="hidden lg:flex lg:w-[45%] relative overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900">
+      {/* Banner image as background */}
+      <div className="absolute inset-0">
+        <img
+          src="/images/onboarding/desktop-banner.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-luminosity"
+        />
+      </div>
+
       {/* Abstract decorative shapes */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large circle */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.1 }}
+          animate={{ scale: 1, opacity: 0.08 }}
           transition={{ duration: 1.5, ease: 'easeOut' }}
           className="absolute -top-20 -left-20 w-96 h-96 rounded-full bg-white"
         />
         {/* Medium circle */}
         <motion.div
           initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.06 }}
+          animate={{ scale: 1, opacity: 0.05 }}
           transition={{ duration: 1.8, delay: 0.3, ease: 'easeOut' }}
           className="absolute bottom-20 right-10 w-72 h-72 rounded-full bg-white"
         />
         {/* Small circles */}
         <motion.div
           initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.08 }}
+          animate={{ y: 0, opacity: 0.07 }}
           transition={{ duration: 1.2, delay: 0.5 }}
           className="absolute top-1/3 right-1/4 w-16 h-16 rounded-full bg-white"
         />
         <motion.div
           initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 0.05 }}
+          animate={{ y: 0, opacity: 0.04 }}
           transition={{ duration: 1.2, delay: 0.7 }}
           className="absolute top-1/2 left-1/4 w-24 h-24 rounded-full bg-white"
         />
         {/* Diamond shape */}
         <motion.div
           initial={{ rotate: 0, scale: 0, opacity: 0 }}
-          animate={{ rotate: 45, scale: 1, opacity: 0.06 }}
+          animate={{ rotate: 45, scale: 1, opacity: 0.05 }}
           transition={{ duration: 1.5, delay: 0.4, ease: 'easeOut' }}
           className="absolute bottom-1/3 left-10 w-32 h-32 bg-white"
         />
         {/* Lines */}
         <motion.div
           initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 0.08 }}
+          animate={{ scaleX: 1, opacity: 0.06 }}
           transition={{ duration: 1, delay: 0.8 }}
           className="absolute top-1/2 left-0 right-0 h-px bg-white origin-left"
         />
         <motion.div
           initial={{ scaleX: 0, opacity: 0 }}
-          animate={{ scaleX: 1, opacity: 0.05 }}
+          animate={{ scaleX: 1, opacity: 0.04 }}
           transition={{ duration: 1, delay: 1 }}
           className="absolute top-2/3 left-0 right-0 h-px bg-white origin-left"
         />
       </div>
 
-      {/* Content */}
+      {/* Featured illustration */}
+      <div className="absolute bottom-0 left-0 right-0 flex justify-center">
+        <motion.img
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1.2, delay: 0.5, ease: 'easeOut' }}
+          src="/images/onboarding/desktop-banner.png"
+          alt="Optometry illustration"
+          className="w-[85%] max-w-md object-contain drop-shadow-2xl"
+          style={{ filter: 'drop-shadow(0 10px 30px rgba(0,0,0,0.3))' }}
+        />
+      </div>
+
+      {/* Content overlay */}
       <div className="relative z-10 flex flex-col justify-between p-10 xl:p-14 w-full">
         {/* Logo area */}
         <div>
@@ -862,24 +884,22 @@ export default function OnboardingPage() {
 
       {/* Right Side — Step Content */}
       <div className="flex-1 flex flex-col min-h-screen lg:min-h-0">
-        {/* Mobile header with blended banner */}
-        <div className="lg:hidden relative overflow-hidden">
-          {/* Banner as background */}
-          <div className="relative h-44 overflow-hidden">
-            <img 
-              src="/images/onboarding/mobile-banner.png" 
-              alt="" 
-              className="absolute inset-0 w-full h-full object-cover object-top"
-            />
-            {/* Gradient overlay to blend into white */}
-            <div className="absolute inset-0 bg-gradient-to-b from-blue-600/60 via-blue-700/40 to-white" />
-            {/* Logo on top */}
-            <div className="relative z-10 flex items-center gap-2.5 pt-5 px-5">
-              <div className="w-7 h-7 rounded-lg bg-white/25 backdrop-blur-sm flex items-center justify-center">
-                <Eye className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-base font-bold text-white drop-shadow-sm">FocusLinks</span>
+        {/* Mobile — subtle banner peek at top */}
+        <div className="lg:hidden relative h-28 overflow-hidden">
+          {/* Banner image — show only top portion (head area) */}
+          <img 
+            src="/images/onboarding/mobile-banner.png" 
+            alt="" 
+            className="absolute inset-0 w-full h-full object-cover object-top scale-110"
+          />
+          {/* Gradient overlay to blend seamlessly into white content area */}
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-600/50 via-blue-700/30 to-white" />
+          {/* Minimal logo — single line, no bar feel */}
+          <div className="relative z-10 flex items-center gap-2 pt-4 px-5">
+            <div className="w-7 h-7 rounded-lg bg-white/25 backdrop-blur-sm flex items-center justify-center">
+              <Eye className="w-4 h-4 text-white" />
             </div>
+            <span className="text-base font-bold text-white drop-shadow-sm">FocusLinks</span>
           </div>
         </div>
 

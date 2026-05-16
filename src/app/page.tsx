@@ -198,29 +198,36 @@ function Router() {
   );
 }
 
-export default function Page() {
+/* ── Inner layout that reads NavigationContext INSIDE the provider ── */
+function AppLayout() {
   const isAuthenticated = useIsAuthenticated();
   const { pathname } = useLocation();
   const path = pathname || '/';
   const isOnboarding = path === '/onboarding';
 
   return (
+    <div className={isOnboarding ? '' : 'min-h-screen bg-gray-50 dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-200'}>
+      {!isOnboarding && <Navbar />}
+      {isAuthenticated && !isOnboarding && <GettingStartedModal />}
+      {isAuthenticated && !isOnboarding && <CommandPalette />}
+      {isAuthenticated && !isOnboarding && <OnboardingTour />}
+      {isAuthenticated && !isOnboarding && <BottomNav />}
+      <main className={isOnboarding ? '' : 'flex-grow'}>
+        <Router />
+      </main>
+      {!isOnboarding && (
+        <div className="hidden md:block">
+          <Footer />
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Page() {
+  return (
     <NavigationProvider>
-      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 font-sans text-gray-900 dark:text-gray-100 flex flex-col transition-colors duration-200">
-        {!isOnboarding && <Navbar />}
-        {isAuthenticated && !isOnboarding && <GettingStartedModal />}
-        {isAuthenticated && !isOnboarding && <CommandPalette />}
-        {isAuthenticated && !isOnboarding && <OnboardingTour />}
-        {isAuthenticated && !isOnboarding && <BottomNav />}
-        <main className={isOnboarding ? '' : 'flex-grow'}>
-          <Router />
-        </main>
-        {!isOnboarding && (
-          <div className="hidden md:block">
-            <Footer />
-          </div>
-        )}
-      </div>
+      <AppLayout />
     </NavigationProvider>
   );
 }
