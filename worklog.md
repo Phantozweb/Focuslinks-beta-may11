@@ -292,3 +292,36 @@ Stage Summary:
 - Much richer animations: floating orbs, pulse rings, step transitions, hover effects
 - Mobile view confirmed unchanged and looking great
 - Desktop layout now fills space properly with no awkward white space
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Redesign desktop onboarding - girl as background, overlapping cards, visuals on right below forms, edge blends
+
+Work Log:
+- User rated previous design 1/10 - "too boring and weird layout, not overlapping, remove eye icon, girl as background, move visuals to right below forms, edge blends"
+- Completely rewrote DecorativePanel:
+  - Girl (desktop-banner.png) now FULL background with object-cover object-top
+  - Removed Eye icon, only "FocusLinks" text as brand
+  - Multi-layer gradient overlays for edge blending (from-blue-900/80, to-transparent, right edge blend into white)
+  - 4 overlapping glassmorphism cards stacked with visible offset layers (peeking from top-right, trailing from bottom-left)
+  - Stats row overlaps bottom edge of headline card with -mb-12
+  - Step-aware content still changes per step (6 unique headlines)
+  - Floating particles and pulse ring animations
+- Right panel now has visual elements below form:
+  - 4 colored feature cards (Clinical Tools, Academy, Directory, Events) with gradient backgrounds
+  - AI-Powered Personalization card with rotating sparkles icon
+  - Blended separator line between form and cards
+  - Edge blend at bottom of each card
+- Removed unused imports (floatAnimationFast, pulseGlow, old stepDescriptions with features/images)
+- VLM rated final design 8/10
+- Mobile view confirmed completely untouched and good
+- Step-aware content verified working (headline changes to "Your Role Shapes Your Experience" for step 2)
+
+Stage Summary:
+- Left panel: Girl as full background with glassmorphism overlays, no eye icon, 4 visible overlapping card layers
+- Right panel: Feature cards below form with colored gradients and edge blends
+- Edge blend between left/right panels via gradient fade
+- Step-aware content continues to work
+- Mobile untouched
+- VLM rating: 8/10
