@@ -98,8 +98,10 @@ export default function MembershipForm() {
       type: 'membership_application',
       membershipId,
       ...formData,
-      status: 'accepted',
-      verified: true,
+      // Do NOT auto-publish to public directory.
+      // Users must explicitly create a public profile via CreateProfile.
+      status: 'pending',
+      verified: false,
       country: formData.country === 'OTHER' ? formData.otherCountry : formData.country,
       submittedAt: new Date().toISOString()
     };
@@ -126,6 +128,7 @@ export default function MembershipForm() {
       
       if (response.ok) {
         // Auto-login: store user data in localStorage
+        // Profile is NOT yet published to directory — user must complete profile separately
         const userData = {
           membershipId,
           name: formData.fullName,
@@ -134,8 +137,8 @@ export default function MembershipForm() {
           title: formData.profession,
           country: formData.country === 'OTHER' ? formData.otherCountry : formData.country,
           location: `${formData.cityState}${formData.cityState && formData.region ? ', ' : ''}${formData.region}`,
-          verified: true,
-          status: 'accepted',
+          verified: false,
+          status: 'pending',
           joinedAt: new Date().toISOString()
         };
         localStorage.setItem('fl_user', JSON.stringify(userData));

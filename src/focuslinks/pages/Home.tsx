@@ -1123,24 +1123,28 @@ export default function Home() {
       </motion.section>
       )}
 
-      {/* ─── Activity Pulse Indicator ─── */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="flex justify-center py-4"
-      >
-        <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-gray-200/60 dark:border-slate-700/60 shadow-sm">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">12 members online now</span>
-        </div>
-      </motion.div>
+      {/* ─── Activity Pulse & Stats — only shown to guests (marketing) ─── */}
+      {isGuest && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 }}
+            className="flex justify-center py-4"
+          >
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm border border-gray-200/60 dark:border-slate-700/60 shadow-sm">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">12 members online now</span>
+            </div>
+          </motion.div>
 
-      {/* ─── Animated Stats Counter Section ─── */}
-      <StatsSection memberCount={memberCount} countryCount={countryCount} clinicCount={clinicCount} />
+          {/* ─── Animated Stats Counter Section ─── */}
+          <StatsSection memberCount={memberCount} countryCount={countryCount} clinicCount={clinicCount} />
+        </>
+      )}
 
       {/* ─── OptoMap Section ─── */}
       <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50/60 dark:bg-slate-950/60 border-y border-gray-100 dark:border-slate-800">

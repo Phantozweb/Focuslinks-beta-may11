@@ -165,56 +165,11 @@ export async function POST(request: NextRequest) {
       throw new Error(`Failed to create file on GitHub: ${errorData.message}`);
     }
 
-    // Sync list_profiles.json for membership applications
-    if (body.type === 'membership_application') {
-      try {
-        const listUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/list_profiles.json`;
-        const listRes = await fetch(listUrl, {
-          headers: {
-            'Authorization': `token ${GITHUB_PAT}`,
-            'Accept': 'application/vnd.github.v3+json'
-          }
-        });
-
-        let listData: any[] = [];
-        let listSha: string | undefined = undefined;
-
-        if (listRes.ok) {
-          const listFile = await listRes.json();
-          const listContent = Buffer.from(listFile.content, 'base64').toString('utf-8');
-          listData = JSON.parse(listContent);
-          listSha = listFile.sha;
-        }
-
-        const newMember = {
-          ...newEntry,
-          name: newEntry.fullName || newEntry.name,
-          title: newEntry.profession,
-          location: `${newEntry.cityState}, ${newEntry.region}, ${newEntry.country}`,
-          verified: true,
-          status: 'accepted'
-        };
-        
-        listData.push(newMember);
-        const updatedListContent = Buffer.from(JSON.stringify(listData, null, 2)).toString('base64');
-        
-        await fetch(listUrl, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `token ${GITHUB_PAT}`,
-            'Accept': 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            message: `Sync list_profiles.json for new member ${newEntry.membershipId}`,
-            content: updatedListContent,
-            sha: listSha
-          })
-        });
-      } catch (syncError) {
-        console.error('Failed to sync list_profiles.json:', syncError);
-      }
-    }
+    // NOTE: Membership applications should NOT auto-add to list_profiles.json.
+    // Users must explicitly create a public profile via CreateProfile and get approved.
+    // Their data is stored in Profile/Users/{id}_userdata.json with status 'pending'
+    // so they can log in, but they won't appear in the public directory until
+    // they complete their profile and it's approved.
 
     return NextResponse.json({ success: true, entryId });
   } catch (error) {

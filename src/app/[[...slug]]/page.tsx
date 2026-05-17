@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import SpaShell from '@/focuslinks/components/SpaShell';
-import { buildBreadcrumbSchema, buildFAQSchema, buildWebSiteSchema, routeFAQs, routeBreadcrumbs } from '@/lib/schema';
+import { buildBreadcrumbSchema, buildFAQSchema, buildWebSiteSchema, buildPersonSchema, buildProfilePageSchemas, routeFAQs, routeBreadcrumbs } from '@/lib/schema';
+
+const GITHUB_PAT = process.env.GITHUB_PAT;
 
 /* ------------------------------------------------------------------ */
 /*  Route Metadata Map — per-page SEO data for server-side rendering  */
@@ -339,6 +341,63 @@ function resolveMeta(slug: string[] | undefined): RouteMeta {
 }
 
 /* ------------------------------------------------------------------ */
+/*  Helper: Fetch profile data from GitHub for SSR metadata           */
+/* ------------------------------------------------------------------ */
+
+async function fetchProfileForSSR(slug: string): Promise<{
+  name: string;
+  title?: string;
+  location?: string;
+  country?: string;
+  role?: string;
+  description?: string;
+  image?: string;
+  verified?: boolean;
+  membershipId?: string;
+} | null> {
+  try {
+    const headers: Record<string, string> = {
+      Accept: 'application/vnd.github.v3+json',
+      'User-Agent': 'FocusLinks-App',
+    };
+    if (GITHUB_PAT) {
+      headers.Authorization = `token ${GITHUB_PAT}`;
+    }
+
+    // Fetch list_profiles.json to find the profile by slug
+    const res = await fetch(
+      `https://raw.githubusercontent.com/Phantozweb/Fldatas/main/list_profiles.json`,
+      { next: { revalidate: 300 } } // Cache for 5 minutes
+    );
+    if (!res.ok) return null;
+
+    const profiles = await res.json();
+    if (!Array.isArray(profiles)) return null;
+
+    // Find profile by matching slug
+    const generateSlug = (name: string) =>
+      (name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const profile = profiles.find((p: any) => generateSlug(p.name) === slug);
+    if (!profile) return null;
+
+    return {
+      name: profile.name,
+      title: profile.title,
+      location: profile.location,
+      country: profile.country,
+      role: profile.role,
+      description: profile.description,
+      image: profile.image,
+      verified: profile.verified,
+      membershipId: profile.membershipId,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /*  generateMetadata — server-side per-route SEO                      */
 /* ------------------------------------------------------------------ */
 
@@ -352,32 +411,51 @@ export async function generateMetadata({
   const path = slug ? `/${slug.join('/')}` : '/';
   const canonicalUrl = `${SITE_URL}${path}`;
 
+  // Dynamic profile metadata for /profile/[slug] routes
+  let title = meta.title;
+  let description = meta.description;
+  let keywords = meta.keywords;
+  let ogImage = '/og-image.jpg';
+
+  if (path.startsWith('/profile/')) {
+    const profileSlug = path.replace('/profile/', '');
+    const profile = await fetchProfileForSSR(profileSlug);
+    if (profile) {
+      title = `${profile.name} — ${profile.title || profile.role || 'Optometrist'} | FocusLinks`;
+      description = `${profile.name} is a ${(profile.role || 'professional').toLowerCase()} on FocusLinks.${profile.location ? ` Based in ${profile.location}.` : ''}${profile.description ? ` ${profile.description.slice(0, 120)}` : ''}`;
+      keywords = [profile.name, profile.role || 'optometrist', profile.location || '', 'FocusLinks profile'].filter(Boolean);
+      if (profile.image && profile.image !== 'none' && !profile.image.includes('localhost')) {
+        ogImage = profile.image;
+      }
+    }
+  }
+
   return {
     // Use absolute title to avoid layout template duplication
-    title: { absolute: meta.title },
-    description: meta.description,
-    keywords: meta.keywords,
+    title: { absolute: title },
+    description,
+    keywords,
     alternates: {
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: meta.title,
-      description: meta.description,
+      title,
+      description,
       url: canonicalUrl,
       siteName: 'FocusLinks',
       type: (meta.type as 'website' | 'article') || 'website',
       images: [{
-        url: '/og-image.jpg',
+        url: ogImage,
         width: 1200,
         height: 630,
-        alt: meta.title,
+        alt: title,
       }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: meta.title,
-      description: meta.description,
-      images: ['/og-image.jpg'],
+      title,
+      description,
+      images: [ogImage],
     },
   };
 }
@@ -401,6 +479,26 @@ export default async function CatchAllPage({
   // WebSite schema on homepage only (search action for Google sitelinks)
   if (path === '/') {
     schemas.push(buildWebSiteSchema());
+  }
+
+  // Profile pages: inject Person + BreadcrumbList + ProfilePage + FAQ schemas
+  if (path.startsWith('/profile/')) {
+    const profileSlug = path.replace('/profile/', '');
+    const profile = await fetchProfileForSSR(profileSlug);
+    if (profile) {
+      const profileSchemas = buildProfilePageSchemas({
+        name: profile.name,
+        title: profile.title,
+        description: profile.description,
+        image: profile.image,
+        location: profile.location,
+        country: profile.country,
+        role: profile.role,
+        verified: profile.verified,
+        membershipId: profile.membershipId,
+      });
+      schemas.push(...profileSchemas);
+    }
   }
 
   // BreadcrumbList schema for every page that has a breadcrumb

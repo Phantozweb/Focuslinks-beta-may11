@@ -468,8 +468,16 @@ export function useProfiles() {
       }
 
       // Sync list_profiles.json (public directory)
+      // Only include profiles that are:
+      // 1. Accepted AND verified (properly reviewed)
+      // 2. NOT membership_application type (those are just registrations, not public profiles)
+      // 3. Have meaningful content (at least a name)
       const listProfilesData = individualProfiles
-        .filter(p => p.status === 'accepted' || p.verified)
+        .filter(p =>
+          (p.status === 'accepted' && p.verified) &&
+          p.type !== 'membership_application' &&
+          !!(p.name || p.fullName)
+        )
         .map(p => ({
           ...p,
           membershipId: p.membershipId,

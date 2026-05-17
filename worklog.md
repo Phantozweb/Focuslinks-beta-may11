@@ -584,3 +584,30 @@ Stage Summary:
 - WebSite schema with SearchAction on homepage (enables Google sitelinks searchbox)
 - All JSON-LD rendered server-side for immediate crawler visibility
 - Lint passes, no errors
+---
+Task ID: 1
+Agent: Main Agent
+Task: Fix profiles being published without completion or user approval
+
+Work Log:
+- Investigated the profile publishing flow: MembershipForm → submit-form API → list_profiles.json
+- Found that membership_application was auto-accepted with verified=true and status='accepted', immediately added to the public directory (list_profiles.json)
+- GitHub data showed 189 profiles in list_profiles.json, of which 162 were membership_application type (auto-accepted registrations without proper profiles)
+- Only 27 profiles were real professional/student/academic profiles
+
+Fixes applied:
+1. submit-form/route.ts: Removed the auto-sync block that added membership_application to list_profiles.json
+2. MembershipForm.tsx: Changed from status='accepted', verified=true to status='pending', verified=false
+3. useProfiles.ts syncAllMembership: Added filter to exclude membership_application type AND require both accepted+verified status
+4. Cleaned GitHub data: Removed 162 membership_application entries from list_profiles.json (189 → 27 real profiles)
+5. Updated local src/data/list_profiles.json to match
+6. Home.tsx: Hidden StatsSection and "members online" indicator from logged-in users (isGuest check)
+7. Added sanitizeUrl() helper in constants.ts to prevent localhost URLs from displaying
+8. Applied sanitizeUrl to ProfileDetail.tsx for image and linkedin URLs
+
+Stage Summary:
+- Profiles no longer auto-publish on membership registration
+- Users must explicitly create a public profile via CreateProfile (which goes through review)
+- The "189 members" count is gone (cleaned to 27 real profiles)
+- Logged-in users no longer see marketing stats section
+- URL sanitization added to prevent localhost URLs in profile display

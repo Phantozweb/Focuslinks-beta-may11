@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from '../../context/NavigationContext';
 import { MapPin, BadgeCheck, ArrowLeft, Mail, Globe, Briefcase, GraduationCap, Award, Calendar, Linkedin, Flag, Mic, Video, Users, UserPlus, Check, X, UserCheck, MessageCircle, Clock, Link2, Lock, LogIn } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useProfiles, generateSlug } from '../../hooks/useProfiles';
+import { sanitizeUrl } from '../../lib/constants';
 import { useAuth } from '../../hooks/useAuth';
 import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectConnection, followUser, unfollowUser, cancelConnection, removeConnection, isFollowing as checkIsFollowing, fetchFollowing, fetchConnections, getMutualConnections, getFollowingCount } from '../../services/connectionsService';
 import type { ConnectionStatus } from '../../services/connectionsService';
@@ -275,7 +276,7 @@ export default function ProfileDetail() {
   }
 
   const email = userData?.links?.email || userData?.email || profile.email || `${generateSlug(profile.name)}@example.com`;
-  const linkedinUrl = userData?.links?.linkedin || userData?.linkedin || profile.linkedin || `https://linkedin.com/in/${generateSlug(profile.name)}`;
+  const linkedinUrl = sanitizeUrl(userData?.links?.linkedin || userData?.linkedin || profile.linkedin) || `https://linkedin.com/in/${generateSlug(profile.name)}`;
   const mailtoSubject = encodeURIComponent("Connecting via FocusLinks");
   const mailtoBody = encodeURIComponent(`Hi ${userData?.name || profile.name},\n\nI came across your profile on FocusLinks and would love to connect with you!\n\nBest regards,\n[Your Name]`);
   const mailtoLink = `mailto:${email}?subject=${mailtoSubject}&body=${mailtoBody}`;
@@ -359,13 +360,13 @@ export default function ProfileDetail() {
             <div className="flex flex-col md:flex-row gap-8 items-start">
               {/* Avatar */}
               <div className="relative shrink-0">
-                {!(userData?.image || profile.image) || (userData?.image || profile.image) === 'none' ? (
+                {!(sanitizeUrl(userData?.image) || sanitizeUrl(profile.image)) || (userData?.image || profile.image) === 'none' ? (
                   <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center border-8 border-white dark:border-slate-900 shadow-lg">
                     <Users className="w-16 h-16 md:w-24 md:h-24 text-slate-400 dark:text-gray-500" />
                   </div>
                 ) : (
                   <img 
-                    src={userData?.image || profile.image} 
+                    src={sanitizeUrl(userData?.image) || sanitizeUrl(profile.image)} 
                     alt={userData?.name || profile.name} 
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || profile.name)}&background=e2e8f0&color=1e293b&size=300`;
