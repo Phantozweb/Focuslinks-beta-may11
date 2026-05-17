@@ -10,7 +10,7 @@ import type { ConnectionStatus } from '../../services/connectionsService';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
 import JsonLd from '../components/JsonLd';
-import { buildPersonSchema, buildBreadcrumbSchema } from '../../lib/schema';
+import { buildProfilePageSchemas } from '../../lib/schema';
 
 export default function ProfileDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -292,8 +292,8 @@ export default function ProfileDetail() {
     toast.error('Log in to view LinkedIn profile');
   };
 
-  // Build structured data for this profile
-  const personSchema = buildPersonSchema({
+  // Build comprehensive structured data for this profile page
+  const profileSchemas = buildProfilePageSchemas({
     name: profile.name,
     title: profile.title || userData?.title,
     description: userData?.bio || userData?.description || profile.description,
@@ -310,19 +310,17 @@ export default function ProfileDetail() {
     education: userData?.education || profile.education,
     verified: userData?.verified ?? profile.verified,
     membershipId: profile.membershipId,
+    organization: userData?.organization || profile.organization,
+    connectionCount,
+    followerCount: followingCount,
   });
-
-  const breadcrumbSchema = buildBreadcrumbSchema([
-    { name: 'Home', url: 'https://focuslinks.in' },
-    { name: 'Directory', url: 'https://focuslinks.in/directory' },
-    { name: profile.name, url: `https://focuslinks.in/profile/${slug}` },
-  ]);
 
   return (
     <>
     <SEO title={`${profile.name} — ${profile.title || 'Optometrist'}`} description={`${profile.name} is a ${(profile.role || 'professional').toLowerCase()} on FocusLinks. ${(userData?.bio || profile.description || '').slice(0, 150)}`} keywords={`${profile.name}, optometrist, ${profile.role || ''}, ${profile.location || ''}, FocusLinks profile`} />
-    <JsonLd schema={personSchema} />
-    <JsonLd schema={breadcrumbSchema} />
+    {profileSchemas.map((schema, i) => (
+      <JsonLd key={i} schema={schema} />
+    ))}
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pt-20 pb-16">
       {/* Sign-in banner for non-logged-in users */}
       {!isLoggedIn && !authLoading && (

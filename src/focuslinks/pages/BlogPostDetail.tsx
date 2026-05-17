@@ -27,6 +27,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import SEO from '../components/SEO';
 
 /* ─── Types ─── */
@@ -357,7 +358,7 @@ export default function BlogPostDetail() {
 
   /* ─── Handlers ─── */
   const handleShare = (platform: string) => {
-    const url = window.location.href;
+    const url = `${SITE_URL}/blog/${slug}`;
     const title = article?.title || '';
     switch (platform) {
       case 'Facebook':
@@ -376,7 +377,7 @@ export default function BlogPostDetail() {
   };
 
   const handleCopyLink = useCallback(() => {
-    navigator.clipboard.writeText(window.location.href).then(() => {
+    navigator.clipboard.writeText(`${SITE_URL}/blog/${slug}`).then(() => {
       setCopied(true);
       toast.success('Link copied to clipboard!');
       setTimeout(() => setCopied(false), 2000);

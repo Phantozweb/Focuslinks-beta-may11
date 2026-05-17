@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from '@/context/NavigationContext';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import SEO from '../components/SEO';
 
@@ -522,7 +523,7 @@ export default function Resources() {
 
   /* ─── Handlers ─── */
   const handleShare = useCallback(async (title: string) => {
-    const url = `${window.location.origin}/resources`;
+    const url = `${SITE_URL}/resources`;
     try {
       await navigator.clipboard.writeText(`${title} — ${url}`);
       toast.success('Link copied to clipboard!');

@@ -224,19 +224,6 @@ export default function HomePage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [feedLoading, setFeedLoading] = useState(true);
 
-  // Realtime stats from API
-  const [realtimeMembers, setRealtimeMembers] = useState<number | null>(null);
-  useEffect(() => {
-    fetch('/api/opto-map')
-      .then(res => res.json())
-      .then(data => {
-        if (data?.stats) {
-          setRealtimeMembers(data.stats.totalProfiles + data.stats.totalUsers);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   // Auth gate + user data loading
   useEffect(() => {
     const storedUser = localStorage.getItem('fl_user');
@@ -347,7 +334,6 @@ export default function HomePage() {
   const durationText = months > 0 ? `${months} month${months > 1 ? 's' : ''}` : `${diffDays} day${diffDays > 1 ? 's' : ''}`;
 
   // Stats
-  const communityMembers = realtimeMembers ?? listProfiles.filter(p => p.type !== 'membership_application').length;
   const userPostsCount = useMemo(
     () => posts.filter(p => p.authorId === user?.membershipId).length,
     [posts, user?.membershipId]
@@ -469,13 +455,6 @@ export default function HomePage() {
   // Stat cards data
   // ------------------------------------------------------------------
   const stats = [
-    {
-      icon: <Users className="w-5 h-5" />,
-      value: communityMembers,
-      label: 'Community Members',
-      gradient: 'from-violet-500 to-purple-600',
-      bg: 'bg-violet-50 dark:bg-violet-950/30',
-    },
     {
       icon: <PenSquare className="w-5 h-5" />,
       value: userPostsCount,

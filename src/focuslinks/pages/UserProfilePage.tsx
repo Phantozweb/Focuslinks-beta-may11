@@ -8,6 +8,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import { buildPersonSchema, buildBreadcrumbSchema } from '../../lib/schema';
 import { generateSlug, useProfiles } from '../../hooks/useProfiles';
 
 /* ------------------------------------------------------------------ */
@@ -386,7 +389,28 @@ export default function UserProfilePage() {
   const socialLinks = parseSocialLinks(profile.socialLinks);
   const initials = profile.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'U';
 
+  // Build structured data for this user profile
+  const profileSlug = profile.name ? generateSlug(profile.name) : urlId;
+  const personSchema = buildPersonSchema({
+    name: profile.name || 'FocusLinks Member',
+    title: profile.title,
+    description: profile.bio || `${profile.name} is a ${(profile.role || 'professional').toLowerCase()} on FocusLinks.`,
+    image: profile.avatar,
+    location: profile.location,
+    role: profile.role,
+    specialties: parseSkills(profile.skills),
+    membershipId: profile.membershipId,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: 'https://focuslinks.in' },
+    { name: 'Profile', url: `https://focuslinks.in/user/${profileSlug}` },
+  ]);
+
   return (
+    <>
+    <SEO title={`${profile.name || 'User'} — ${profile.title || profile.role || 'Optometrist'} | FocusLinks`} description={`${profile.name || 'This user'} is a ${(profile.role || 'professional').toLowerCase()} on FocusLinks.${profile.location ? ` Based in ${profile.location}.` : ''}`} keywords={`${profile.name}, optometrist, ${profile.role || ''}, ${profile.location || ''}, FocusLinks`} />
+    <JsonLd schema={personSchema} />
+    <JsonLd schema={breadcrumbSchema} />
     <motion.div
       variants={containerVariants}
       initial="hidden"
@@ -679,7 +703,7 @@ export default function UserProfilePage() {
                     className="w-full gap-2"
                     onClick={() => {
                       const slug = profile?.name ? generateSlug(profile.name) : urlId;
-                      const url = `${window.location.origin}/user/${slug}`;
+                      const url = `${SITE_URL}/user/${slug}`;
                       navigator.clipboard.writeText(url).then(() => {
                         toast.success('Profile link copied!');
                       }).catch(() => {
@@ -863,5 +887,6 @@ export default function UserProfilePage() {
 
       </div>
     </motion.div>
+    </>
   );
 }

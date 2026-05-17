@@ -4,6 +4,7 @@ import { useState, useRef, useCallback, useMemo } from 'react';
 import { Link, useNavigate, useLocation } from '../../context/NavigationContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import {
   User,
   MapPin,
@@ -331,7 +332,7 @@ export default function UserProfile() {
   // Share
   const handleShare = useCallback(() => {
     const slug = generateSlug(name);
-    const url = slug ? `${window.location.origin}/user/${slug}` : `${window.location.origin}${window.location.pathname}`;
+    const url = slug ? `${SITE_URL}/user/${slug}` : `${SITE_URL}${window.location.pathname}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(() => toast.success('Profile link copied!')).catch(() => toast.success('Profile link copied!'));
     } else {

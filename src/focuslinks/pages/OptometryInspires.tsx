@@ -9,6 +9,7 @@ import {
   ExternalLink, Flame, Users, BarChart3, Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import { Link } from '../../context/NavigationContext';
 import { useProfiles } from '../../hooks/useProfiles';
 import SEO from '../components/SEO';
@@ -438,7 +439,7 @@ export default function OptometryInspires() {
 
   // ─── Share ───
   const handleShare = (post: InspirePost) => {
-    const url = `${window.location.origin}/inspires/post/${post.id}`;
+    const url = `${SITE_URL}/inspires/post/${post.id}`;
     navigator.clipboard.writeText(url).then(() => {
       toast.success('Link copied to clipboard!');
     }).catch(() => {

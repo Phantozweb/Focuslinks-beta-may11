@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { encodeImage, formatBytes } from '../../lib/imageEncoder';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import { Link, useNavigate, useLocation, useParams } from '../../context/NavigationContext';
 import { useProfiles, generateSlug } from '../../hooks/useProfiles';
 import { fetchGitHubJson, updateGitHubFile } from '../../services/githubService';
@@ -445,7 +446,7 @@ export default function Feed() {
   };
 
   const handleShare = (post: Post) => {
-    const url = `${window.location.origin}${window.location.pathname}#/post/${post.id}`;
+    const url = `${SITE_URL}/feed/post/${post.id}`;
     navigator.clipboard.writeText(url).then(() => {
       toast.success('Link copied to clipboard!');
     }).catch(() => {

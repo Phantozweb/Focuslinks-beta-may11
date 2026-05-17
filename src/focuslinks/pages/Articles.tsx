@@ -3,6 +3,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Clock, ArrowRight, User, Search, Bookmark, BookmarkCheck, Share2, Eye, Star, TrendingUp, Sparkles, X, Heart, MessageSquare, PenSquare, Loader2 } from 'lucide-react';
 import { useNavigate, Link } from '../../context/NavigationContext';
 import { toast } from 'sonner';
+import { SITE_URL } from '../../lib/constants';
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import SEO from '../components/SEO';
 
@@ -311,7 +312,7 @@ export default function Articles() {
   };
 
   const handleShare = async (title: string, slug: string) => {
-    const url = `${window.location.origin}/#/blog/${slug}`;
+    const url = `${SITE_URL}/blog/${slug}`;
     try {
       await navigator.clipboard.writeText(`${title} — ${url}`);
       toast.success('Link copied to clipboard!');
