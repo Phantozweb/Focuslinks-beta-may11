@@ -526,3 +526,27 @@ Stage Summary:
 - Profile completion items: name ✅, email ✅, role ✅, location ✅, photo ❌, public profile ❌
 - "Publish My Profile" CTA links to /create-profile
 - Progress bar and completion percentage shown clearly
+
+---
+Task ID: 5
+Agent: main
+Task: Add AI bot User-Agents to robots.txt for AEO (AI Engine Optimization)
+
+Work Log:
+- Rewrote /public/robots.txt with comprehensive coverage of 38 user agents
+- Added all major AI training bots: GPTBot, ChatGPT-User, OAI-SearchBot (OpenAI)
+- Added Google-Extended, GoogleOther (Google AI)
+- Added ClaudeBot, Claude-Web, Anthropic-AI (Anthropic)
+- Added PerplexityBot, Perplexity-Chat (Perplexity AI)
+- Added FacebookBot, Meta-ExternalAgent (Meta AI)
+- Added Bytespider (ByteDance/TikTok), CCBot (Common Crawl), cohere-ai, AI2Bot, Amazonbot, YouBot, DeepseekBot
+- Kept all existing search engine and social media bots
+- Added Sitemap reference: https://focuslinks.in/sitemap.xml
+- Created /src/app/sitemap.ts — Next.js sitemap generation with 33 pages, proper priority and changeFrequency
+- Sitemap serves at /sitemap.xml with correct XML format
+
+Stage Summary:
+- 38 User-Agents explicitly allowed (was 5)
+- Full AEO coverage: OpenAI, Google AI, Anthropic, Perplexity, Meta, ByteDance, Cohere, AI2, Amazon, DeepSeek, You.com
+- Dynamic sitemap.xml now served at https://focuslinks.in/sitemap.xml
+- Lint passes, no errors

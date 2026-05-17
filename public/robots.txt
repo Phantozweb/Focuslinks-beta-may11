@@ -1,14 +1,155 @@
+# ═══════════════════════════════════════════════════════════════════
+# FocusLinks — robots.txt
+# https://focuslinks.in
+#
+# AEO (AI Engine Optimization) + SEO — explicitly allowing all major
+# search engine crawlers, social media bots, and AI training/search
+# agents to access and index the full site.
+# ═══════════════════════════════════════════════════════════════════
+
+# ─── Traditional Search Engine Bots ────────────────────────────────
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
+User-agent: Slurp          # Yahoo
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: facebot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+# ─── Social Media & Messaging Bots ────────────────────────────────
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: SkypeUriPreview
+Allow: /
+
+# ─── OpenAI Bots ──────────────────────────────────────────────────
+# GPTBot — Used for training OpenAI's GPT models
+User-agent: GPTBot
+Allow: /
+
+# ChatGPT-User — Used by ChatGPT to fetch real-time web results
+User-agent: ChatGPT-User
+Allow: /
+
+# OAI-SearchBot — Used to surface sites in OpenAI search features
+User-agent: OAI-SearchBot
+Allow: /
+
+# ─── Google AI Bots ───────────────────────────────────────────────
+# Google-Extended — Used for training AI models (Gemini, etc.)
+User-agent: Google-Extended
+Allow: /
+
+# GoogleOther — Google's generic crawler for AI/ML research
+User-agent: GoogleOther
+Allow: /
+
+# ─── Anthropic Bots ───────────────────────────────────────────────
+# ClaudeBot — Used for training Claude AI models
+User-agent: ClaudeBot
+Allow: /
+
+# Claude-Web — Used by Claude for real-time web browsing
+User-agent: Claude-Web
+Allow: /
+
+# Anthropic-AI — General Anthropic crawler
+User-agent: Anthropic-AI
+Allow: /
+
+# ─── Perplexity Bots ──────────────────────────────────────────────
+# PerplexityBot — AI search engine crawler
+User-agent: PerplexityBot
+Allow: /
+
+# Perplexity-Chat — Used for Perplexity chat features
+User-agent: Perplexity-Chat
+Allow: /
+
+# ─── Meta AI Bots ─────────────────────────────────────────────────
+# FacebookBot — Used for training Meta's AI models
+User-agent: FacebookBot
+Allow: /
+
+# Meta-ExternalAgent — Meta's AI search/assistant agent
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# ─── Other AI Bots ────────────────────────────────────────────────
+# Bytespider — ByteDance / TikTok AI crawler
+User-agent: Bytespider
+Allow: /
+
+# CCBot — Common Crawl (used by many AI training pipelines)
+User-agent: CCBot
+Allow: /
+
+# cohere-ai — Cohere AI training data
+User-agent: cohere-ai
+Allow: /
+
+# AI2Bot — Allen Institute for AI (used for AI2 models)
+User-agent: AI2Bot
+Allow: /
+
+# Amazonbot — Amazon's crawler (used for Alexa, AI features)
+User-agent: Amazonbot
+Allow: /
+
+# YouBot — You.com AI search engine
+User-agent: YouBot
+Allow: /
+
+# DeepseekBot — DeepSeek AI crawler
+User-agent: DeepseekBot
+Allow: /
+
+# GPTBot-compat — Compatibility alias for GPTBot
+User-agent: GPTBot-compat
+Allow: /
+
+# imgsizer — Used by some AI tools for image analysis
+User-agent: imgsizer
+Allow: /
+
+# ─── Catch-all: Allow everything else ─────────────────────────────
 User-agent: *
 Allow: /
+
+# ─── Sitemap ──────────────────────────────────────────────────────
+Sitemap: https://focuslinks.in/sitemap.xml
