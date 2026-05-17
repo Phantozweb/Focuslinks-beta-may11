@@ -471,9 +471,17 @@ export default function OnboardingPage() {
       localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
       localStorage.setItem(USER_KEY, JSON.stringify({
         name: data.fullName || 'User',
+        fullName: data.fullName || 'User',
         email: data.email || '',
         role: data.status || '',
+        country: data.country || '',
+        cityState: data.cityState || '',
         location: data.cityState ? `${data.cityState}, ${data.country}` : data.country || '',
+        organization: data.organization || '',
+        membershipId: data.membershipId || '',
+        purposes: data.purposes || [],
+        specialties: data.specialties || [],
+        timestamp: new Date().toISOString(),
       }));
     } catch { /* ignore */ }
     navigate('/dashboard');
@@ -485,9 +493,17 @@ export default function OnboardingPage() {
       localStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
       localStorage.setItem(USER_KEY, JSON.stringify({
         name: data.fullName,
+        fullName: data.fullName,
         email: data.email,
         role: data.status,
+        country: data.country,
+        cityState: data.cityState,
         location: data.cityState ? `${data.cityState}, ${data.country}` : data.country,
+        organization: data.organization,
+        membershipId: data.membershipId,
+        purposes: data.purposes,
+        specialties: data.specialties,
+        timestamp: new Date().toISOString(),
       }));
 
       try {

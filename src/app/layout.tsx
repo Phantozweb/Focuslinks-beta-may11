@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://focuslinks.in";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "FocusLinks | World's First Global Platform for Optometrists",
     template: "%s | FocusLinks",
@@ -48,6 +51,7 @@ export const metadata: Metadata = {
     description: "Connecting vision professionals, students, and organizations worldwide. Discover tools, resources, and community.",
     type: "website",
     locale: "en_US",
+    url: SITE_URL,
     siteName: "FocusLinks",
     images: [{
       url: "/og-image.jpg",
@@ -61,10 +65,11 @@ export const metadata: Metadata = {
     title: "FocusLinks | Global Platform for Optometrists",
     description: "Connecting vision professionals, students, and organizations worldwide.",
     creator: "@focuslinks",
+    images: ["/og-image.jpg"],
   },
   verification: {},
   alternates: {
-    canonical: "https://focuslinks.com",
+    canonical: SITE_URL,
   },
 };
 
@@ -101,7 +106,7 @@ export default function RootLayout({
                 "@context": "https://schema.org",
                 "@type": "WebApplication",
                 "name": "FocusLinks",
-                "url": "https://focuslinks.com",
+                "url": "https://focuslinks.in",
                 "description": "World's First Global Platform for Optometrists — connecting vision professionals, students, and organizations worldwide.",
                 "applicationCategory": "Professional Network",
                 "operatingSystem": "Web",
@@ -114,7 +119,7 @@ export default function RootLayout({
                 "author": {
                   "@type": "Organization",
                   "name": "FocusLinks",
-                  "logo": "https://focuslinks.com/logo.svg"
+                  "logo": "https://focuslinks.in/logo.svg"
                 },
                 "sameAs": [],
                 "featureList": [
@@ -137,13 +142,13 @@ export default function RootLayout({
                 "@context": "https://schema.org",
                 "@type": "Organization",
                 "name": "FocusLinks",
-                "url": "https://focuslinks.com",
-                "logo": "https://focuslinks.com/logo.svg",
+                "url": "https://focuslinks.in",
+                "logo": "https://focuslinks.in/logo.svg",
                 "description": "Global platform for optometrists, students, and eye care organizations.",
                 "contactPoint": {
                   "@type": "ContactPoint",
                   "contactType": "customer support",
-                  "url": "https://focuslinks.com/#/contactus"
+                  "url": "https://focuslinks.in/contactus"
                 }
               })
             }}

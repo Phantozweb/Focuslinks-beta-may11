@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from 'motion/react';
 import Navbar from '@/focuslinks/components/Navbar';
 import Footer from '@/focuslinks/components/Footer';
 import GettingStartedModal from '@/focuslinks/components/GettingStartedModal';
-// OnboardingWizard removed — now using full-page OnboardingPage
 import CommandPalette from '@/focuslinks/components/CommandPalette';
 import OnboardingTour from '@/focuslinks/components/OnboardingTour';
 import Breadcrumbs from '@/focuslinks/components/Breadcrumbs';
@@ -224,7 +223,7 @@ function AppLayout() {
   );
 }
 
-export default function Page() {
+export default function SpaShell() {
   return (
     <NavigationProvider>
       <AppLayout />

@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -15,17 +14,9 @@ const nextConfig: NextConfig = {
     '*.space-z.ai',
     '*.space.z.ai',
   ],
-  // SPA rewrite: serve the root page for all client-side routes
-  async rewrites() {
-    return {
-      beforeFiles: [
-        {
-          source: '/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-*|certificate-template\\.png|.*\\.png|.*\\.jpg|.*\\.svg|.*\\.ico|.*\\.webp).*)',
-          destination: '/',
-        },
-      ],
-    };
-  },
+  // The [[...slug]] catch-all route now handles all client-side paths
+  // with proper server-side metadata generation for each route.
+  // No SPA rewrite needed.
 };
 
 export default nextConfig;
