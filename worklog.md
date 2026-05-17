@@ -550,3 +550,37 @@ Stage Summary:
 - Full AEO coverage: OpenAI, Google AI, Anthropic, Perplexity, Meta, ByteDance, Cohere, AI2, Amazon, DeepSeek, You.com
 - Dynamic sitemap.xml now served at https://focuslinks.in/sitemap.xml
 - Lint passes, no errors
+
+---
+Task ID: 6
+Agent: main
+Task: Add schema.org structured data for user profiles, breadcrumbs, FAQs, and more (SEO + AEO)
+
+Work Log:
+- Created /src/lib/schema.ts — comprehensive JSON-LD schema builders with 9 schema types:
+  - Person (optometrist profiles with knowsAbout, hasCredential, alumniOf, workExperience)
+  - ProfessionalService + MedicalBusiness (clinic/practice profiles)
+  - BreadcrumbList (navigation trails — 18 route configs including nested paths)
+  - FAQPage (frequently asked questions — 5 routes with 2-3 Q&As each)
+  - WebSite (search action for Google sitelinks searchbox)
+  - Article (blog posts)
+  - Event (webinars, Eye Q Arena)
+  - Course (academy courses)
+  - ItemList (directory/collection pages)
+- Created /src/focuslinks/components/JsonLd.tsx — client-side JSON-LD injection component
+- Added Person + BreadcrumbList schema to ProfileDetail.tsx with full profile data
+- Enhanced ProfileDetail SEO: dynamic title "{Name} — {Title}", description with bio excerpt
+- Updated catch-all route ([[...slug]]/page.tsx) to inject server-side JSON-LD:
+  - WebSite schema on homepage with SearchAction
+  - BreadcrumbList schema for 18 key routes (including nested: Labs → OD Cam, Academy → Beyond Phoropter)
+  - FAQPage schema for 5 routes: /directory, /labs, /academy, /membership, /about
+- All schemas render server-side — crawlers see them immediately without JS execution
+
+Stage Summary:
+- 9 schema.org types available for structured data injection
+- Person schema on profile pages: knowsAbout (specialties), hasCredential (verified), alumniOf, workExperience, address, sameAs
+- BreadcrumbList on 18 routes (including nested sub-routes like /labs/od-cam)
+- FAQPage on 5 key pages with real optometry Q&As
+- WebSite schema with SearchAction on homepage (enables Google sitelinks searchbox)
+- All JSON-LD rendered server-side for immediate crawler visibility
+- Lint passes, no errors

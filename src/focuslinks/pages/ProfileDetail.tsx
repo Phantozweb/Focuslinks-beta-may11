@@ -9,6 +9,8 @@ import { getConnectionStatus, sendConnectionRequest, acceptConnection, rejectCon
 import type { ConnectionStatus } from '../../services/connectionsService';
 import { toast } from 'sonner';
 import SEO from '../components/SEO';
+import JsonLd from '../components/JsonLd';
+import { buildPersonSchema, buildBreadcrumbSchema } from '../../lib/schema';
 
 export default function ProfileDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,7 +38,7 @@ export default function ProfileDetail() {
     if (showDisconnectMenu) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
-    <SEO title="Profile" description="View this optometry professional profile on FocusLinks." keywords="profile, optometrist, professional profile" />
+
     }
   }, [showDisconnectMenu]);
 
@@ -290,7 +292,37 @@ export default function ProfileDetail() {
     toast.error('Log in to view LinkedIn profile');
   };
 
+  // Build structured data for this profile
+  const personSchema = buildPersonSchema({
+    name: profile.name,
+    title: profile.title || userData?.title,
+    description: userData?.bio || userData?.description || profile.description,
+    image: profile.image || userData?.image,
+    location: profile.location || userData?.location,
+    country: profile.country || userData?.country,
+    role: profile.role || userData?.role,
+    email: email,
+    linkedin: linkedinUrl,
+    specialties: userData?.skills || profile.skills,
+    skills: userData?.skills || profile.skills,
+    languages: userData?.languages || profile.languages,
+    experience: userData?.experience || profile.experience,
+    education: userData?.education || profile.education,
+    verified: userData?.verified ?? profile.verified,
+    membershipId: profile.membershipId,
+  });
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: 'https://focuslinks.in' },
+    { name: 'Directory', url: 'https://focuslinks.in/directory' },
+    { name: profile.name, url: `https://focuslinks.in/profile/${slug}` },
+  ]);
+
   return (
+    <>
+    <SEO title={`${profile.name} — ${profile.title || 'Optometrist'}`} description={`${profile.name} is a ${(profile.role || 'professional').toLowerCase()} on FocusLinks. ${(userData?.bio || profile.description || '').slice(0, 150)}`} keywords={`${profile.name}, optometrist, ${profile.role || ''}, ${profile.location || ''}, FocusLinks profile`} />
+    <JsonLd schema={personSchema} />
+    <JsonLd schema={breadcrumbSchema} />
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 pt-20 pb-16">
       {/* Sign-in banner for non-logged-in users */}
       {!isLoggedIn && !authLoading && (
@@ -880,5 +912,6 @@ export default function ProfileDetail() {
         </div>
       </div>
     </div>
+    </>
   );
 }

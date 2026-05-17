@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import SpaShell from '@/focuslinks/components/SpaShell';
+import { buildBreadcrumbSchema, buildFAQSchema, buildWebSiteSchema, routeFAQs, routeBreadcrumbs } from '@/lib/schema';
 
 /* ------------------------------------------------------------------ */
 /*  Route Metadata Map — per-page SEO data for server-side rendering  */
@@ -383,15 +384,48 @@ export async function generateMetadata({
 
 /* ------------------------------------------------------------------ */
 /*  Page Component — server-side shell that renders the SPA client     */
+/*  Also injects per-route JSON-LD structured data for SEO & AEO      */
 /* ------------------------------------------------------------------ */
 
-export default function CatchAllPage({
+export default async function CatchAllPage({
   params,
 }: {
   params: Promise<{ slug?: string[] }>;
 }) {
-  // The server component renders the SPA shell.
-  // Metadata is handled by generateMetadata above.
-  // Client-side routing is handled by NavigationContext.
-  return <SpaShell />;
+  const { slug } = await params;
+  const path = slug ? `/${slug.join('/')}` : '/';
+
+  // Build server-side JSON-LD schemas
+  const schemas: Record<string, unknown>[] = [];
+
+  // WebSite schema on homepage only (search action for Google sitelinks)
+  if (path === '/') {
+    schemas.push(buildWebSiteSchema());
+  }
+
+  // BreadcrumbList schema for every page that has a breadcrumb
+  const breadcrumbItems = routeBreadcrumbs[path];
+  if (breadcrumbItems) {
+    schemas.push(buildBreadcrumbSchema(breadcrumbItems));
+  }
+
+  // FAQPage schema for pages that have FAQs
+  const faqs = routeFAQs[path];
+  if (faqs) {
+    schemas.push(buildFAQSchema(faqs));
+  }
+
+  return (
+    <>
+      {/* Server-side JSON-LD structured data — visible to crawlers */}
+      {schemas.map((schema, i) => (
+        <script
+          key={`schema-${i}`}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+      <SpaShell />
+    </>
+  );
 }
